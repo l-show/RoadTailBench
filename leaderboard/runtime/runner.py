@@ -51,24 +51,7 @@ class CodeScenarioRunner:
             print("[leaderboard] --skip-load-world set; using current CARLA world", flush=True)
             self.world = self.client.get_world()
         elif town:
-            candidates = [town]
-            if not str(town).startswith("/Game/"):
-                candidates.append(f"/Game/Carla/Maps/{town}")
-            last_error = None
-            for candidate in candidates:
-                try:
-                    print(f"[leaderboard] loading CARLA map: {candidate}", flush=True)
-                    self.world = self.client.load_world(candidate)
-                    print(f"[leaderboard] loaded CARLA map: {self.world.get_map().name}", flush=True)
-                    break
-                except RuntimeError as exc:
-                    last_error = exc
-                    print(f"[leaderboard] load_world failed for {candidate}: {exc}", flush=True)
-            if self.world is None:
-                raise RuntimeError(
-                    f"failed to load map for {scenario.scene_id}; tried {candidates}. "
-                    f"Last error: {last_error}"
-                )
+            self.world = self.load_world(town, scenario.scene_id)
         else:
             print("[leaderboard] no town configured; using current CARLA world", flush=True)
             self.world = self.client.get_world()
@@ -76,7 +59,99 @@ class CodeScenarioRunner:
         settings.synchronous_mode = True
         settings.fixed_delta_seconds = float(self.args.fixed_delta_seconds)
         self.world.apply_settings(settings)
+        self.set_spectator_from_metadata(metadata)
         return self.world
+
+    def set_spectator_from_metadata(self, metadata):
+        if getattr(self.args, "spectator_mode", "ego_start") != "ego_start":
+            return
+        ego_start = metadata.get("ego_start") or metadata.get("ego_spawn")
+        loc = metadata_location(ego_start)
+        if not loc:
+            return
+        rotation = ego_start.get("rotation", {}) if isinstance(ego_start, dict) else {}
+        yaw = float(rotation.get("yaw", 0.0)) if isinstance(rotation, dict) else 0.0
+        try:
+            spectator = self.world.get_spectator()
+            spectator.set_transform(
+                self.carla.Transform(
+                    self.carla.Location(x=loc[0], y=loc[1], z=loc[2] + 25.0),
+                    self.carla.Rotation(pitch=-65.0, yaw=yaw, roll=0.0),
+                )
+            )
+            print(f"[leaderboard] spectator set near ego_start ({loc[0]:.1f}, {loc[1]:.1f}, {loc[2]:.1f})", flush=True)
+        except RuntimeError as exc:
+            print(f"[leaderboard] spectator setup skipped: {exc}", flush=True)
+
+    def map_candidates(self, town):
+        candidates = [str(town)]
+        if not str(town).startswith("/Game/"):
+            candidates.append(f"/Game/Carla/Maps/{town}")
+        return candidates
+
+    def load_world(self, town, scene_id):
+        candidates = self.map_candidates(town)
+        if getattr(self.args, "map_load_mode", "api") == "helper":
+            return self.load_world_with_helper(candidates, scene_id)
+        return self.load_world_with_api(candidates, scene_id)
+
+    def load_world_with_api(self, candidates, scene_id):
+        original_timeout = float(getattr(self.args, "carla_timeout", 180.0))
+        map_timeout = float(getattr(self.args, "map_load_timeout", original_timeout))
+        self.client.set_timeout(map_timeout)
+        try:
+            last_error = None
+            for candidate in candidates:
+                try:
+                    print(f"[leaderboard] loading CARLA map via API: {candidate}", flush=True)
+                    world = self.client.load_world(candidate)
+                    print(f"[leaderboard] loaded CARLA map: {world.get_map().name}", flush=True)
+                    return world
+                except RuntimeError as exc:
+                    last_error = exc
+                    print(f"[leaderboard] load_world failed for {candidate}: {exc}", flush=True)
+            raise RuntimeError(
+                f"failed to load map for {scene_id}; tried {candidates}. "
+                f"Last error: {last_error}"
+            )
+        finally:
+            self.client.set_timeout(original_timeout)
+
+    def load_world_with_helper(self, candidates, scene_id):
+        helper = Path(__file__).resolve().parents[2] / "scripts" / "carla_control.py"
+        last_error = None
+        for candidate in candidates:
+            cmd = [
+                sys.executable,
+                str(helper),
+                "--host",
+                str(self.args.host),
+                "--port",
+                str(self.args.port),
+                "--timeout",
+                str(float(self.args.map_load_timeout)),
+                "--wait",
+                "--map",
+                str(candidate),
+                "--sleep-after-load",
+                str(float(self.args.map_load_sleep)),
+                "--print-world",
+            ]
+            print(f"[leaderboard] loading CARLA map via helper: {candidate}", flush=True)
+            result = subprocess.run(cmd, text=True, capture_output=True, timeout=float(self.args.map_load_timeout) + 10.0)
+            if result.stdout:
+                print(result.stdout.rstrip(), flush=True)
+            if result.returncode == 0:
+                world = self.client.get_world()
+                print(f"[leaderboard] loaded CARLA map: {world.get_map().name}", flush=True)
+                return world
+            last_error = result.stderr.strip() or f"exit={result.returncode}"
+            if last_error:
+                print(f"[leaderboard] helper load failed for {candidate}: {last_error}", flush=True)
+        raise RuntimeError(
+            f"failed to load map for {scene_id}; tried {candidates}. "
+            f"Last error: {last_error}"
+        )
 
     def restore_world(self):
         if not self.world:
@@ -152,7 +227,7 @@ class CodeScenarioRunner:
 
     def advance_world_for_collection(self, world, wait_timeout=None):
         if self.args.ego_mode == "scene_ego" and getattr(self.args, "scene_drives_ticks", True):
-            seconds = float(self.args.tick_wait_timeout) if wait_timeout is None else max(0.01, float(wait_timeout))
+            seconds = float(self.args.tick_wait_timeout) if wait_timeout is None else max(0.5, float(wait_timeout))
             return world.wait_for_tick(seconds=seconds)
         return world.tick()
 
@@ -232,6 +307,9 @@ class CodeScenarioRunner:
         output_dir.mkdir(parents=True, exist_ok=True)
         proc = logger = ego = adapter = None
         status, error, ticks, script_exit_tick = "started", "", 0, None
+        termination_reason = ""
+        started_wall = time.time()
+        first_sim_time = last_sim_time = None
         scenario_timeout = float(getattr(self.args, "scenario_timeout", 0.0) or 0.0)
         scenario_deadline = time.time() + scenario_timeout if scenario_timeout > 0.0 else None
 
@@ -242,7 +320,10 @@ class CodeScenarioRunner:
         def remaining_wait_timeout():
             if scenario_deadline is None:
                 return None
-            return min(float(self.args.tick_wait_timeout), max(0.01, scenario_deadline - time.time()))
+            remaining = scenario_deadline - time.time()
+            if remaining <= 0.0:
+                raise ScenarioTimeoutError(f"{scenario.scene_id}: scenario-timeout {scenario_timeout:.1f}s exceeded")
+            return min(float(self.args.tick_wait_timeout), remaining)
 
         try:
             check_scenario_timeout()
@@ -278,20 +359,28 @@ class CodeScenarioRunner:
                 else:
                     try:
                         control = ego.get_control()
-                    except RuntimeError:
+                    except (AttributeError, RuntimeError):
                         control = None
                 logger.log_tick(world, ego, control, actor_radius_m=self.args.actor_log_radius_m)
+                if logger._frames:
+                    frame_time = float(logger._frames[-1].get("time", 0.0))
+                    if first_sim_time is None:
+                        first_sim_time = frame_time
+                    last_sim_time = frame_time
                 if proc and proc.poll() is not None:
                     if script_exit_tick is None:
                         script_exit_tick = ticks
                     if ticks - script_exit_tick >= int(self.args.min_ticks_after_script_exit):
+                        termination_reason = "script_exit"
                         break
             status = "completed"
         except ScenarioTimeoutError as exc:
-            status = "timeout"
-            error = f"{exc}\n{traceback.format_exc()}"
+            status = "completed_timeout"
+            termination_reason = "scenario_timeout"
+            error = str(exc)
         except Exception as exc:
             status = "failed"
+            termination_reason = "exception"
             error = f"{exc}\n{traceback.format_exc()}"
         finally:
             if adapter:
@@ -305,17 +394,32 @@ class CodeScenarioRunner:
                     proc.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     proc.kill()
-            summary = {"scene_id": scenario.scene_id, "status": status, "error": error, "ticks": ticks, "output_dir": str(output_dir)}
+            elapsed_wall = time.time() - started_wall
+            elapsed_sim = None
+            if first_sim_time is not None and last_sim_time is not None:
+                elapsed_sim = max(0.0, last_sim_time - first_sim_time)
+            summary = {
+                "scene_id": scenario.scene_id,
+                "status": status,
+                "error": error,
+                "ticks": ticks,
+                "output_dir": str(output_dir),
+                "elapsed_wall_seconds": elapsed_wall,
+                "elapsed_sim_seconds": elapsed_sim,
+                "timeout_seconds": scenario_timeout or None,
+                "termination_reason": termination_reason or status,
+            }
             if logger:
                 summary["outputs"] = logger.close(summary)
             else:
                 save_json(output_dir / "leaderboard_run_summary.json", summary)
             if self.args.cleanup_ego and ego and ego.is_alive and self.args.ego_mode == "agent_ego":
                 ego.destroy()
-            try:
-                self.restore_world()
-            except Exception:
-                pass
+            if getattr(self.args, "restore_world_settings", False):
+                try:
+                    self.restore_world()
+                except Exception:
+                    pass
         return summary
 
     def run(self, scenarios):
@@ -326,7 +430,7 @@ class CodeScenarioRunner:
             summaries.append(summary)
             save_json(Path(self.args.output_root) / "leaderboard_batch_summary.json", summaries)
             print(f"[leaderboard] {scenario.scene_id} {summary['status']} ticks={summary['ticks']}", flush=True)
-            if summary.get("status") != "completed" and summary.get("error"):
+            if summary.get("status") not in ("completed", "completed_timeout") and summary.get("error"):
                 first_line = summary["error"].splitlines()[0] if summary["error"].splitlines() else summary["error"]
                 print(f"[leaderboard] error: {first_line}", flush=True)
         return summaries

@@ -16,6 +16,11 @@ def build_argparser():
     parser.add_argument("--timeout", dest="carla_timeout", type=float, default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     parser.add_argument("--town", default="")
     parser.add_argument("--skip-load-world", action="store_true", help="Use the currently loaded CARLA world instead of calling client.load_world().")
+    parser.add_argument("--map-load-mode", choices=["api", "helper"], default="api", help="api: load maps in-process; helper: call scripts/carla_control.py before reconnecting.")
+    parser.add_argument("--map-load-timeout", default=300.0, type=float, help="Timeout for map loading in seconds.")
+    parser.add_argument("--map-load-sleep", default=3.0, type=float, help="Seconds to wait after a helper map load.")
+    parser.add_argument("--spectator-mode", choices=["ego_start", "none"], default="ego_start", help="Set editor spectator after map load.")
+    parser.add_argument("--restore-world-settings", action="store_true", help="Restore asynchronous world settings after each scenario. Disabled by default for scene_ego stability.")
     parser.add_argument("--fixed-delta-seconds", default=0.05, type=float)
     parser.add_argument("--scene-root", required=True)
     parser.add_argument("--metadata-root", default="")
@@ -55,7 +60,8 @@ def main():
     if args.dry_run or not scenarios:
         return 0
     summaries = CodeScenarioRunner(args).run(scenarios)
-    return 1 if any(s.get("status") != "completed" for s in summaries) else 0
+    successful_statuses = {"completed", "completed_timeout"}
+    return 1 if any(s.get("status") not in successful_statuses for s in summaries) else 0
 
 
 if __name__ == "__main__":

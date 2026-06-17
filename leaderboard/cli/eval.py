@@ -1,7 +1,19 @@
 import argparse
+from pathlib import Path
 
 from leaderboard.core.io import load_json, load_jsonl, save_json
 from leaderboard.metrics.evaluator import evaluate_leaderboard
+
+
+def reject_placeholder(path, label):
+    text = str(path)
+    if "<" in text or ">" in text:
+        raise SystemExit(
+            f"{label} contains a placeholder: {text}\n"
+            "Replace <run> with a real output directory name, for example RTB116_20260617_160038."
+        )
+    if not Path(text).exists():
+        raise SystemExit(f"{label} does not exist: {text}")
 
 
 def main():
@@ -10,6 +22,8 @@ def main():
     parser.add_argument("--config", required=True)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
+    reject_placeholder(args.frames, "--frames")
+    reject_placeholder(args.config, "--config")
     frames = load_jsonl(args.frames)
     config = load_json(args.config)
     save_json(args.output, evaluate_leaderboard(frames, config))

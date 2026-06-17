@@ -10,8 +10,12 @@ This project is Apache-2.0. Do not copy code from repositories whose top-level l
 
 ## Quick Start
 
+Install the package inside the conda environment you will use to run CARLA:
+
 ```powershell
-pip install -e G:\Codex\RoadTailBench
+conda activate Carla-0915
+cd G:\Codex\RoadTailBench
+python -m pip install -e . --no-build-isolation
 
 leaderboard-run `
   --scene-root G:\Codex\RoadTailBench\scenes `
@@ -19,6 +23,18 @@ leaderboard-run `
   --scenes RTB116-RTB125 `
   --dry-run
 ```
+
+If the console script is not available yet, use the repository script directly:
+
+```powershell
+python G:\Codex\RoadTailBench\run_leaderboard.py `
+  --scene-root G:\Codex\RoadTailBench\scenes `
+  --metadata-root G:\Codex\RoadTailBench\metadata `
+  --scenes RTB116-RTB125 `
+  --dry-run
+```
+
+Avoid running `python -m leaderboard...` from `G:\Bench2Drive`, because that directory also contains an older `leaderboard` package.
 
 For automated `scene_ego` CARLA execution:
 
@@ -35,6 +51,22 @@ leaderboard-run `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
 
+`--limit 3` runs only the first three discovered scenarios from the selected range. Remove it, or set `--limit 0`, to run the full selection.
+
+If CARLA map loading stalls, test the CARLA side directly:
+
+```powershell
+python G:\Codex\RoadTailBench\scripts\carla_control.py `
+  --host localhost `
+  --port 2000 `
+  --timeout 300 `
+  --wait `
+  --map RTB116 `
+  --print-world
+```
+
+For source-built CARLA Editor startup, see `scripts\launch_carla_editor.ps1` and `docs\RUNNING_ZH.md`.
+
 The runner automatically loads each scenario's `town` from metadata unless `--skip-load-world` is set. Metrics are computed during run close and can be recomputed later:
 
 ```powershell
@@ -42,6 +74,16 @@ leaderboard-eval `
   --frames G:\Codex\RoadTailBench\outputs\<run>\leaderboard_frame_log.jsonl `
   --config G:\Codex\RoadTailBench\outputs\<run>\leaderboard_scenario_config.json `
   --output G:\Codex\RoadTailBench\outputs\<run>\metrics.json
+```
+
+Plot a finished run:
+
+```powershell
+pip install matplotlib
+
+leaderboard-plot `
+  --run-dir G:\Codex\RoadTailBench\outputs\<run> `
+  --output G:\Codex\RoadTailBench\outputs\plots\RTB116_report.png
 ```
 
 `agent_ego` and Zoo adapters remain a later integration phase. The current priority is validating scenario execution and metrics in `scene_ego`.

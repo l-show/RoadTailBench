@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from leaderboard.cli.run import build_argparser
+from leaderboard.runtime.carla_utils import actor_to_record
 from leaderboard.metrics.drivable_area import DrivableAreaMetric
 from leaderboard.metrics.evaluator import evaluate_leaderboard
 from leaderboard.runtime.runner import CodeScenarioRunner
@@ -26,11 +27,21 @@ def test_runner_cli_args():
         "--scenes", "RTB116-RTB125",
         "--limit", "2",
         "--carla-timeout", "30",
+        "--map-load-mode", "helper",
+        "--map-load-timeout", "45",
+        "--map-load-sleep", "1",
+        "--spectator-mode", "none",
+        "--restore-world-settings",
         "--scenario-timeout", "120",
         "--dry-run",
     ])
     assert args.limit == 2
     assert args.carla_timeout == 30
+    assert args.map_load_mode == "helper"
+    assert args.map_load_timeout == 45
+    assert args.map_load_sleep == 1
+    assert args.spectator_mode == "none"
+    assert args.restore_world_settings is True
     assert args.scenario_timeout == 120
 
 
@@ -38,6 +49,10 @@ def test_runner_cli_defaults():
     args = build_argparser().parse_args(["--scene-root", "scenes"])
     assert args.limit == 0
     assert args.carla_timeout == 180.0
+    assert args.map_load_mode == "api"
+    assert args.map_load_timeout == 300.0
+    assert args.spectator_mode == "ego_start"
+    assert args.restore_world_settings is False
     assert args.scenario_timeout == 0.0
 
 
@@ -75,6 +90,40 @@ def test_evaluator_uses_leaderboard_score_name():
     assert "leaderboard_driving_score" in result["metrics"]
 
 
+def test_actor_to_record_without_control():
+    class Vec:
+        x = 1.0
+        y = 2.0
+        z = 3.0
+
+    class Rot:
+        roll = 0.0
+        pitch = 0.0
+        yaw = 90.0
+
+    class Transform:
+        location = Vec()
+        rotation = Rot()
+
+    class StaticActor:
+        id = 10
+        type_id = "static.prop.box"
+        attributes = {}
+
+        def get_transform(self):
+            return Transform()
+
+        def get_velocity(self):
+            return Vec()
+
+        def get_acceleration(self):
+            return Vec()
+
+    record = actor_to_record(StaticActor())
+    assert record["type_id"] == "static.prop.box"
+    assert "control" not in record
+
+
 def test_scenario_timeout_writes_summary_and_continues_shape(tmp_path):
     runner = object.__new__(CodeScenarioRunner)
     runner.args = SimpleNamespace(
@@ -84,6 +133,7 @@ def test_scenario_timeout_writes_summary_and_continues_shape(tmp_path):
         ego_wait_timeout=1.0,
         tick_wait_timeout=1.0,
         cleanup_ego=False,
+        restore_world_settings=False,
     )
     runner.connect_world = lambda scenario: object()
     runner.restore_world = lambda: None
@@ -108,6 +158,8 @@ def test_scenario_timeout_writes_summary_and_continues_shape(tmp_path):
 
     summary = runner.run_scenario(scenario)
 
-    assert summary["status"] == "timeout"
+    assert summary["status"] == "completed_timeout"
     assert "scenario-timeout" in summary["error"]
+    assert summary["termination_reason"] == "scenario_timeout"
+    assert summary["elapsed_wall_seconds"] >= 0.0
     assert (Path(summary["output_dir"]) / "leaderboard_run_summary.json").exists()

@@ -36,10 +36,11 @@ def actor_to_record(actor):
         "acceleration": vector_to_list(acc),
         "speed_mps": float(speed),
     }
-    try:
-        record["control"] = control_to_dict(actor.get_control())
-    except RuntimeError:
-        pass
+    if hasattr(actor, "get_control"):
+        try:
+            record["control"] = control_to_dict(actor.get_control())
+        except (AttributeError, RuntimeError):
+            pass
     return record
 
 

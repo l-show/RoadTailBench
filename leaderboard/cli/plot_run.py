@@ -25,9 +25,20 @@ def main():
     args = parser.parse_args()
 
     run_dir = Path(args.run_dir)
-    frames = load_frames(run_dir / "leaderboard_frame_log.jsonl")
-    metrics = load_json(run_dir / "leaderboard_metrics.json")
-    config = load_json(run_dir / "leaderboard_scenario_config.json")
+    if "<" in str(run_dir) or ">" in str(run_dir):
+        raise SystemExit(
+            f"--run-dir contains a placeholder: {run_dir}\n"
+            "Replace <run> with a real output directory name, for example RTB116_20260617_160038."
+        )
+    frames_path = run_dir / "leaderboard_frame_log.jsonl"
+    metrics_path = run_dir / "leaderboard_metrics.json"
+    config_path = run_dir / "leaderboard_scenario_config.json"
+    missing = [str(path) for path in (frames_path, metrics_path, config_path) if not path.exists()]
+    if missing:
+        raise SystemExit("Missing required run files:\n" + "\n".join(missing))
+    frames = load_frames(frames_path)
+    metrics = load_json(metrics_path)
+    config = load_json(config_path)
     output = Path(args.output) if args.output else run_dir / "leaderboard_report.png"
 
     import matplotlib.pyplot as plt

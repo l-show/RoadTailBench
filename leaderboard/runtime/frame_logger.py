@@ -44,14 +44,14 @@ class RuntimeFrameLogger:
         ego_loc = ego_actor.get_location()
         actors = []
         for actor in world.get_actors():
-            if actor.id == ego_actor.id or actor.type_id.startswith("sensor."):
-                continue
-            if not (actor.type_id.startswith("vehicle.") or actor.type_id.startswith("walker.") or actor.type_id.startswith("static.")):
-                continue
             try:
+                if actor.id == ego_actor.id or actor.type_id.startswith("sensor."):
+                    continue
+                if not (actor.type_id.startswith("vehicle.") or actor.type_id.startswith("walker.") or actor.type_id.startswith("static.")):
+                    continue
                 if actor.get_location().distance(ego_loc) <= actor_radius_m:
                     actors.append(actor_to_record(actor))
-            except RuntimeError:
+            except (AttributeError, RuntimeError):
                 continue
         ego_record = actor_to_record(ego_actor)
         if ego_control is not None:
