@@ -9,13 +9,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_discovery():
-    scenarios = discover_scenarios(ROOT / "scenes" / "rtb116_125", ROOT / "metadata" / "rtb116_125", "RTB116-RTB125")
+    scenarios = discover_scenarios(ROOT / "scenes", ROOT / "metadata", "RTB116-RTB125")
     assert len(scenarios) == 10
     assert all(s.metadata_path for s in scenarios)
 
 
 def test_metadata_json():
-    for path in (ROOT / "metadata" / "rtb116_125").glob("RTB*.json"):
+    for path in (ROOT / "metadata").glob("RTB*.json"):
         data = json.loads(path.read_text(encoding="utf-8"))
         assert data["scenario_id"] == path.stem
         assert data["ego_type_id"]

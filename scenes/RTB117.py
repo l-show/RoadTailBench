@@ -4,12 +4,8 @@ import carla
 import time
 import math
 import random  # 新增：用于生成自然翻滚的随机数
-from pathlib import Path
 
 # 1. 动态引入标准化函数库路径
-LOCAL_LIBRARY_PATH = str(Path(__file__).resolve().parent)
-if LOCAL_LIBRARY_PATH not in sys.path:
-    sys.path.insert(0, LOCAL_LIBRARY_PATH)
 LIBRARY_PATH = r"G:\RoadTailCode\标准化函数库"
 if LIBRARY_PATH not in sys.path:
     sys.path.append(LIBRARY_PATH)
