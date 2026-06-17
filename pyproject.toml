@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "roadtailbench"
+name = "leaderboard"
 version = "0.1.0"
-description = "RoadTailBench closed-loop code-scenario evaluation toolkit for CARLA."
+description = "Leaderboard closed-loop code-scenario evaluation toolkit for CARLA."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "Apache-2.0" }
@@ -13,9 +13,10 @@ authors = [{ name = "RoadTailBench Authors" }]
 dependencies = []
 
 [project.scripts]
-rtb-run = "roadtailbench.cli.run:main"
-rtb-eval = "roadtailbench.cli.eval:main"
+leaderboard-run = "leaderboard.cli.run:main"
+leaderboard-eval = "leaderboard.cli.eval:main"
+leaderboard-plot = "leaderboard.cli.plot_run:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["roadtailbench*"]
+include = ["leaderboard*"]

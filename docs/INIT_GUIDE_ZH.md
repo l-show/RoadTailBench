@@ -1,40 +1,38 @@
-# RoadTailBench /init 指南
+# RoadTailBench Leaderboard /init 指南
 
 ## 当前仓库分工
 
-- `G:\Codex\RoadTailBench`：Bench 本体。这里放 CARLA 场景脚本、场景元数据、运行器、帧日志和指标计算。后续做 benchmark 运行、场景发现、指标评估、leaderboard 接回时，优先看这个仓库。
-- `G:\Codex\RoadTailBench-Zoo`：Zoo 接口层。这里放模型 adapter，把外部自动驾驶模型的输入输出转成 RoadTailBench 的统一闭环协议。只有在 `agent_ego` 模式或改模型接入时才需要动它。
+- `G:\Codex\RoadTailBench`：Bench 本体和 Leaderboard 评测层。Python 包名是 `leaderboard`，负责 CARLA 场景脚本、元数据、自动切图运行、帧日志和指标计算。
+- `G:\Codex\RoadTailBench-Zoo`：后续模型 adapter 层。当前阶段不接模型，先用 `scene_ego` 验证指标链路。
+
+本仓库是因为 Bench2Drive 顶层开源协议边界而做的大幅重构。Bench2Drive 可以作为论文和功能参考，但不把原 `leaderboard/`、`scenario_runner/`、XML/XOSC loader 或模型 wrapper 代码复制进来。
 
 ## 重要目录
 
-Bench 仓库：
-
-- `scenes/`：`RTBXXX.py` 场景代码。场景脚本负责 CARLA 关卡内的天气、NPC、hazard 和动态行为。
-- `metadata/`：`RTBXXX.json` 场景元数据。用于地图、ego 起终点、ego 蓝图、参考路线和 hazard 标注。
-- `roadtailbench/runtime/`：CARLA 连接、加载地图、启动场景脚本、寻找或生成 ego、记录帧。
-- `roadtailbench/metrics/`：从帧日志和配置计算指标。
-- `roadtailbench/cli/`：`rtb-run` 和 `rtb-eval` 命令。
+- `leaderboard/runtime/`：CARLA 连接、自动加载地图、启动场景脚本、寻找 ego、记录帧、场景超时处理。
+- `leaderboard/metrics/`：从帧日志和配置计算指标。
+- `leaderboard/scenarios/`：发现 `RTBXXX.py` 并加载同名 metadata。
+- `leaderboard/cli/`：`leaderboard-run`、`leaderboard-eval`、`leaderboard-plot`。
+- `scenes/`：`RTBXXX.py` 场景代码。当前 `scene_ego` 模式下，脚本自己生成和控制 ego。
+- `metadata/`：`RTBXXX.json` 场景元数据。`town` 用于自动切换 CARLA 地图。
 - `outputs/`：运行输出目录，不提交。
-
-Zoo 仓库：
-
-- `roadtailbench_zoo/protocol/`：adapter 基类和 `RTBControl` 等协议类型。
-- `roadtailbench_zoo/adapters/`：不同模型的 adapter。
-- `configs/`、`checkpoints/`：模型配置和本地权重占位；权重不要提交。
 
 ## 基础安装
 
 ```powershell
 pip install -e G:\Codex\RoadTailBench
-pip install -e G:\Codex\RoadTailBench-Zoo
 ```
 
-如果只跑 `scene_ego`，第二条不是必需；如果跑 `agent_ego`，需要安装 Zoo 或保证 adapter 可被 Python import。
+如果后续进入 `agent_ego` 模型接入阶段，再安装：
+
+```powershell
+pip install -e G:\Codex\RoadTailBench-Zoo
+```
 
 ## 场景发现检查
 
 ```powershell
-rtb-run `
+leaderboard-run `
   --scene-root G:\Codex\RoadTailBench\scenes `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
@@ -43,71 +41,73 @@ rtb-run `
 
 这一步不导入 CARLA，用来确认 `RTBXXX.py` 和 `RTBXXX.json` 能匹配。
 
-## scene_ego 运行方式
+## scene_ego 自动化运行
 
-`scene_ego` 是默认模式。场景脚本自己生成和控制 ego，runner 只负责识别该车、记录帧并计算指标。识别优先级来自代码和元数据：
+`scene_ego` 是当前重点。场景脚本自己生成和控制 ego，runner 只负责：
 
-- `ego_role_names` / `ego_role_name`，默认命令参数是 `ego,hero`。
-- `ego_type_id` / `ego_blueprint`。
-- `ego_start` 附近的车辆位置匹配。
+- 按 metadata 的 `town` 自动 `load_world()`。
+- 启动对应 `RTBXXX.py` 场景进程。
+- 按 `ego_role_names`、`ego_type_id` / `ego_blueprint`、`ego_start` 附近位置寻找 ego。
+- 逐帧记录 ego、周边 actor、控制量和碰撞。
+- 场景结束或超时后写指标，并自动切到下一个场景。
 
 示例：
 
 ```powershell
-rtb-run `
+leaderboard-run `
   --host localhost `
   --port 2000 `
   --scene-root G:\Codex\RoadTailBench\scenes `
   --metadata-root G:\Codex\RoadTailBench\metadata `
-  --scenes RTB116 `
+  --scenes RTB116-RTB125 `
+  --limit 3 `
   --ego-mode scene_ego `
+  --carla-timeout 180 `
+  --scenario-timeout 300 `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
 
-这个模式不需要模型 adapter。只要场景中 ego 的车名、role name 或蓝图能和 metadata 对上，指标计算就可以继续。
+参数说明：
 
-## agent_ego 运行方式
-
-`agent_ego` 用于接入外部算法。runner 先根据 metadata 里的 `ego_start` 和 `ego_blueprint` / `ego_type_id` 生成 ego，再每 tick 调用 Zoo adapter 输出控制量。
-
-示例：
-
-```powershell
-rtb-run `
-  --host localhost `
-  --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
-  --metadata-root G:\Codex\RoadTailBench\metadata `
-  --scenes RTB116 `
-  --ego-mode agent_ego `
-  --agent roadtailbench_zoo.adapters.rule_based:RuleBasedAdapter `
-  --output-root G:\Codex\RoadTailBench\outputs
-```
-
-注意：当前不少 `scenes/RTBXXX.py` 场景内部仍有自己的 ego 生成和 PID 控制逻辑。真正接算法跑 `agent_ego` 时，需要补一层兼容逻辑，让场景在 `ROADTAILBENCH_EGO_MODE=agent_ego` 时不再生成或控制 scene-side ego，只保留 NPC、hazard 和场景动态行为。这个改动应优先放在 Bench 仓库的场景运行兼容层或场景公共 helper 中，而不是放到 Zoo adapter 里。
+- `--scenes RTB116-RTB125`：选择场景范围，也支持逗号组合。
+- `--limit 3`：只跑发现结果里的前 3 个，便于小批量验证。
+- `--scenario-timeout 300`：单场景 wall-clock 超时，超时后标记为 `timeout` 并继续下一个。
+- `--carla-timeout 180`：CARLA RPC timeout。
+- `--skip-load-world`：不自动切图，使用当前 CARLA world。
 
 ## 输出和指标
 
 每次运行会在 `outputs/<scene>_<timestamp>/` 下生成：
 
-- `roadtailbench_frame_log.jsonl`
-- `roadtailbench_scenario_config.json`
-- `roadtailbench_metrics.json`
-- `roadtailbench_run_summary.json`
+- `leaderboard_frame_log.jsonl`
+- `leaderboard_scenario_config.json`
+- `leaderboard_metrics.json`
+- `leaderboard_run_summary.json`
+
+批量汇总写到：
+
+```text
+outputs/leaderboard_batch_summary.json
+```
 
 重新计算指标：
 
 ```powershell
-rtb-eval `
-  --frames G:\Codex\RoadTailBench\outputs\<run>\roadtailbench_frame_log.jsonl `
-  --config G:\Codex\RoadTailBench\outputs\<run>\roadtailbench_scenario_config.json `
+leaderboard-eval `
+  --frames G:\Codex\RoadTailBench\outputs\<run>\leaderboard_frame_log.jsonl `
+  --config G:\Codex\RoadTailBench\outputs\<run>\leaderboard_scenario_config.json `
   --output G:\Codex\RoadTailBench\outputs\<run>\metrics.json
 ```
 
-## 后续开发原则
+## 当前缺少但暂不迁移的 Bench2Drive 能力
 
-- Bench 是运行和评分入口；Zoo 是模型接口层。
-- 不把 Bench2Drive、Bench2DriveZoo 或不兼容许可的上游代码 vendored 进来。
-- 场景脚本和元数据必须同名，例如 `RTB116.py` / `RTB116.json`。
-- 修改 discovery、metadata schema 或 metrics 时跑 `pytest` 和 dry-run。
-- 修改 CARLA runtime 时，优先补不依赖 CARLA 的单元测试；真实 CARLA 验证步骤写清楚。
+- 不迁移 XML/XOSC route loader。
+- 不迁移原 scenario_runner 行为树体系。
+- 不迁移原 agent wrapper、sensor interface、Zoo 模型接入。
+- 不迁移原 leaderboard statistics manager 的复杂恢复/提交逻辑。
+
+当前重要替代能力是：批量 `scene_ego` runner、metadata 驱动地图加载、帧日志、指标计算、批量 summary。
+
+## 后续 agent_ego 注意
+
+当前不少 `scenes/RTBXXX.py` 场景内部仍有自己的 ego 生成和 PID 控制逻辑。真正接算法跑 `agent_ego` 时，需要补兼容逻辑，让场景在 `LEADERBOARD_EGO_MODE=agent_ego` 或 `ROADTAILBENCH_EGO_MODE=agent_ego` 时不再生成或控制 scene-side ego，只保留 NPC、hazard 和场景动态行为。这个改动应优先放在 Bench 仓库的场景运行兼容层或场景公共 helper 中，而不是放到 Zoo adapter 里。

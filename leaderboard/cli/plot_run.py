@@ -18,17 +18,17 @@ def load_frames(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Plot a RoadTailBench run summary PNG.")
+    parser = argparse.ArgumentParser(description="Plot a leaderboard run summary PNG.")
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--output", default="")
     parser.add_argument("--dpi", default=400, type=int)
     args = parser.parse_args()
 
     run_dir = Path(args.run_dir)
-    frames = load_frames(run_dir / "roadtailbench_frame_log.jsonl")
-    metrics = load_json(run_dir / "roadtailbench_metrics.json")
-    config = load_json(run_dir / "roadtailbench_scenario_config.json")
-    output = Path(args.output) if args.output else run_dir / "roadtailbench_report.png"
+    frames = load_frames(run_dir / "leaderboard_frame_log.jsonl")
+    metrics = load_json(run_dir / "leaderboard_metrics.json")
+    config = load_json(run_dir / "leaderboard_scenario_config.json")
+    output = Path(args.output) if args.output else run_dir / "leaderboard_report.png"
 
     import matplotlib.pyplot as plt
 
@@ -88,7 +88,7 @@ def main():
 
     ax2.bar([k for k, _ in score_items], [v for _, v in score_items], color="#56B4E9")
     ax2.set_ylim(0, 1.05)
-    ax2.set_title(f"metric scores; driving={metric_map.get('roadtailbench_driving_score', {}).get('score', 0.0):.2f}")
+    ax2.set_title(f"metric scores; driving={metric_map.get('leaderboard_driving_score', {}).get('score', 0.0):.2f}")
     ax2.tick_params(axis="x", rotation=35, labelsize=7)
     ax2.grid(True, axis="y", alpha=0.25)
 

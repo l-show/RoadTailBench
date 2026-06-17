@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from roadtailbench.core.io import save_json
-from roadtailbench.metrics.evaluator import evaluate_roadtailbench
+from leaderboard.core.io import save_json
+from leaderboard.metrics.evaluator import evaluate_leaderboard
 from .carla_utils import actor_to_record, control_to_dict
 
 
@@ -12,10 +12,10 @@ class RuntimeFrameLogger:
         self.scenario = scenario
         self.config = config
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.frames_path = self.output_dir / "roadtailbench_frame_log.jsonl"
-        self.config_path = self.output_dir / "roadtailbench_scenario_config.json"
-        self.metrics_path = self.output_dir / "roadtailbench_metrics.json"
-        self.summary_path = self.output_dir / "roadtailbench_run_summary.json"
+        self.frames_path = self.output_dir / "leaderboard_frame_log.jsonl"
+        self.config_path = self.output_dir / "leaderboard_scenario_config.json"
+        self.metrics_path = self.output_dir / "leaderboard_metrics.json"
+        self.summary_path = self.output_dir / "leaderboard_run_summary.json"
         self._file = self.frames_path.open("w", encoding="utf-8")
         self._frames = []
         self._collisions = []
@@ -74,7 +74,7 @@ class RuntimeFrameLogger:
                 self._collision_sensor.destroy()
         finally:
             self._file.close()
-        save_json(self.metrics_path, evaluate_roadtailbench(self._frames, self.config))
+        save_json(self.metrics_path, evaluate_leaderboard(self._frames, self.config))
         if run_summary:
             save_json(self.summary_path, run_summary)
         return {

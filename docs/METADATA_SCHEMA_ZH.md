@@ -1,4 +1,4 @@
-# RoadTailBench Metadata v1
+# leaderboard Metadata v1
 
 metadata 只服务于评测语义，不负责加载场景。动态场景由 `RTBXXX.py` 自己定义。
 

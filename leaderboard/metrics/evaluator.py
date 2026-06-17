@@ -3,7 +3,7 @@ from .ability_score import AbilityScoreMetric
 from .composite_score import CompositeScoreMetric
 
 
-def evaluate_roadtailbench(frames, config):
+def evaluate_leaderboard(frames, config):
     results = {}
     for metric_cls in CORE_METRICS:
         metric = metric_cls()

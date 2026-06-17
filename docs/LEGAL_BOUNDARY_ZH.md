@@ -10,7 +10,7 @@
 允许的内容：
 
 - 你自有并可授权的 RoadTailBench 场景代码。
-- 你自有重写的 RoadTailBench runtime、metrics、metadata。
+- 你自有重写的 `leaderboard` runtime、metrics、metadata。
 - 明确 MIT/Apache/BSD 等宽松许可证下的第三方组件，但必须保留 notice。
 
 Bench2Drive 可以作为论文和 benchmark 对照引用，但不是本项目运行时依赖。

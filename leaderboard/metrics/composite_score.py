@@ -2,7 +2,7 @@ from .base import BaseMetric, MetricResult
 
 
 class CompositeScoreMetric(BaseMetric):
-    name = "roadtailbench_driving_score"
+    name = "leaderboard_driving_score"
 
     def compute(self, frames, config, context=None):
         context = context or {}

@@ -1,24 +1,26 @@
 import argparse
 from argparse import RawTextHelpFormatter
 
-from roadtailbench.runtime.runner import CodeScenarioRunner, normalize_ego_mode
-from roadtailbench.scenarios.discovery import discover_scenarios
+from leaderboard.runtime.runner import CodeScenarioRunner, normalize_ego_mode
+from leaderboard.scenarios.discovery import discover_scenarios
 
 
 def build_argparser():
     parser = argparse.ArgumentParser(
-        description="RoadTailBench code-scenario runner. Runs RTBXXX.py directly without XML/XOSC.",
+        description="Leaderboard code-scenario runner. Runs RTBXXX.py directly without XML/XOSC.",
         formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument("--host", default="localhost")
     parser.add_argument("--port", default=2000, type=int)
-    parser.add_argument("--timeout", default=180.0, type=float)
+    parser.add_argument("--carla-timeout", default=180.0, type=float, help="CARLA client RPC timeout in seconds.")
+    parser.add_argument("--timeout", dest="carla_timeout", type=float, default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     parser.add_argument("--town", default="")
     parser.add_argument("--skip-load-world", action="store_true", help="Use the currently loaded CARLA world instead of calling client.load_world().")
     parser.add_argument("--fixed-delta-seconds", default=0.05, type=float)
     parser.add_argument("--scene-root", required=True)
     parser.add_argument("--metadata-root", default="")
     parser.add_argument("--scenes", default="")
+    parser.add_argument("--limit", default=0, type=int, help="Maximum number of discovered scenarios to run. 0 means unlimited.")
     parser.add_argument("--output-root", default="outputs")
     parser.add_argument("--ego-mode", choices=["scene_ego", "script_ego", "agent_ego", "external_ego"], default="scene_ego")
     parser.add_argument("--ego-role-name", default="ego,hero")
@@ -29,6 +31,7 @@ def build_argparser():
     parser.add_argument("--agent", default="", help="Python path in module:Class form for agent_ego mode.")
     parser.add_argument("--agent-config", default="")
     parser.add_argument("--max-ticks", default=4000, type=int)
+    parser.add_argument("--scenario-timeout", default=0.0, type=float, help="Per-scenario wall-clock timeout in seconds. 0 disables it.")
     parser.add_argument("--tick-wait-timeout", default=5.0, type=float)
     parser.add_argument("--runner-drives-scene-ticks", dest="scene_drives_ticks", action="store_false", help="Make the runner call world.tick() even in scene_ego mode. Default scene_ego behavior is passive wait_for_tick().")
     parser.add_argument("--min-ticks-after-script-exit", default=20, type=int)
@@ -42,8 +45,10 @@ def main():
     args = build_argparser().parse_args()
     args.ego_mode = normalize_ego_mode(args.ego_mode)
     scenarios = discover_scenarios(args.scene_root, args.metadata_root or None, args.scenes)
-    print(f"[RoadTailBench] ego_mode={args.ego_mode}", flush=True)
-    print(f"[RoadTailBench] discovered {len(scenarios)} scenario(s)", flush=True)
+    if args.limit:
+        scenarios = scenarios[: max(0, int(args.limit))]
+    print(f"[leaderboard] ego_mode={args.ego_mode}", flush=True)
+    print(f"[leaderboard] discovered {len(scenarios)} scenario(s)", flush=True)
     for scenario in scenarios:
         metadata = f" metadata={scenario.metadata_path}" if scenario.metadata_path else " metadata=<missing>"
         print(f"  - {scenario.scene_id}: {scenario.script_path}{metadata}", flush=True)

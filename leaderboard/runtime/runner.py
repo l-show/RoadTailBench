@@ -7,9 +7,13 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
-from roadtailbench.core.io import save_json
+from leaderboard.core.io import save_json
 from .carla_utils import dict_to_transform, metadata_location
 from .frame_logger import RuntimeFrameLogger
+
+
+class ScenarioTimeoutError(RuntimeError):
+    pass
 
 
 EGO_MODE_ALIASES = {
@@ -37,14 +41,14 @@ class CodeScenarioRunner:
         self.args.ego_mode = normalize_ego_mode(args.ego_mode)
         self.carla = import_carla()
         self.client = self.carla.Client(args.host, args.port)
-        self.client.set_timeout(args.timeout)
+        self.client.set_timeout(args.carla_timeout)
         self.world = None
 
     def connect_world(self, scenario):
         metadata = scenario.metadata or {}
         town = self.args.town or metadata.get("town")
         if getattr(self.args, "skip_load_world", False):
-            print("[RoadTailBench] --skip-load-world set; using current CARLA world", flush=True)
+            print("[leaderboard] --skip-load-world set; using current CARLA world", flush=True)
             self.world = self.client.get_world()
         elif town:
             candidates = [town]
@@ -53,20 +57,20 @@ class CodeScenarioRunner:
             last_error = None
             for candidate in candidates:
                 try:
-                    print(f"[RoadTailBench] loading CARLA map: {candidate}", flush=True)
+                    print(f"[leaderboard] loading CARLA map: {candidate}", flush=True)
                     self.world = self.client.load_world(candidate)
-                    print(f"[RoadTailBench] loaded CARLA map: {self.world.get_map().name}", flush=True)
+                    print(f"[leaderboard] loaded CARLA map: {self.world.get_map().name}", flush=True)
                     break
                 except RuntimeError as exc:
                     last_error = exc
-                    print(f"[RoadTailBench] load_world failed for {candidate}: {exc}", flush=True)
+                    print(f"[leaderboard] load_world failed for {candidate}: {exc}", flush=True)
             if self.world is None:
                 raise RuntimeError(
                     f"failed to load map for {scenario.scene_id}; tried {candidates}. "
                     f"Last error: {last_error}"
                 )
         else:
-            print("[RoadTailBench] no town configured; using current CARLA world", flush=True)
+            print("[leaderboard] no town configured; using current CARLA world", flush=True)
             self.world = self.client.get_world()
         settings = self.world.get_settings()
         settings.synchronous_mode = True
@@ -146,9 +150,10 @@ class CodeScenarioRunner:
             return actors[0]
         return None
 
-    def advance_world_for_collection(self, world):
+    def advance_world_for_collection(self, world, wait_timeout=None):
         if self.args.ego_mode == "scene_ego" and getattr(self.args, "scene_drives_ticks", True):
-            return world.wait_for_tick(seconds=float(self.args.tick_wait_timeout))
+            seconds = float(self.args.tick_wait_timeout) if wait_timeout is None else max(0.01, float(wait_timeout))
+            return world.wait_for_tick(seconds=seconds)
         return world.tick()
 
     def spawn_agent_ego(self, scenario):
@@ -167,6 +172,11 @@ class CodeScenarioRunner:
 
     def start_scene_process(self, scenario, output_dir):
         env = os.environ.copy()
+        env["LEADERBOARD_SCENE_ID"] = scenario.scene_id
+        env["LEADERBOARD_OUTPUT_DIR"] = str(output_dir)
+        env["LEADERBOARD_EGO_MODE"] = self.args.ego_mode
+        env["LEADERBOARD_CARLA_HOST"] = self.args.host
+        env["LEADERBOARD_CARLA_PORT"] = str(self.args.port)
         env["ROADTAILBENCH_SCENE_ID"] = scenario.scene_id
         env["ROADTAILBENCH_OUTPUT_DIR"] = str(output_dir)
         env["ROADTAILBENCH_EGO_MODE"] = self.args.ego_mode
@@ -198,7 +208,7 @@ class CodeScenarioRunner:
     def build_config(self, scenario):
         metadata = dict(scenario.metadata or {})
         config = {
-            "schema_version": "roadtailbench.runtime_config.v1",
+            "schema_version": "leaderboard.runtime_config.v1",
             "scenario_id": scenario.scene_id,
             "route_id": scenario.scene_id,
             "script_path": str(scenario.script_path),
@@ -222,7 +232,20 @@ class CodeScenarioRunner:
         output_dir.mkdir(parents=True, exist_ok=True)
         proc = logger = ego = adapter = None
         status, error, ticks, script_exit_tick = "started", "", 0, None
+        scenario_timeout = float(getattr(self.args, "scenario_timeout", 0.0) or 0.0)
+        scenario_deadline = time.time() + scenario_timeout if scenario_timeout > 0.0 else None
+
+        def check_scenario_timeout():
+            if scenario_deadline is not None and time.time() >= scenario_deadline:
+                raise ScenarioTimeoutError(f"{scenario.scene_id}: scenario-timeout {scenario_timeout:.1f}s exceeded")
+
+        def remaining_wait_timeout():
+            if scenario_deadline is None:
+                return None
+            return min(float(self.args.tick_wait_timeout), max(0.01, scenario_deadline - time.time()))
+
         try:
+            check_scenario_timeout()
             world = self.connect_world(scenario)
             if self.args.ego_mode == "agent_ego":
                 ego = self.spawn_agent_ego(scenario)
@@ -230,17 +253,20 @@ class CodeScenarioRunner:
             proc = self.start_scene_process(scenario, output_dir)
             deadline = time.time() + float(self.args.ego_wait_timeout)
             while time.time() < deadline:
-                self.advance_world_for_collection(world)
+                check_scenario_timeout()
+                self.advance_world_for_collection(world, remaining_wait_timeout())
                 ego = ego or self.find_scene_ego(scenario)
                 if ego or (proc and proc.poll() is not None):
                     break
+            check_scenario_timeout()
             if not ego:
                 raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
             config = self.build_config(scenario)
             logger = RuntimeFrameLogger(output_dir, scenario, config)
             logger.attach_collision_sensor(self.carla, world, ego)
             while ticks < int(self.args.max_ticks):
-                self.advance_world_for_collection(world)
+                check_scenario_timeout()
+                self.advance_world_for_collection(world, remaining_wait_timeout())
                 ticks += 1
                 control = None
                 if adapter:
@@ -261,6 +287,9 @@ class CodeScenarioRunner:
                     if ticks - script_exit_tick >= int(self.args.min_ticks_after_script_exit):
                         break
             status = "completed"
+        except ScenarioTimeoutError as exc:
+            status = "timeout"
+            error = f"{exc}\n{traceback.format_exc()}"
         except Exception as exc:
             status = "failed"
             error = f"{exc}\n{traceback.format_exc()}"
@@ -280,7 +309,7 @@ class CodeScenarioRunner:
             if logger:
                 summary["outputs"] = logger.close(summary)
             else:
-                save_json(output_dir / "roadtailbench_run_summary.json", summary)
+                save_json(output_dir / "leaderboard_run_summary.json", summary)
             if self.args.cleanup_ego and ego and ego.is_alive and self.args.ego_mode == "agent_ego":
                 ego.destroy()
             try:
@@ -292,12 +321,12 @@ class CodeScenarioRunner:
     def run(self, scenarios):
         summaries = []
         for scenario in scenarios:
-            print(f"[RoadTailBench] running {scenario.scene_id}: {scenario.script_path}", flush=True)
+            print(f"[leaderboard] running {scenario.scene_id}: {scenario.script_path}", flush=True)
             summary = self.run_scenario(scenario)
             summaries.append(summary)
-            save_json(Path(self.args.output_root) / "roadtailbench_batch_summary.json", summaries)
-            print(f"[RoadTailBench] {scenario.scene_id} {summary['status']} ticks={summary['ticks']}", flush=True)
+            save_json(Path(self.args.output_root) / "leaderboard_batch_summary.json", summaries)
+            print(f"[leaderboard] {scenario.scene_id} {summary['status']} ticks={summary['ticks']}", flush=True)
             if summary.get("status") != "completed" and summary.get("error"):
                 first_line = summary["error"].splitlines()[0] if summary["error"].splitlines() else summary["error"]
-                print(f"[RoadTailBench] error: {first_line}", flush=True)
+                print(f"[leaderboard] error: {first_line}", flush=True)
         return summaries
