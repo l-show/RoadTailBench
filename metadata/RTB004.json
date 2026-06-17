@@ -1,0 +1,84 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB004",
+  "town": "RTB004",
+  "description": "Ego车辆在傍晚逆光条件下，从城市快速路驶入一个螺旋式出口匝道。由于匝道入口处的限速标志牌被一名违规站立的行人部分遮挡，且存在一个角度错误、表面污损的旧限速牌干扰，导致Ego车辆的感知系统对限速产生误判。同时，车载高精地图数据未及时更新，提供了错误的限速信息，形成了“物理-数字”信息冲突。最终，Ego车辆可能以过高速度进入急弯匝道，面临失控风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 5,
+    "source": "李响训练集",
+    "original_scene_id": "LX104",
+    "source_hazards": "交通标志[限速标志误导]",
+    "variant": 2,
+    "scenario_id": "RTB004",
+    "scenario_typical": "城市快速路出口匝道",
+    "scene_type": "高速场景 (Highway Scenes)",
+    "road": null,
+    "environment": "傍晚逆光条件",
+    "maker": "HQJ",
+    "variant_hazard": null,
+    "description": "Ego车辆在傍晚逆光条件下，从城市快速路驶入一个螺旋式出口匝道。由于匝道入口处的限速标志牌被一名违规站立的行人部分遮挡，且存在一个角度错误、表面污损的旧限速牌干扰，导致Ego车辆的感知系统对限速产生误判。同时，车载高精地图数据未及时更新，提供了错误的限速信息，形成了“物理-数字”信息冲突。最终，Ego车辆可能以过高速度进入急弯匝道，面临失控风险。"
+  },
+  "scenario_family_id": "LX104",
+  "scene_type": "高速场景 (Highway Scenes)",
+  "scenario_typical": "城市快速路出口匝道",
+  "environment": "傍晚逆光条件",
+  "source_hazards": "交通标志[限速标志误导]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.tesla.model3",
+  "ego_blueprint": "vehicle.tesla.model3",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.lighting_facility",
+    "A.sight_distance",
+    "A.speed_control_facility",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.merging_flow",
+    "B.overtaking_bypass",
+    "B.yielding_priority",
+    "C.glare",
+    "C.low_light",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.lighting_facility",
+      "A.sight_distance",
+      "A.speed_control_facility",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.merging_flow",
+      "B.overtaking_bypass",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.glare",
+      "C.low_light",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

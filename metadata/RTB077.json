@@ -1,0 +1,80 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB077",
+  "town": "RTB077",
+  "description": "在一个城市支路的T型交叉口，Ego车辆在接近路口时，遭遇了逻辑冲突（停车和减速让行）、设置不当（距离路口过远）且部分被遮挡的交通标志。同时，路口视线被违停车辆严重遮挡，高精地图信息过时，且驾驶环境存在逆光眩光和路面湿滑等多重风险。/Ego车辆在接近一个不规则城市交叉口时，遭遇了停车让行（Stop）与减速让行（Yield）标志在同一入口处重复且冲突的设置。该基础设施层面的混淆，叠加了由路边违停车辆造成的视线遮挡，导致一个突然横穿的行人成为高危瞬时风险。同时，来自太阳的低角度眩光和过时的高精地图信息，进一步削弱了Ego车辆的感知与决策能力。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 78,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY8",
+    "source_hazards": "交通标志[交通标志之间重复设置]\n + 道路交叉[路口缺少警告标志]",
+    "variant": "1+2",
+    "scenario_id": "RTB077",
+    "scenario_typical": "城市支路的T型交叉口",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在一个城市支路的T型交叉口，Ego车辆在接近路口时，遭遇了逻辑冲突（停车和减速让行）、设置不当（距离路口过远）且部分被遮挡的交通标志。同时，路口视线被违停车辆严重遮挡，高精地图信息过时，且驾驶环境存在逆光眩光和路面湿滑等多重风险。/Ego车辆在接近一个不规则城市交叉口时，遭遇了停车让行（Stop）与减速让行（Yield）标志在同一入口处重复且冲突的设置。该基础设施层面的混淆，叠加了由路边违停车辆造成的视线遮挡，导致一个突然横穿的行人成为高危瞬时风险。同时，来自太阳的低角度眩光和过时的高精地图信息，进一步削弱了Ego车辆的感知与决策能力。"
+  },
+  "scenario_family_id": "HHY8",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "城市支路的T型交叉口",
+  "environment": null,
+  "source_hazards": "交通标志[交通标志之间重复设置]\n + 道路交叉[路口缺少警告标志]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.mercedes.sprinter",
+  "ego_blueprint": "vehicle.mercedes.sprinter",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.lighting_facility",
+    "A.pavement_condition",
+    "A.sight_distance",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.merging_flow",
+    "B.yielding_priority",
+    "C.glare",
+    "C.rain_wet",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.lighting_facility",
+      "A.pavement_condition",
+      "A.sight_distance",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.merging_flow",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.glare",
+      "C.rain_wet",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

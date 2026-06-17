@@ -1,0 +1,70 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB067",
+  "town": "RTB067",
+  "description": "在一个复杂的城市主干道与次干道交叉口，Ego车辆在傍晚时分、雨后湿滑路面条件下，试图直行通过一个交通标线严重磨损的十字路口。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 68,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY2",
+    "source_hazards": "交通标线[交通标线磨损+交通标线缺失]",
+    "variant": 1,
+    "scenario_id": "RTB067",
+    "scenario_typical": "城市场景",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在一个复杂的城市主干道与次干道交叉口，Ego车辆在傍晚时分、雨后湿滑路面条件下，试图直行通过一个交通标线严重磨损的十字路口。"
+  },
+  "scenario_family_id": "HHY2",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "城市场景",
+  "environment": null,
+  "source_hazards": "交通标线[交通标线磨损+交通标线缺失]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.mitsubishi.fusorosa",
+  "ego_blueprint": "vehicle.mitsubishi.fusorosa",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.pavement_condition",
+    "A.traffic_sign_marking",
+    "B.yielding_priority",
+    "C.low_light",
+    "C.rain_wet"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.pavement_condition",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.low_light",
+      "C.rain_wet"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

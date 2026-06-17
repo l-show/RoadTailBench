@@ -1,0 +1,78 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB108",
+  "town": "RTB108",
+  "description": "在一段具有挑战性几何特征的乡村道路上，Ego车辆（自动驾驶L2+模式）在高速巡航状态下，跟随一辆行为飘忽的本地慢车。由于道路右侧存在一个未被充分标识且部分被植被遮挡的侵入限界的混凝土构造物，加之午后阳光眩光对感知的瞬时干扰，以及高精地图数据的缺失，导致系统在应对前车避让性左偏时，对右侧的静态风险误判，最终在紧急向右避让时与该构造物发生碰撞。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 109,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY466",
+    "source_hazards": "限界侵入[路基范围内的构造物]\n + 路面质量[道路破损]",
+    "variant": 2,
+    "scenario_id": "RTB108",
+    "scenario_typical": "乡村道路上",
+    "scene_type": "乡村场景 (Rural Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在一段具有挑战性几何特征的乡村道路上，Ego车辆（自动驾驶L2+模式）在高速巡航状态下，跟随一辆行为飘忽的本地慢车。由于道路右侧存在一个未被充分标识且部分被植被遮挡的侵入限界的混凝土构造物，加之午后阳光眩光对感知的瞬时干扰，以及高精地图数据的缺失，导致系统在应对前车避让性左偏时，对右侧的静态风险误判，最终在紧急向右避让时与该构造物发生碰撞。"
+  },
+  "scenario_family_id": "HHY466",
+  "scene_type": "乡村场景 (Rural Scenes)",
+  "scenario_typical": "乡村道路上",
+  "environment": null,
+  "source_hazards": "限界侵入[路基范围内的构造物]\n + 路面质量[道路破损]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.nissan.patrol",
+  "ego_blueprint": "vehicle.nissan.patrol",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.clearance_intrusion",
+    "A.lighting_facility",
+    "A.pavement_condition",
+    "A.sight_distance",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "B.yielding_priority",
+    "C.glare",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.clearance_intrusion",
+      "A.lighting_facility",
+      "A.pavement_condition",
+      "A.sight_distance"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.glare",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

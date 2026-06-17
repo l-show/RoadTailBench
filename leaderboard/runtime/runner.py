@@ -1,4 +1,5 @@
 import importlib
+import math
 import os
 import subprocess
 import sys
@@ -8,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from leaderboard.core.io import save_json
+from leaderboard.core.geometry import point_xy
 from .carla_utils import dict_to_transform, metadata_location
 from .frame_logger import RuntimeFrameLogger
 
@@ -161,6 +163,45 @@ class CodeScenarioRunner:
         settings.fixed_delta_seconds = None
         self.world.apply_settings(settings)
 
+    def natural_goal_xy(self, config):
+        for key in ("ego_end", "ego_goal"):
+            loc = metadata_location(config.get(key))
+            if loc:
+                return (loc[0], loc[1])
+        route = config.get("route") or config.get("centerline_route") or []
+        if route:
+            return point_xy(route[-1])
+        return None
+
+    def actor_alive(self, actor):
+        try:
+            return bool(actor and actor.is_alive)
+        except RuntimeError:
+            return False
+
+    def check_natural_termination(
+        self,
+        ego,
+        frame,
+        goal_xy,
+        goal_reached_ticks,
+    ):
+        if getattr(self.args, "disable_natural_end", False):
+            return None, goal_reached_ticks
+        if not self.actor_alive(ego):
+            return "ego_destroyed", goal_reached_ticks
+
+        threshold = float(getattr(self.args, "natural_end_distance_m", 5.0))
+        min_ticks = max(1, int(getattr(self.args, "natural_end_min_ticks", 5)))
+        if goal_xy and frame:
+            loc = frame.get("ego", {}).get("location", [0.0, 0.0])
+            dist = math.hypot(float(loc[0]) - goal_xy[0], float(loc[1]) - goal_xy[1])
+            goal_reached_ticks = goal_reached_ticks + 1 if dist <= threshold else 0
+            if goal_reached_ticks >= min_ticks:
+                return "ego_reached_goal", goal_reached_ticks
+
+        return None, goal_reached_ticks
+
     def find_scene_ego(self, scenario):
         metadata = scenario.metadata or {}
         role_values = []
@@ -293,6 +334,8 @@ class CodeScenarioRunner:
             "reference_speed_kmh": 50.0,
             "route": [],
             "centerline_route": [],
+            "natural_end_distance_m": float(getattr(self.args, "natural_end_distance_m", 5.0)),
+            "natural_end_min_ticks": int(getattr(self.args, "natural_end_min_ticks", 5)),
         }
         config.update(metadata)
         if not config.get("route") and config.get("ego_start") and config.get("ego_end"):
@@ -312,6 +355,7 @@ class CodeScenarioRunner:
         first_sim_time = last_sim_time = None
         scenario_timeout = float(getattr(self.args, "scenario_timeout", 0.0) or 0.0)
         scenario_deadline = time.time() + scenario_timeout if scenario_timeout > 0.0 else None
+        goal_reached_ticks = 0
 
         def check_scenario_timeout():
             if scenario_deadline is not None and time.time() >= scenario_deadline:
@@ -343,12 +387,16 @@ class CodeScenarioRunner:
             if not ego:
                 raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
             config = self.build_config(scenario)
+            goal_xy = self.natural_goal_xy(config)
             logger = RuntimeFrameLogger(output_dir, scenario, config)
             logger.attach_collision_sensor(self.carla, world, ego)
             while ticks < int(self.args.max_ticks):
                 check_scenario_timeout()
                 self.advance_world_for_collection(world, remaining_wait_timeout())
                 ticks += 1
+                if not self.actor_alive(ego):
+                    termination_reason = "ego_destroyed"
+                    break
                 control = None
                 if adapter:
                     obs = {"frame": ticks, "ego": ego, "world": world, "config": config}
@@ -362,11 +410,21 @@ class CodeScenarioRunner:
                     except (AttributeError, RuntimeError):
                         control = None
                 logger.log_tick(world, ego, control, actor_radius_m=self.args.actor_log_radius_m)
-                if logger._frames:
-                    frame_time = float(logger._frames[-1].get("time", 0.0))
+                latest_frame = logger._frames[-1] if logger._frames else None
+                if latest_frame:
+                    frame_time = float(latest_frame.get("time", 0.0))
                     if first_sim_time is None:
                         first_sim_time = frame_time
                     last_sim_time = frame_time
+                    natural_reason, goal_reached_ticks = self.check_natural_termination(
+                        ego,
+                        latest_frame,
+                        goal_xy,
+                        goal_reached_ticks,
+                    )
+                    if natural_reason:
+                        termination_reason = natural_reason
+                        break
                 if proc and proc.poll() is not None:
                     if script_exit_tick is None:
                         script_exit_tick = ticks
@@ -383,6 +441,10 @@ class CodeScenarioRunner:
             termination_reason = "exception"
             error = f"{exc}\n{traceback.format_exc()}"
         finally:
+            try:
+                self.restore_world()
+            except Exception:
+                pass
             if adapter:
                 try:
                     adapter.destroy()
@@ -415,11 +477,6 @@ class CodeScenarioRunner:
                 save_json(output_dir / "leaderboard_run_summary.json", summary)
             if self.args.cleanup_ego and ego and ego.is_alive and self.args.ego_mode == "agent_ego":
                 ego.destroy()
-            if getattr(self.args, "restore_world_settings", False):
-                try:
-                    self.restore_world()
-                except Exception:
-                    pass
         return summary
 
     def run(self, scenarios):

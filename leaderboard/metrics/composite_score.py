@@ -20,7 +20,9 @@ class CompositeScoreMetric(BaseMetric):
         comfort = s("comfort")
         stable = s("control_stability")
         response = s("long_tail_hazard_response")
-        score = 100.0 * rc * col * drv * inter * reha
+        safety_gate = max(0.0, min(1.0, 0.65 * col + 0.35 * inter))
+        task_gate = max(0.0, min(1.0, 0.60 * rc + 0.20 * drv + 0.20 * reha))
+        score = 100.0 * task_gate * safety_gate
         score *= (0.5 + 0.5 * eff) * (0.6 + 0.4 * spd) * (0.8 + 0.2 * comfort)
         score *= (0.8 + 0.2 * stable) * (0.7 + 0.3 * response)
         return MetricResult.make(self.name, score, {
@@ -34,4 +36,6 @@ class CompositeScoreMetric(BaseMetric):
             "comfort": comfort,
             "control_stability": stable,
             "long_tail_hazard_response": response,
+            "task_gate": task_gate,
+            "safety_gate": safety_gate,
         })

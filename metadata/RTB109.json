@@ -1,0 +1,69 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB109",
+  "town": "RTB109",
+  "description": "在城市主干道上，Ego车辆在自动驾驶领航辅助模式下，为超越前方慢车，准备向右侧车道变道。然而，目标车道内存在一个近期维修后未被正确复位、略高于路面的检修井盖。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 110,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY466",
+    "source_hazards": "限界侵入[路基范围内的构造物]\n + 路面质量[道路破损]",
+    "variant": 4,
+    "scenario_id": "RTB109",
+    "scenario_typical": "城市主干道",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在城市主干道上，Ego车辆在自动驾驶领航辅助模式下，为超越前方慢车，准备向右侧车道变道。然而，目标车道内存在一个近期维修后未被正确复位、略高于路面的检修井盖。"
+  },
+  "scenario_family_id": "HHY466",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "城市主干道",
+  "environment": null,
+  "source_hazards": "限界侵入[路基范围内的构造物]\n + 路面质量[道路破损]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.nissan.patrol",
+  "ego_blueprint": "vehicle.nissan.patrol",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.clearance_intrusion",
+    "A.pavement_condition",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "B.yielding_priority"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.clearance_intrusion",
+      "A.pavement_condition"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass",
+      "B.yielding_priority"
+    ],
+    "C": []
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

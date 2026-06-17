@@ -28,12 +28,21 @@ class RuntimeFrameLogger:
 
         def on_collision(event):
             other = event.other_actor
+            location = None
+            try:
+                location = event.transform.location
+            except AttributeError:
+                try:
+                    location = ego_actor.get_location()
+                except RuntimeError:
+                    location = None
             self._collisions.append({
                 "frame": int(event.frame),
                 "type": "collision",
                 "other_actor_id": int(other.id) if other else None,
                 "other_actor_type": other.type_id if other else "unknown",
                 "role_name": other.attributes.get("role_name", "") if other else "",
+                "location": [float(location.x), float(location.y), float(location.z)] if location else None,
             })
 
         self._collision_sensor.listen(on_collision)

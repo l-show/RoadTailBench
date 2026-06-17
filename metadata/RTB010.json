@@ -1,0 +1,73 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB010",
+  "town": "RTB010",
+  "description": "Ego车辆在一条无中心线的乡村道路上，以接近限速的速度巡航，即将通过一个无信号灯的丁字路口。该路口因一辆违规临停的大型货车及路边疯长的植被，导致Ego车辆对右侧支路来车的视线被严重遮挡。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 11,
+    "source": "李响训练集",
+    "original_scene_id": "LX132",
+    "source_hazards": "视距不良[路段视距不良]\n+路域环境[杂草、植被遮挡视距]\n+交通标志[交通标志缺失]",
+    "variant": 5,
+    "scenario_id": "RTB010",
+    "scenario_typical": "乡村道路",
+    "scene_type": "乡村场景 (Rural Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "TLZ",
+    "variant_hazard": null,
+    "description": "Ego车辆在一条无中心线的乡村道路上，以接近限速的速度巡航，即将通过一个无信号灯的丁字路口。该路口因一辆违规临停的大型货车及路边疯长的植被，导致Ego车辆对右侧支路来车的视线被严重遮挡。"
+  },
+  "scenario_family_id": "LX132",
+  "scene_type": "乡村场景 (Rural Scenes)",
+  "scenario_typical": "乡村道路",
+  "environment": null,
+  "source_hazards": "视距不良[路段视距不良]\n+路域环境[杂草、植被遮挡视距]\n+交通标志[交通标志缺失]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.tesla.model3",
+  "ego_blueprint": "vehicle.tesla.model3",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.clearance_intrusion",
+    "A.sight_distance",
+    "A.speed_control_facility",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "B.yielding_priority"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.clearance_intrusion",
+      "A.sight_distance",
+      "A.speed_control_facility",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass",
+      "B.yielding_priority"
+    ],
+    "C": []
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

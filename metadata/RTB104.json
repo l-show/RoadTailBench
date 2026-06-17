@@ -1,0 +1,70 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB104",
+  "town": "RTB104",
+  "description": "在清晨浓雾笼罩的山区双车道公路上，Ego车辆（自动驾驶L3）以较高速度行驶在一个连续下坡的右转弯道。一个为提醒前方慢行车辆而设置的LED警示信号灯，因近期维修失当导致其安装角度严重偏离，且表面有污垢。浓雾和信号灯自身问题共同导致Ego的感知系统未能及时识别警示，高精地图中也无此新增设施数据。当Ego车辆驶出弯道后，才发现前方有一辆因动力不足而低速行驶的重型卡车，此时安全距离已严重不足，系统紧急向左避让但最终与卡车发生剐蹭碰撞。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 105,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY223",
+    "source_hazards": "信号设施[信号灯设置不规范]",
+    "variant": 3,
+    "scenario_id": "RTB104",
+    "scenario_typical": "山区双车道公路",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": "清晨浓雾笼罩",
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在清晨浓雾笼罩的山区双车道公路上，Ego车辆（自动驾驶L3）以较高速度行驶在一个连续下坡的右转弯道。一个为提醒前方慢行车辆而设置的LED警示信号灯，因近期维修失当导致其安装角度严重偏离，且表面有污垢。浓雾和信号灯自身问题共同导致Ego的感知系统未能及时识别警示，高精地图中也无此新增设施数据。当Ego车辆驶出弯道后，才发现前方有一辆因动力不足而低速行驶的重型卡车，此时安全距离已严重不足，系统紧急向左避让但最终与卡车发生剐蹭碰撞。"
+  },
+  "scenario_family_id": "HHY223",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "山区双车道公路",
+  "environment": "清晨浓雾笼罩",
+  "source_hazards": "信号设施[信号灯设置不规范]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.nissan.patrol",
+  "ego_blueprint": "vehicle.nissan.patrol",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.sight_distance",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "C.fog"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.sight_distance"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass"
+    ],
+    "C": [
+      "C.fog"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB007",
+  "town": "RTB007",
+  "description": "Ego车辆在国道右侧车道以较高速度巡航行驶，在通过一个由浓密树丛严重遮挡视线的加油站出口时，一辆目标车辆（TV）未发出任何信号，以较大加速度突然汇入主路，导致Ego车辆面临严重的侧向碰撞风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 8,
+    "source": "李响训练集",
+    "original_scene_id": "LX132",
+    "source_hazards": "视距不良[路段视距不良]\n+路域环境[杂草、植被遮挡视距]\n+交通标志[交通标志缺失]",
+    "variant": 1,
+    "scenario_id": "RTB007",
+    "scenario_typical": "国道右侧车道-加油站出口汇入",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "TLZ",
+    "variant_hazard": null,
+    "description": "Ego车辆在国道右侧车道以较高速度巡航行驶，在通过一个由浓密树丛严重遮挡视线的加油站出口时，一辆目标车辆（TV）未发出任何信号，以较大加速度突然汇入主路，导致Ego车辆面临严重的侧向碰撞风险。"
+  },
+  "scenario_family_id": "LX132",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "国道右侧车道-加油站出口汇入",
+  "environment": null,
+  "source_hazards": "视距不良[路段视距不良]\n+路域环境[杂草、植被遮挡视距]\n+交通标志[交通标志缺失]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.carlamotors.firetruck",
+  "ego_blueprint": "vehicle.carlamotors.firetruck",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.sight_distance",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.merging_flow",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.sight_distance",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.merging_flow"
+    ],
+    "C": [
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

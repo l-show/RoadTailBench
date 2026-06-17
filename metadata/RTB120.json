@@ -1,9 +1,29 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v2",
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
   "scenario_id": "RTB120",
   "town": "RTB120",
-  "description": "Auto-extracted metadata for RTB120; RTB script owns dynamic scenario logic, no Bench2Drive XML is required.",
-  "metadata_quality": "auto_extracted_minimal_review_recommended",
+  "description": "在冬季暴雪的山区高速公路上，Ego车辆因巡航系统故障超速行驶。此时，一个因基础腐蚀和强风导致结构不稳的路灯杆突然倒向路面，形成瞬时障碍。相邻车道的重型卡车限制了Ego的避让空间，恶劣天气和传感器降效进一步压缩了感知决策时间，构成一个由基础设施失效、车辆自身故障、极端环境和动态障碍物叠加的复合型长尾危险场景。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 121,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY1264",
+    "source_hazards": "照明设施[照明设备非工作状态]",
+    "variant": 4,
+    "scenario_id": "RTB120",
+    "scenario_typical": "山区高速公路",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": "冬季暴雪",
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在冬季暴雪的山区高速公路上，Ego车辆因巡航系统故障超速行驶。此时，一个因基础腐蚀和强风导致结构不稳的路灯杆突然倒向路面，形成瞬时障碍。相邻车道的重型卡车限制了Ego的避让空间，恶劣天气和传感器降效进一步压缩了感知决策时间，构成一个由基础设施失效、车辆自身故障、极端环境和动态障碍物叠加的复合型长尾危险场景。"
+  },
+  "scenario_family_id": "HHY1264",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "山区高速公路",
+  "environment": "冬季暴雪",
+  "source_hazards": "照明设施[照明设备非工作状态]",
   "ego_role_names": [
     "ego",
     "hero"
@@ -11,30 +31,7 @@
   "ego_type_id": "vehicle.chevrolet.impala",
   "ego_blueprint": "vehicle.chevrolet.impala",
   "ego_start_match_radius_m": 8.0,
-  "ego_start": {
-    "location": {
-      "x": -174.57,
-      "y": 179.195,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -85.309,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 66.909,
-      "y": -183.945,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -28.739,
-      "roll": 0.0
-    }
-  },
+  "route_source": "RAW_TRAJ_EGO",
   "route": [
     [
       -174.57,
@@ -134,6 +131,11 @@
     [
       -155.754,
       88.226,
+      0.5
+    ],
+    [
+      -153.599,
+      83.627,
       0.5
     ],
     [
@@ -334,6 +336,11 @@
     [
       -56.339,
       -85.343,
+      0.5
+    ],
+    [
+      -51.388,
+      -91.128,
       0.5
     ],
     [
@@ -539,6 +546,11 @@
       0.5
     ],
     [
+      -153.599,
+      83.627,
+      0.5
+    ],
+    [
       -151.429,
       79.133,
       0.5
@@ -736,6 +748,11 @@
     [
       -56.339,
       -85.343,
+      0.5
+    ],
+    [
+      -51.388,
+      -91.128,
       0.5
     ],
     [
@@ -941,6 +958,11 @@
       0.5
     ],
     [
+      -153.599,
+      83.627,
+      0.5
+    ],
+    [
       -151.429,
       79.133,
       0.5
@@ -1141,6 +1163,11 @@
       0.5
     ],
     [
+      -51.388,
+      -91.128,
+      0.5
+    ],
+    [
       -46.517,
       -96.819,
       0.5
@@ -1245,62 +1272,103 @@
   "allowed_lateral_error_m": 2.0,
   "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.clearance_intrusion",
+    "A.lighting_facility",
+    "A.pavement_condition",
+    "B.overtaking_bypass",
+    "C.snow_low_friction",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.clearance_intrusion",
+      "A.lighting_facility",
+      "A.pavement_condition"
+    ],
+    "B": [
+      "B.overtaking_bypass"
+    ],
+    "C": [
+      "C.snow_low_friction",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "ego_start": {
+    "location": {
+      "x": -174.57,
+      "y": 179.195,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -85.309,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 66.909,
+      "y": -183.945,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -28.739,
+      "roll": 0.0
+    }
+  },
   "speed_zones": [
     {
-      "id": "rtb120_hazard_speed_zone",
+      "id": "rtb120_primary_speed_zone",
       "center": [
-        -121.224,
-        12.816,
-        26.688
+        -116.191,
+        1.482,
+        0.5
       ],
       "radius": 35.0,
-      "target_speed_kmh": 20.0,
-      "reason": "low_friction_zone",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "target_speed_kmh": 40.0,
+      "reason": "bypass_or_change_lane_safely",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb120_primary_hazard_zone",
       "category": "A",
-      "subtype": "pavement_condition",
+      "subtype": "clearance_intrusion",
+      "behavior_subtype": "overtaking_bypass",
       "center": [
-        -121.224,
-        12.816,
-        26.688
+        -116.191,
+        1.482,
+        0.5
       ],
-      "radius_m": 12.0,
-      "target_speed_kmh": 20.0,
-      "metadata_quality": "auto_extracted_review_recommended"
+      "radius_m": 10.0,
+      "target_speed_kmh": 40.0,
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazards": [
     {
       "id": "rtb120_primary_hazard",
-      "type": "low_friction_zone",
+      "type": "overtaking_bypass",
       "center": [
-        -121.224,
-        12.816,
-        26.688
+        -116.191,
+        1.482,
+        0.5
       ],
-      "radius_m": 12.0,
-      "perception_radius_m": 35.0,
-      "danger_radius_m": 6.0,
+      "radius_m": 10.0,
+      "perception_radius_m": 40.0,
+      "danger_radius_m": 4.0,
       "allow_enter_danger_zone": false,
-      "expected_behavior": "slow_or_avoid",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "expected_behavior": "bypass_or_change_lane_safely",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
-  "scenario_tags": [
-    "A.pavement_condition",
-    "B.emergency_avoidance",
-    "C.fog",
-    "C.wind_dust_visibility"
-  ],
-  "drivable_polygons": [],
   "notes": [
-    "Bench2Drive XML/XOSC is intentionally not used for this RoadTailBench code scenario.",
-    "drivable_area metric is evaluated as centerline deviation using centerline_route.",
-    "Hazard coordinates are conservative auto-extracted placeholders unless explicitly known; manually refine them before final benchmark reporting."
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

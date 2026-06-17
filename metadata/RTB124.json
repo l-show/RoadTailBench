@@ -1,9 +1,29 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v2",
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
   "scenario_id": "RTB124",
   "town": "RTB124",
-  "description": "Auto-extracted metadata for RTB124; RTB script owns dynamic scenario logic, no Bench2Drive XML is required.",
-  "metadata_quality": "auto_extracted_minimal_review_recommended",
+  "description": "在夜间大雨中，Ego车辆以自适应巡航模式（ACC）进入一个无清晰标线、缺少关键警告标志的城市陡峭下坡路段。由于感知系统受限及数字信息延迟，车辆错误地判断前方为平坦道路并开始加速，而此时前方不仅有部分侵占车道的市政作业车辆，还有行为不规律的打伞人群。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 125,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY1313",
+    "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
+    "variant": 3,
+    "scenario_id": "RTB124",
+    "scenario_typical": "城市陡峭下坡路段",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": "夜间大雨",
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在夜间大雨中，Ego车辆以自适应巡航模式（ACC）进入一个无清晰标线、缺少关键警告标志的城市陡峭下坡路段。由于感知系统受限及数字信息延迟，车辆错误地判断前方为平坦道路并开始加速，而此时前方不仅有部分侵占车道的市政作业车辆，还有行为不规律的打伞人群。"
+  },
+  "scenario_family_id": "HHY1313",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "城市陡峭下坡路段",
+  "environment": "夜间大雨",
+  "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
   "ego_role_names": [
     "ego",
     "hero"
@@ -11,30 +31,7 @@
   "ego_type_id": "vehicle.audi.tt",
   "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "ego_start": {
-    "location": {
-      "x": 3.78,
-      "y": 317.128,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -90.558,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 200.47,
-      "y": -225.325,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -1.112,
-      "roll": 0.0
-    }
-  },
+  "route_source": "RAW_EGO_TRAJ",
   "route": [
     [
       3.78,
@@ -74,6 +71,11 @@
     [
       3.006,
       263.38,
+      0.5
+    ],
+    [
+      3.087,
+      254.857,
       0.5
     ],
     [
@@ -157,6 +159,11 @@
       0.5
     ],
     [
+      2.632,
+      103.696,
+      0.5
+    ],
+    [
       2.47,
       94.594,
       0.5
@@ -234,6 +241,11 @@
     [
       1.997,
       -38.641,
+      0.5
+    ],
+    [
+      1.912,
+      -47.817,
       0.5
     ],
     [
@@ -317,6 +329,11 @@
       0.5
     ],
     [
+      1.219,
+      -198.637,
+      0.5
+    ],
+    [
       1.179,
       -207.597,
       0.5
@@ -394,6 +411,11 @@
     [
       121.133,
       -225.834,
+      0.5
+    ],
+    [
+      129.887,
+      -225.715,
       0.5
     ],
     [
@@ -479,6 +501,11 @@
       0.5
     ],
     [
+      3.087,
+      254.857,
+      0.5
+    ],
+    [
       3.242,
       246.001,
       0.5
@@ -556,6 +583,11 @@
     [
       2.852,
       112.669,
+      0.5
+    ],
+    [
+      2.632,
+      103.696,
       0.5
     ],
     [
@@ -639,6 +671,11 @@
       0.5
     ],
     [
+      1.912,
+      -47.817,
+      0.5
+    ],
+    [
       1.905,
       -56.338,
       0.5
@@ -719,6 +756,11 @@
       0.5
     ],
     [
+      1.219,
+      -198.637,
+      0.5
+    ],
+    [
       1.179,
       -207.597,
       0.5
@@ -796,6 +838,11 @@
     [
       121.133,
       -225.834,
+      0.5
+    ],
+    [
+      129.887,
+      -225.715,
       0.5
     ],
     [
@@ -881,6 +928,11 @@
       0.5
     ],
     [
+      3.087,
+      254.857,
+      0.5
+    ],
+    [
       3.242,
       246.001,
       0.5
@@ -958,6 +1010,11 @@
     [
       2.852,
       112.669,
+      0.5
+    ],
+    [
+      2.632,
+      103.696,
       0.5
     ],
     [
@@ -1041,6 +1098,11 @@
       0.5
     ],
     [
+      1.912,
+      -47.817,
+      0.5
+    ],
+    [
       1.905,
       -56.338,
       0.5
@@ -1118,6 +1180,11 @@
     [
       1.288,
       -190.089,
+      0.5
+    ],
+    [
+      1.219,
+      -198.637,
       0.5
     ],
     [
@@ -1201,6 +1268,11 @@
       0.5
     ],
     [
+      129.887,
+      -225.715,
+      0.5
+    ],
+    [
       138.711,
       -225.575,
       0.5
@@ -1245,9 +1317,56 @@
   "allowed_lateral_error_m": 2.0,
   "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.yielding_priority",
+    "C.low_light",
+    "C.rain_wet"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.low_light",
+      "C.rain_wet"
+    ]
+  },
+  "drivable_polygons": [],
+  "ego_start": {
+    "location": {
+      "x": 3.78,
+      "y": 317.128,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -90.558,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 200.47,
+      "y": -225.325,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -1.112,
+      "roll": 0.0
+    }
+  },
   "speed_zones": [
     {
-      "id": "rtb124_hazard_speed_zone",
+      "id": "rtb124_primary_speed_zone",
       "center": [
         1.912,
         -47.817,
@@ -1255,50 +1374,46 @@
       ],
       "radius": 35.0,
       "target_speed_kmh": 40.0,
-      "reason": "multi_actor_conflict",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "reason": "yield_or_stop_for_priority_conflict",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb124_primary_hazard_zone",
-      "category": "B",
-      "subtype": "emergency_avoidance",
+      "category": "A",
+      "subtype": "alignment_geometry",
+      "behavior_subtype": "emergency_avoidance",
       "center": [
         1.912,
         -47.817,
         0.5
       ],
-      "radius_m": 8.0,
+      "radius_m": 10.0,
       "target_speed_kmh": 40.0,
-      "metadata_quality": "auto_extracted_review_recommended"
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazards": [
     {
       "id": "rtb124_primary_hazard",
-      "type": "multi_actor_conflict",
+      "type": "emergency_avoidance",
       "center": [
         1.912,
         -47.817,
         0.5
       ],
-      "radius_m": 8.0,
-      "perception_radius_m": 35.0,
+      "radius_m": 10.0,
+      "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
-      "allow_enter_danger_zone": false,
-      "expected_behavior": "slow_or_avoid",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "allow_enter_danger_zone": true,
+      "expected_behavior": "yield_or_stop_for_priority_conflict",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
-  "scenario_tags": [
-    "B.emergency_avoidance",
-    "B.overtaking_bypass"
-  ],
-  "drivable_polygons": [],
   "notes": [
-    "Bench2Drive XML/XOSC is intentionally not used for this RoadTailBench code scenario.",
-    "drivable_area metric is evaluated as centerline deviation using centerline_route.",
-    "Hazard coordinates are conservative auto-extracted placeholders unless explicitly known; manually refine them before final benchmark reporting."
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

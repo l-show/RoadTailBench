@@ -1,0 +1,412 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB049",
+  "town": "RTB049",
+  "description": "Ego车辆（测试车）在一段山区高速的右侧车道上自动驾驶，前方为一个长陡下坡与凹形竖曲线、小半径水平右转弯的复杂组合路段。由于浓雾及竖曲线坡顶的遮挡，前方纵向视距严重受限。一辆因发现路面散落物而紧急减速的重型卡车，正处于Ego车辆的视觉盲区内。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 50,
+    "source": "李响训练集",
+    "original_scene_id": "LX985",
+    "source_hazards": "道路线形[不良线形组合]\n+视距不良[纵向视距不良]",
+    "variant": 3,
+    "scenario_id": "RTB049",
+    "scenario_typical": "山区高速",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "HQJ",
+    "variant_hazard": null,
+    "description": "Ego车辆（测试车）在一段山区高速的右侧车道上自动驾驶，前方为一个长陡下坡与凹形竖曲线、小半径水平右转弯的复杂组合路段。由于浓雾及竖曲线坡顶的遮挡，前方纵向视距严重受限。一辆因发现路面散落物而紧急减速的重型卡车，正处于Ego车辆的视觉盲区内。"
+  },
+  "scenario_family_id": "LX985",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "山区高速",
+  "environment": null,
+  "source_hazards": "道路线形[不良线形组合]\n+视距不良[纵向视距不良]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.audi.tt",
+  "ego_blueprint": "vehicle.audi.tt",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "TRAJ_STR_EGO",
+  "route": [
+    [
+      138.882,
+      -10.585,
+      0.5
+    ],
+    [
+      135.776,
+      -10.475,
+      0.5
+    ],
+    [
+      125.812,
+      -10.066,
+      0.5
+    ],
+    [
+      114.927,
+      -9.958,
+      0.5
+    ],
+    [
+      102.215,
+      -10.028,
+      0.5
+    ],
+    [
+      86.877,
+      -10.047,
+      0.5
+    ],
+    [
+      71.814,
+      -9.988,
+      0.5
+    ],
+    [
+      56.683,
+      -9.796,
+      0.5
+    ],
+    [
+      41.3,
+      -9.509,
+      0.5
+    ],
+    [
+      25.989,
+      -9.349,
+      0.5
+    ],
+    [
+      10.668,
+      -9.691,
+      0.5
+    ],
+    [
+      -4.52,
+      -10.25,
+      0.5
+    ],
+    [
+      -19.685,
+      -10.827,
+      0.5
+    ],
+    [
+      -33.663,
+      -16.586,
+      0.5
+    ],
+    [
+      -46.0,
+      -25.361,
+      0.5
+    ],
+    [
+      -56.646,
+      -36.145,
+      0.5
+    ],
+    [
+      -66.322,
+      -47.822,
+      0.5
+    ],
+    [
+      -78.683,
+      -63.725,
+      0.5
+    ]
+  ],
+  "route_waypoints": [
+    [
+      138.882,
+      -10.585,
+      0.5
+    ],
+    [
+      135.776,
+      -10.475,
+      0.5
+    ],
+    [
+      125.812,
+      -10.066,
+      0.5
+    ],
+    [
+      114.927,
+      -9.958,
+      0.5
+    ],
+    [
+      102.215,
+      -10.028,
+      0.5
+    ],
+    [
+      86.877,
+      -10.047,
+      0.5
+    ],
+    [
+      71.814,
+      -9.988,
+      0.5
+    ],
+    [
+      56.683,
+      -9.796,
+      0.5
+    ],
+    [
+      41.3,
+      -9.509,
+      0.5
+    ],
+    [
+      25.989,
+      -9.349,
+      0.5
+    ],
+    [
+      10.668,
+      -9.691,
+      0.5
+    ],
+    [
+      -4.52,
+      -10.25,
+      0.5
+    ],
+    [
+      -19.685,
+      -10.827,
+      0.5
+    ],
+    [
+      -33.663,
+      -16.586,
+      0.5
+    ],
+    [
+      -46.0,
+      -25.361,
+      0.5
+    ],
+    [
+      -56.646,
+      -36.145,
+      0.5
+    ],
+    [
+      -66.322,
+      -47.822,
+      0.5
+    ],
+    [
+      -78.683,
+      -63.725,
+      0.5
+    ]
+  ],
+  "centerline_route": [
+    [
+      138.882,
+      -10.585,
+      0.5
+    ],
+    [
+      135.776,
+      -10.475,
+      0.5
+    ],
+    [
+      125.812,
+      -10.066,
+      0.5
+    ],
+    [
+      114.927,
+      -9.958,
+      0.5
+    ],
+    [
+      102.215,
+      -10.028,
+      0.5
+    ],
+    [
+      86.877,
+      -10.047,
+      0.5
+    ],
+    [
+      71.814,
+      -9.988,
+      0.5
+    ],
+    [
+      56.683,
+      -9.796,
+      0.5
+    ],
+    [
+      41.3,
+      -9.509,
+      0.5
+    ],
+    [
+      25.989,
+      -9.349,
+      0.5
+    ],
+    [
+      10.668,
+      -9.691,
+      0.5
+    ],
+    [
+      -4.52,
+      -10.25,
+      0.5
+    ],
+    [
+      -19.685,
+      -10.827,
+      0.5
+    ],
+    [
+      -33.663,
+      -16.586,
+      0.5
+    ],
+    [
+      -46.0,
+      -25.361,
+      0.5
+    ],
+    [
+      -56.646,
+      -36.145,
+      0.5
+    ],
+    [
+      -66.322,
+      -47.822,
+      0.5
+    ],
+    [
+      -78.683,
+      -63.725,
+      0.5
+    ]
+  ],
+  "centerline_source": "ego_trajectory_from_RTB_script",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.pavement_condition",
+    "A.sight_distance",
+    "B.emergency_avoidance",
+    "C.fog"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.pavement_condition",
+      "A.sight_distance"
+    ],
+    "B": [
+      "B.emergency_avoidance"
+    ],
+    "C": [
+      "C.fog"
+    ]
+  },
+  "drivable_polygons": [],
+  "ego_start": {
+    "location": {
+      "x": 138.882,
+      "y": -10.585,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 178.913,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": -78.683,
+      "y": -63.725,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -127.678,
+      "roll": 0.0
+    }
+  },
+  "speed_zones": [
+    {
+      "id": "rtb049_primary_speed_zone",
+      "center": [
+        25.989,
+        -9.349,
+        0.5
+      ],
+      "radius": 35.0,
+      "target_speed_kmh": 40.0,
+      "reason": "slow_or_avoid",
+      "metadata_quality": "auto_generated_review_recommended"
+    }
+  ],
+  "hazard_zones": [
+    {
+      "id": "rtb049_primary_hazard_zone",
+      "category": "A",
+      "subtype": "alignment_geometry",
+      "behavior_subtype": "emergency_avoidance",
+      "center": [
+        25.989,
+        -9.349,
+        0.5
+      ],
+      "radius_m": 10.0,
+      "target_speed_kmh": 40.0,
+      "metadata_quality": "auto_generated_review_recommended"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "rtb049_primary_hazard",
+      "type": "emergency_avoidance",
+      "center": [
+        25.989,
+        -9.349,
+        0.5
+      ],
+      "radius_m": 10.0,
+      "perception_radius_m": 40.0,
+      "danger_radius_m": 4.0,
+      "allow_enter_danger_zone": false,
+      "expected_behavior": "slow_or_avoid",
+      "metadata_quality": "auto_generated_review_recommended"
+    }
+  ],
+  "notes": [
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

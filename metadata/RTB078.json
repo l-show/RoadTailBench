@@ -1,0 +1,76 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB078",
+  "town": "RTB078",
+  "description": "自动驾驶车辆（Ego）在一条湿滑多雾的山区双车道公路上行驶，接近一个不规则的T型交叉口。该交叉口存在设计缺陷，一个被部分遮挡的停车让行标志与一个角度错误的减速让行标志被重复、矛盾地设置，严重干扰了车辆的决策逻辑。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 79,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY8",
+    "source_hazards": "交通标志[交通标志之间重复设置]\n + 道路交叉[路口缺少警告标志]",
+    "variant": 3,
+    "scenario_id": "RTB078",
+    "scenario_typical": "湿滑多雾的山区双车道公路",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "自动驾驶车辆（Ego）在一条湿滑多雾的山区双车道公路上行驶，接近一个不规则的T型交叉口。该交叉口存在设计缺陷，一个被部分遮挡的停车让行标志与一个角度错误的减速让行标志被重复、矛盾地设置，严重干扰了车辆的决策逻辑。"
+  },
+  "scenario_family_id": "HHY8",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "湿滑多雾的山区双车道公路",
+  "environment": null,
+  "source_hazards": "交通标志[交通标志之间重复设置]\n + 道路交叉[路口缺少警告标志]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.carlamotors.european_hgv",
+  "ego_blueprint": "vehicle.carlamotors.european_hgv",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.pavement_condition",
+    "A.sight_distance",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "B.yielding_priority",
+    "C.fog",
+    "C.rain_wet"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.pavement_condition",
+      "A.sight_distance",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.fog",
+      "C.rain_wet"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB002",
+  "town": "RTB002",
+  "description": "在高速公路出口匝道分流区域，Ego车辆（自动驾驶L2+模式）在黄昏小雨天气中行驶，由于匝道限速标志的角度和位置设置不当，加之落日余晖造成的侧向眩光，系统错误地将匝道40km/h的限速识别为主路限速，并执行了紧急减速。此时，后方一辆大型SUV正以极近的距离跟驰，导致了极高的追尾风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 3,
+    "source": "李响训练集",
+    "original_scene_id": "LX104",
+    "source_hazards": "交通标志[限速标志误导]",
+    "variant": "1LX",
+    "scenario_id": "RTB002",
+    "scenario_typical": "高速公路出口匝道分流区",
+    "scene_type": "高速场景 (Highway Scenes)",
+    "road": null,
+    "environment": "黄昏小雨天气",
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在高速公路出口匝道分流区域，Ego车辆（自动驾驶L2+模式）在黄昏小雨天气中行驶，由于匝道限速标志的角度和位置设置不当，加之落日余晖造成的侧向眩光，系统错误地将匝道40km/h的限速识别为主路限速，并执行了紧急减速。此时，后方一辆大型SUV正以极近的距离跟驰，导致了极高的追尾风险。"
+  },
+  "scenario_family_id": "LX104",
+  "scene_type": "高速场景 (Highway Scenes)",
+  "scenario_typical": "高速公路出口匝道分流区",
+  "environment": "黄昏小雨天气",
+  "source_hazards": "交通标志[限速标志误导]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.tesla.cybertruck",
+  "ego_blueprint": "vehicle.tesla.cybertruck",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.lighting_facility",
+    "A.speed_control_facility",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.merging_flow",
+    "C.glare",
+    "C.low_light",
+    "C.rain_wet",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.lighting_facility",
+      "A.speed_control_facility",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.merging_flow"
+    ],
+    "C": [
+      "C.glare",
+      "C.low_light",
+      "C.rain_wet",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

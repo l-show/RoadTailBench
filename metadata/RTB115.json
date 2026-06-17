@@ -1,0 +1,82 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB115",
+  "town": "RTB115",
+  "description": "在山区高速公路的连续急弯路段，自动驾驶车辆（Ego）在低能见度（重度雾霾）和高速巡航状态下，因缺少关键交通标志（急弯警告、限速）和物理设施（凸面镜），同时路侧护栏存在缺失，导致未能提前感知并评估前方多个风险点（对向来车、道路曲率突变、路面湿滑），最终在紧急制动和转向过程中发生姿态失稳，伴随潜在的侧翻或碰撞护栏风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 116,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY1185",
+    "source_hazards": "交通标志[交通标志缺失]\n + 隔离防护[护栏缺失]",
+    "variant": 5,
+    "scenario_id": "RTB115",
+    "scenario_typical": "山区高速公路",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在山区高速公路的连续急弯路段，自动驾驶车辆（Ego）在低能见度（重度雾霾）和高速巡航状态下，因缺少关键交通标志（急弯警告、限速）和物理设施（凸面镜），同时路侧护栏存在缺失，导致未能提前感知并评估前方多个风险点（对向来车、道路曲率突变、路面湿滑），最终在紧急制动和转向过程中发生姿态失稳，伴随潜在的侧翻或碰撞护栏风险。"
+  },
+  "scenario_family_id": "HHY1185",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "山区高速公路",
+  "environment": null,
+  "source_hazards": "交通标志[交通标志缺失]\n + 隔离防护[护栏缺失]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.tesla.model3",
+  "ego_blueprint": "vehicle.tesla.model3",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.pavement_condition",
+    "A.separation_protection",
+    "A.sight_distance",
+    "A.speed_control_facility",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.yielding_priority",
+    "C.fog",
+    "C.rain_wet",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.pavement_condition",
+      "A.separation_protection",
+      "A.sight_distance",
+      "A.speed_control_facility",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.fog",
+      "C.rain_wet",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

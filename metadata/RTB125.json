@@ -1,40 +1,37 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v2",
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
   "scenario_id": "RTB125",
   "town": "RTB125",
-  "description": "Auto-extracted metadata for RTB125; RTB script owns dynamic scenario logic, no Bench2Drive XML is required.",
-  "metadata_quality": "auto_extracted_minimal_review_recommended",
+  "description": "在一段无信号、长直且陡峭的国道下坡路段，突降暴雨导致路面积水与部分坑洼。Ego车辆在跟随前车行驶时，右侧车道一辆SUV无征兆地向左并线切入Ego车辆前方盲区。与此同时，原前方车辆因规避前方道路上的一个大型坠落物（由临时操作引入）而紧急制动，导致Ego车辆面临追尾和被切入车辆夹击的双重碰撞风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 126,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY1313",
+    "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
+    "variant": 4,
+    "scenario_id": "RTB125",
+    "scenario_typical": "国道下坡路段",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在一段无信号、长直且陡峭的国道下坡路段，突降暴雨导致路面积水与部分坑洼。Ego车辆在跟随前车行驶时，右侧车道一辆SUV无征兆地向左并线切入Ego车辆前方盲区。与此同时，原前方车辆因规避前方道路上的一个大型坠落物（由临时操作引入）而紧急制动，导致Ego车辆面临追尾和被切入车辆夹击的双重碰撞风险。"
+  },
+  "scenario_family_id": "HHY1313",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "国道下坡路段",
+  "environment": null,
+  "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
   "ego_role_names": [
     "ego",
     "hero"
   ],
-  "ego_type_id": "vehicle.audi.tt",
-  "ego_blueprint": "vehicle.audi.tt",
+  "ego_type_id": "vehicle.chevrolet.impala",
+  "ego_blueprint": "vehicle.chevrolet.impala",
   "ego_start_match_radius_m": 8.0,
-  "ego_start": {
-    "location": {
-      "x": 1.17,
-      "y": 158.353,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -81.191,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 1.815,
-      "y": -379.081,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -89.721,
-      "roll": 0.0
-    }
-  },
+  "route_source": "TRAJ_3_EGO",
   "route": [
     [
       1.17,
@@ -1110,9 +1107,62 @@
   "allowed_lateral_error_m": 2.0,
   "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.pavement_condition",
+    "A.sight_distance",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "B.yielding_priority",
+    "C.rain_wet",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.pavement_condition",
+      "A.sight_distance",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.rain_wet",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "ego_start": {
+    "location": {
+      "x": 1.17,
+      "y": 158.353,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -81.191,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 1.815,
+      "y": -379.081,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -89.721,
+      "roll": 0.0
+    }
+  },
   "speed_zones": [
     {
-      "id": "rtb125_hazard_speed_zone",
+      "id": "rtb125_primary_speed_zone",
       "center": [
         1.118,
         -15.99,
@@ -1120,52 +1170,46 @@
       ],
       "radius": 35.0,
       "target_speed_kmh": 40.0,
-      "reason": "overtake_and_opposing_high_beam",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "reason": "yield_or_stop_for_priority_conflict",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb125_primary_hazard_zone",
       "category": "A",
-      "subtype": "lighting_facility",
+      "subtype": "alignment_geometry",
+      "behavior_subtype": "emergency_avoidance",
       "center": [
         1.118,
         -15.99,
         0.5
       ],
-      "radius_m": 8.0,
+      "radius_m": 10.0,
       "target_speed_kmh": 40.0,
-      "metadata_quality": "auto_extracted_review_recommended"
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazards": [
     {
       "id": "rtb125_primary_hazard",
-      "type": "overtake_and_opposing_high_beam",
+      "type": "emergency_avoidance",
       "center": [
         1.118,
         -15.99,
         0.5
       ],
-      "radius_m": 8.0,
-      "perception_radius_m": 35.0,
+      "radius_m": 10.0,
+      "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
-      "allow_enter_danger_zone": false,
-      "expected_behavior": "slow_or_avoid",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "allow_enter_danger_zone": true,
+      "expected_behavior": "yield_or_stop_for_priority_conflict",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
-  "scenario_tags": [
-    "A.lighting_facility",
-    "B.overtaking_bypass",
-    "C.rain_wet",
-    "C.glare"
-  ],
-  "drivable_polygons": [],
   "notes": [
-    "Bench2Drive XML/XOSC is intentionally not used for this RoadTailBench code scenario.",
-    "drivable_area metric is evaluated as centerline deviation using centerline_route.",
-    "Hazard coordinates are conservative auto-extracted placeholders unless explicitly known; manually refine them before final benchmark reporting."
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

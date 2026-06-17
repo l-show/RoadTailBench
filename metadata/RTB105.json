@@ -1,0 +1,76 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB105",
+  "town": "RTB105",
+  "description": "在城市主干道交叉口前，Ego车辆（自动驾驶L4）在接近限速的状态下行驶。一个非国标的减速警示黄闪灯因安装位置不当、自身亮度衰减，且被路侧等待的密集行人群体和电线杆部分遮挡。同时，午后阳光形成的侧向眩光和前方洒水车突然作业产生的水雾，对Ego的视觉感知系统造成了多重干扰。数字信息层面，高精地图未收录该非标信号灯，V2X通信也无相关预警，导致Ego未能及时识别减速风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 106,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY223",
+    "source_hazards": "信号设施[信号灯设置不规范]",
+    "variant": 5,
+    "scenario_id": "RTB105",
+    "scenario_typical": "城市主干道交叉口",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在城市主干道交叉口前，Ego车辆（自动驾驶L4）在接近限速的状态下行驶。一个非国标的减速警示黄闪灯因安装位置不当、自身亮度衰减，且被路侧等待的密集行人群体和电线杆部分遮挡。同时，午后阳光形成的侧向眩光和前方洒水车突然作业产生的水雾，对Ego的视觉感知系统造成了多重干扰。数字信息层面，高精地图未收录该非标信号灯，V2X通信也无相关预警，导致Ego未能及时识别减速风险。"
+  },
+  "scenario_family_id": "HHY223",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "城市主干道交叉口",
+  "environment": null,
+  "source_hazards": "信号设施[信号灯设置不规范]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.nissan.patrol",
+  "ego_blueprint": "vehicle.nissan.patrol",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.lighting_facility",
+    "A.sight_distance",
+    "A.speed_control_facility",
+    "B.emergency_avoidance",
+    "B.yielding_priority",
+    "C.fog",
+    "C.glare",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.lighting_facility",
+      "A.sight_distance",
+      "A.speed_control_facility"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.fog",
+      "C.glare",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB026",
+  "town": "RTB026",
+  "description": "Original scenario body for LX339; detailed variant description is unavailable in the source spreadsheet.",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 27,
+    "source": "李响训练集",
+    "original_scene_id": "LX339",
+    "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
+    "variant": "/",
+    "scenario_id": "RTB026",
+    "scenario_typical": null,
+    "scene_type": "郊区场景 (Suburban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "HQJ",
+    "variant_hazard": null,
+    "description": null
+  },
+  "scenario_family_id": "LX339",
+  "scene_type": "郊区场景 (Suburban Scenes)",
+  "scenario_typical": null,
+  "environment": null,
+  "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.tesla.model3",
+  "ego_blueprint": "vehicle.tesla.model3",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.sight_distance",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.yielding_priority"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.sight_distance",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.yielding_priority"
+    ],
+    "C": []
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

@@ -1,9 +1,29 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v2",
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
   "scenario_id": "RTB117",
   "town": "RTB117",
-  "description": "Auto-extracted metadata for RTB117; RTB script owns dynamic scenario logic, no Bench2Drive XML is required.",
-  "metadata_quality": "auto_extracted_minimal_review_recommended",
+  "description": "在高速公路的微下坡加右转弯道路段，Ego车辆在暴雨和强侧风的恶劣天气下以辅助驾驶模式高速行驶。一个因基础松动且受强风影响的路灯杆突然倾倒，砸中邻道的重型卡车，导致卡车失控并坠落多个货物，形成一个复杂的、动态演化的障碍物场，严重考验自动驾驶系统的感知、决策及规控能力。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 118,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY1264",
+    "source_hazards": "照明设施[照明设备非工作状态]",
+    "variant": 1,
+    "scenario_id": "RTB117",
+    "scenario_typical": "高速公路的微下坡加右转弯道路",
+    "scene_type": "高速场景 (Highway Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在高速公路的微下坡加右转弯道路段，Ego车辆在暴雨和强侧风的恶劣天气下以辅助驾驶模式高速行驶。一个因基础松动且受强风影响的路灯杆突然倾倒，砸中邻道的重型卡车，导致卡车失控并坠落多个货物，形成一个复杂的、动态演化的障碍物场，严重考验自动驾驶系统的感知、决策及规控能力。"
+  },
+  "scenario_family_id": "HHY1264",
+  "scene_type": "高速场景 (Highway Scenes)",
+  "scenario_typical": "高速公路的微下坡加右转弯道路",
+  "environment": null,
+  "source_hazards": "照明设施[照明设备非工作状态]",
   "ego_role_names": [
     "ego",
     "hero"
@@ -11,30 +31,7 @@
   "ego_type_id": "vehicle.audi.tt",
   "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "ego_start": {
-    "location": {
-      "x": 134.088,
-      "y": 20.431,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -70.634,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 101.812,
-      "y": -373.505,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -110.913,
-      "roll": 0.0
-    }
-  },
+  "route_source": "RAW_TRAJ_EGO",
   "route": [
     [
       134.088,
@@ -540,9 +537,58 @@
   "allowed_lateral_error_m": 2.0,
   "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 100.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.clearance_intrusion",
+    "A.lighting_facility",
+    "B.emergency_avoidance",
+    "B.overtaking_bypass",
+    "C.rain_wet",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.clearance_intrusion",
+      "A.lighting_facility"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.overtaking_bypass"
+    ],
+    "C": [
+      "C.rain_wet",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "ego_start": {
+    "location": {
+      "x": 134.088,
+      "y": 20.431,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -70.634,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 101.812,
+      "y": -373.505,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -110.913,
+      "roll": 0.0
+    }
+  },
   "speed_zones": [
     {
-      "id": "rtb117_hazard_speed_zone",
+      "id": "rtb117_primary_speed_zone",
       "center": [
         152.388,
         -176.464,
@@ -550,51 +596,46 @@
       ],
       "radius": 35.0,
       "target_speed_kmh": 40.0,
-      "reason": "cargo_drop_or_heavy_vehicle",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "reason": "bypass_or_change_lane_safely",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb117_primary_hazard_zone",
       "category": "A",
-      "subtype": "clearance_intrusion",
+      "subtype": "alignment_geometry",
+      "behavior_subtype": "emergency_avoidance",
       "center": [
         152.388,
         -176.464,
         0.5
       ],
-      "radius_m": 8.0,
+      "radius_m": 10.0,
       "target_speed_kmh": 40.0,
-      "metadata_quality": "auto_extracted_review_recommended"
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazards": [
     {
       "id": "rtb117_primary_hazard",
-      "type": "cargo_drop_or_heavy_vehicle",
+      "type": "emergency_avoidance",
       "center": [
         152.388,
         -176.464,
         0.5
       ],
-      "radius_m": 8.0,
-      "perception_radius_m": 35.0,
+      "radius_m": 10.0,
+      "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
       "allow_enter_danger_zone": false,
-      "expected_behavior": "slow_or_avoid",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "expected_behavior": "bypass_or_change_lane_safely",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
-  "scenario_tags": [
-    "A.clearance_intrusion",
-    "B.emergency_avoidance",
-    "C.rain_wet"
-  ],
-  "drivable_polygons": [],
   "notes": [
-    "Bench2Drive XML/XOSC is intentionally not used for this RoadTailBench code scenario.",
-    "drivable_area metric is evaluated as centerline deviation using centerline_route.",
-    "Hazard coordinates are conservative auto-extracted placeholders unless explicitly known; manually refine them before final benchmark reporting."
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

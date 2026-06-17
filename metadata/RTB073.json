@@ -1,0 +1,70 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB073",
+  "town": "RTB073",
+  "description": "在城市道路的一个信号灯控制交叉口前，Ego车辆由于多种风险叠加，面临未能对突然出现的行人做出及时反应的碰撞风险。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 74,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY7",
+    "source_hazards": "路面质量[路面破损]\n + 道路交叉[路口缺少警告标志]",
+    "variant": 2,
+    "scenario_id": "RTB073",
+    "scenario_typical": "城市道路信号灯控制交叉口",
+    "scene_type": "城市场景 (Urban Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在城市道路的一个信号灯控制交叉口前，Ego车辆由于多种风险叠加，面临未能对突然出现的行人做出及时反应的碰撞风险。"
+  },
+  "scenario_family_id": "HHY7",
+  "scene_type": "城市场景 (Urban Scenes)",
+  "scenario_typical": "城市道路信号灯控制交叉口",
+  "environment": null,
+  "source_hazards": "路面质量[路面破损]\n + 道路交叉[路口缺少警告标志]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.mercedes.sprinter",
+  "ego_blueprint": "vehicle.mercedes.sprinter",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.pavement_condition",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "B.yielding_priority",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.pavement_condition",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.yielding_priority"
+    ],
+    "C": [
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}

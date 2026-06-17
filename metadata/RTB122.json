@@ -1,40 +1,37 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v2",
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
   "scenario_id": "RTB122",
   "town": "RTB122",
-  "description": "Auto-extracted metadata for RTB122; RTB script owns dynamic scenario logic, no Bench2Drive XML is required.",
-  "metadata_quality": "auto_extracted_minimal_review_recommended",
+  "description": "Ego车辆（测试车）在一段连续长下坡的山区公路上，以较高速度跟随一辆重型卡车行驶。该路段正经历大雨天气，路面湿滑且存在多处积水。由于道路基础设施维护不善，关键的视觉减速标线缺失，且坡底紧接一个急弯。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 123,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY1313",
+    "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
+    "variant": 1,
+    "scenario_id": "RTB122",
+    "scenario_typical": "连续长下坡的山区公路",
+    "scene_type": "山区场景 (Mountain Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "Ego车辆（测试车）在一段连续长下坡的山区公路上，以较高速度跟随一辆重型卡车行驶。该路段正经历大雨天气，路面湿滑且存在多处积水。由于道路基础设施维护不善，关键的视觉减速标线缺失，且坡底紧接一个急弯。"
+  },
+  "scenario_family_id": "HHY1313",
+  "scene_type": "山区场景 (Mountain Scenes)",
+  "scenario_typical": "连续长下坡的山区公路",
+  "environment": null,
+  "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
   "ego_role_names": [
     "ego",
     "hero"
   ],
-  "ego_type_id": "vehicle.audi.tt",
-  "ego_blueprint": "vehicle.audi.tt",
+  "ego_type_id": "vehicle.mercedes.sprinter",
+  "ego_blueprint": "vehicle.mercedes.sprinter",
   "ego_start_match_radius_m": 8.0,
-  "ego_start": {
-    "location": {
-      "x": 3.925,
-      "y": 471.013,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -86.692,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": -174.671,
-      "y": 254.843,
-      "z": 0.5
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": 153.452,
-      "roll": 0.0
-    }
-  },
+  "route_source": "RAW_EGO_TRAJECTORY",
   "route": [
     [
       3.925,
@@ -49,6 +46,11 @@
     [
       4.511,
       460.877,
+      0.5
+    ],
+    [
+      4.804,
+      455.809,
       0.5
     ],
     [
@@ -72,6 +74,11 @@
       0.5
     ],
     [
+      6.56,
+      430.412,
+      0.5
+    ],
+    [
       6.95,
       425.432,
       0.5
@@ -89,6 +96,11 @@
     [
       8.045,
       410.244,
+      0.5
+    ],
+    [
+      8.44,
+      405.185,
       0.5
     ],
     [
@@ -117,6 +129,11 @@
       0.5
     ],
     [
+      10.496,
+      374.616,
+      0.5
+    ],
+    [
       10.89,
       369.607,
       0.5
@@ -134,6 +151,11 @@
     [
       12.16,
       354.374,
+      0.5
+    ],
+    [
+      12.581,
+      349.32,
       0.5
     ],
     [
@@ -162,6 +184,11 @@
       0.5
     ],
     [
+      16.241,
+      318.913,
+      0.5
+    ],
+    [
       17.224,
       314.019,
       0.5
@@ -182,6 +209,11 @@
       0.5
     ],
     [
+      22.208,
+      294.181,
+      0.5
+    ],
+    [
       23.83,
       289.458,
       0.5
@@ -199,6 +231,11 @@
     [
       29.712,
       275.509,
+      0.5
+    ],
+    [
+      31.918,
+      271.031,
       0.5
     ],
     [
@@ -227,6 +264,11 @@
       0.5
     ],
     [
+      43.043,
+      249.997,
+      0.5
+    ],
+    [
       46.017,
       245.883,
       0.5
@@ -244,6 +286,11 @@
     [
       52.672,
       232.326,
+      0.5
+    ],
+    [
+      53.876,
+      227.401,
       0.5
     ],
     [
@@ -272,6 +319,11 @@
       0.5
     ],
     [
+      43.872,
+      199.878,
+      0.5
+    ],
+    [
       39.949,
       196.793,
       0.5
@@ -292,6 +344,11 @@
       0.5
     ],
     [
+      20.924,
+      189.546,
+      0.5
+    ],
+    [
       15.869,
       188.525,
       0.5
@@ -309,6 +366,11 @@
     [
       0.586,
       186.746,
+      0.5
+    ],
+    [
+      -4.56,
+      186.366,
       0.5
     ],
     [
@@ -337,6 +399,11 @@
       0.5
     ],
     [
+      -34.873,
+      189.173,
+      0.5
+    ],
+    [
       -39.868,
       190.462,
       0.5
@@ -354,6 +421,11 @@
     [
       -54.462,
       195.313,
+      0.5
+    ],
+    [
+      -59.237,
+      197.264,
       0.5
     ],
     [
@@ -382,6 +454,11 @@
       0.5
     ],
     [
+      -86.507,
+      210.802,
+      0.5
+    ],
+    [
       -91.121,
       213.11,
       0.5
@@ -402,6 +479,11 @@
       0.5
     ],
     [
+      -109.217,
+      222.142,
+      0.5
+    ],
+    [
       -113.836,
       224.45,
       0.5
@@ -419,6 +501,11 @@
     [
       -139.077,
       237.06,
+      0.5
+    ],
+    [
+      -148.161,
+      241.599,
       0.5
     ],
     [
@@ -454,6 +541,11 @@
       0.5
     ],
     [
+      4.804,
+      455.809,
+      0.5
+    ],
+    [
       5.097,
       450.74,
       0.5
@@ -474,6 +566,11 @@
       0.5
     ],
     [
+      6.56,
+      430.412,
+      0.5
+    ],
+    [
       6.95,
       425.432,
       0.5
@@ -491,6 +588,11 @@
     [
       8.045,
       410.244,
+      0.5
+    ],
+    [
+      8.44,
+      405.185,
       0.5
     ],
     [
@@ -519,6 +621,11 @@
       0.5
     ],
     [
+      10.496,
+      374.616,
+      0.5
+    ],
+    [
       10.89,
       369.607,
       0.5
@@ -536,6 +643,11 @@
     [
       12.16,
       354.374,
+      0.5
+    ],
+    [
+      12.581,
+      349.32,
       0.5
     ],
     [
@@ -564,6 +676,11 @@
       0.5
     ],
     [
+      16.241,
+      318.913,
+      0.5
+    ],
+    [
       17.224,
       314.019,
       0.5
@@ -584,6 +701,11 @@
       0.5
     ],
     [
+      22.208,
+      294.181,
+      0.5
+    ],
+    [
       23.83,
       289.458,
       0.5
@@ -601,6 +723,11 @@
     [
       29.712,
       275.509,
+      0.5
+    ],
+    [
+      31.918,
+      271.031,
       0.5
     ],
     [
@@ -629,6 +756,11 @@
       0.5
     ],
     [
+      43.043,
+      249.997,
+      0.5
+    ],
+    [
       46.017,
       245.883,
       0.5
@@ -646,6 +778,11 @@
     [
       52.672,
       232.326,
+      0.5
+    ],
+    [
+      53.876,
+      227.401,
       0.5
     ],
     [
@@ -674,6 +811,11 @@
       0.5
     ],
     [
+      43.872,
+      199.878,
+      0.5
+    ],
+    [
       39.949,
       196.793,
       0.5
@@ -694,6 +836,11 @@
       0.5
     ],
     [
+      20.924,
+      189.546,
+      0.5
+    ],
+    [
       15.869,
       188.525,
       0.5
@@ -711,6 +858,11 @@
     [
       0.586,
       186.746,
+      0.5
+    ],
+    [
+      -4.56,
+      186.366,
       0.5
     ],
     [
@@ -739,6 +891,11 @@
       0.5
     ],
     [
+      -34.873,
+      189.173,
+      0.5
+    ],
+    [
       -39.868,
       190.462,
       0.5
@@ -756,6 +913,11 @@
     [
       -54.462,
       195.313,
+      0.5
+    ],
+    [
+      -59.237,
+      197.264,
       0.5
     ],
     [
@@ -784,6 +946,11 @@
       0.5
     ],
     [
+      -86.507,
+      210.802,
+      0.5
+    ],
+    [
       -91.121,
       213.11,
       0.5
@@ -804,6 +971,11 @@
       0.5
     ],
     [
+      -109.217,
+      222.142,
+      0.5
+    ],
+    [
       -113.836,
       224.45,
       0.5
@@ -821,6 +993,11 @@
     [
       -139.077,
       237.06,
+      0.5
+    ],
+    [
+      -148.161,
+      241.599,
       0.5
     ],
     [
@@ -856,6 +1033,11 @@
       0.5
     ],
     [
+      4.804,
+      455.809,
+      0.5
+    ],
+    [
       5.097,
       450.74,
       0.5
@@ -876,6 +1058,11 @@
       0.5
     ],
     [
+      6.56,
+      430.412,
+      0.5
+    ],
+    [
       6.95,
       425.432,
       0.5
@@ -893,6 +1080,11 @@
     [
       8.045,
       410.244,
+      0.5
+    ],
+    [
+      8.44,
+      405.185,
       0.5
     ],
     [
@@ -921,6 +1113,11 @@
       0.5
     ],
     [
+      10.496,
+      374.616,
+      0.5
+    ],
+    [
       10.89,
       369.607,
       0.5
@@ -938,6 +1135,11 @@
     [
       12.16,
       354.374,
+      0.5
+    ],
+    [
+      12.581,
+      349.32,
       0.5
     ],
     [
@@ -966,6 +1168,11 @@
       0.5
     ],
     [
+      16.241,
+      318.913,
+      0.5
+    ],
+    [
       17.224,
       314.019,
       0.5
@@ -986,6 +1193,11 @@
       0.5
     ],
     [
+      22.208,
+      294.181,
+      0.5
+    ],
+    [
       23.83,
       289.458,
       0.5
@@ -1003,6 +1215,11 @@
     [
       29.712,
       275.509,
+      0.5
+    ],
+    [
+      31.918,
+      271.031,
       0.5
     ],
     [
@@ -1031,6 +1248,11 @@
       0.5
     ],
     [
+      43.043,
+      249.997,
+      0.5
+    ],
+    [
       46.017,
       245.883,
       0.5
@@ -1048,6 +1270,11 @@
     [
       52.672,
       232.326,
+      0.5
+    ],
+    [
+      53.876,
+      227.401,
       0.5
     ],
     [
@@ -1076,6 +1303,11 @@
       0.5
     ],
     [
+      43.872,
+      199.878,
+      0.5
+    ],
+    [
       39.949,
       196.793,
       0.5
@@ -1096,6 +1328,11 @@
       0.5
     ],
     [
+      20.924,
+      189.546,
+      0.5
+    ],
+    [
       15.869,
       188.525,
       0.5
@@ -1113,6 +1350,11 @@
     [
       0.586,
       186.746,
+      0.5
+    ],
+    [
+      -4.56,
+      186.366,
       0.5
     ],
     [
@@ -1141,6 +1383,11 @@
       0.5
     ],
     [
+      -34.873,
+      189.173,
+      0.5
+    ],
+    [
       -39.868,
       190.462,
       0.5
@@ -1158,6 +1405,11 @@
     [
       -54.462,
       195.313,
+      0.5
+    ],
+    [
+      -59.237,
+      197.264,
       0.5
     ],
     [
@@ -1186,6 +1438,11 @@
       0.5
     ],
     [
+      -86.507,
+      210.802,
+      0.5
+    ],
+    [
       -91.121,
       213.11,
       0.5
@@ -1203,6 +1460,11 @@
     [
       -104.676,
       219.873,
+      0.5
+    ],
+    [
+      -109.217,
+      222.142,
       0.5
     ],
     [
@@ -1226,6 +1488,11 @@
       0.5
     ],
     [
+      -148.161,
+      241.599,
+      0.5
+    ],
+    [
       -157.396,
       246.212,
       0.5
@@ -1244,10 +1511,55 @@
   "centerline_source": "ego_trajectory_from_RTB_script",
   "allowed_lateral_error_m": 2.0,
   "hard_lateral_error_m": 4.0,
-  "reference_speed_kmh": 70.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.pavement_condition",
+    "A.traffic_sign_marking",
+    "B.emergency_avoidance",
+    "C.rain_wet"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.pavement_condition",
+      "A.traffic_sign_marking"
+    ],
+    "B": [
+      "B.emergency_avoidance"
+    ],
+    "C": [
+      "C.rain_wet"
+    ]
+  },
+  "drivable_polygons": [],
+  "ego_start": {
+    "location": {
+      "x": 3.925,
+      "y": 471.013,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -86.692,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": -174.671,
+      "y": 254.843,
+      "z": 0.5
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 153.452,
+      "roll": 0.0
+    }
+  },
   "speed_zones": [
     {
-      "id": "rtb122_hazard_speed_zone",
+      "id": "rtb122_primary_speed_zone",
       "center": [
         50.863,
         236.966,
@@ -1255,51 +1567,46 @@
       ],
       "radius": 35.0,
       "target_speed_kmh": 40.0,
-      "reason": "truck_conflict_in_extreme_weather",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "reason": "slow_or_avoid",
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb122_primary_hazard_zone",
-      "category": "B",
-      "subtype": "emergency_avoidance",
+      "category": "A",
+      "subtype": "alignment_geometry",
+      "behavior_subtype": "emergency_avoidance",
       "center": [
         50.863,
         236.966,
         0.5
       ],
-      "radius_m": 8.0,
+      "radius_m": 10.0,
       "target_speed_kmh": 40.0,
-      "metadata_quality": "auto_extracted_review_recommended"
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
   "hazards": [
     {
       "id": "rtb122_primary_hazard",
-      "type": "truck_conflict_in_extreme_weather",
+      "type": "emergency_avoidance",
       "center": [
         50.863,
         236.966,
         0.5
       ],
-      "radius_m": 8.0,
-      "perception_radius_m": 35.0,
+      "radius_m": 10.0,
+      "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
       "allow_enter_danger_zone": false,
       "expected_behavior": "slow_or_avoid",
-      "metadata_quality": "auto_extracted_review_recommended"
+      "metadata_quality": "auto_generated_review_recommended"
     }
   ],
-  "scenario_tags": [
-    "B.emergency_avoidance",
-    "C.rain_wet",
-    "C.wind_dust_visibility"
-  ],
-  "drivable_polygons": [],
   "notes": [
-    "Bench2Drive XML/XOSC is intentionally not used for this RoadTailBench code scenario.",
-    "drivable_area metric is evaluated as centerline deviation using centerline_route.",
-    "Hazard coordinates are conservative auto-extracted placeholders unless explicitly known; manually refine them before final benchmark reporting."
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

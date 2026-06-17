@@ -1,0 +1,74 @@
+{
+  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "scenario_id": "RTB103",
+  "town": "RTB103",
+  "description": "在高速公路出口匝道前，Ego车辆在自动驾驶模式下高速巡航，面临一个因安装角度错误、表面被污染且与V2I信息存在严重延迟的减速信号灯。此核心风险与小雨、路面湿滑、前车行为异常以及路边临时作业等多个次要风险因素叠加，构成一个复杂的决策困境，极易导致Ego车辆因错误判断信号而执行错误的加速或减速指令，最终在匝道入口处发生侧滑失控。",
+  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
+  "excel_metadata": {
+    "excel_row": 104,
+    "source": "黄虎翼训练集",
+    "original_scene_id": "HHY223",
+    "source_hazards": "信号设施[信号灯设置不规范]",
+    "variant": 2,
+    "scenario_id": "RTB103",
+    "scenario_typical": "高速公路出口匝道",
+    "scene_type": "高速场景 (Highway Scenes)",
+    "road": null,
+    "environment": null,
+    "maker": "LX",
+    "variant_hazard": null,
+    "description": "在高速公路出口匝道前，Ego车辆在自动驾驶模式下高速巡航，面临一个因安装角度错误、表面被污染且与V2I信息存在严重延迟的减速信号灯。此核心风险与小雨、路面湿滑、前车行为异常以及路边临时作业等多个次要风险因素叠加，构成一个复杂的决策困境，极易导致Ego车辆因错误判断信号而执行错误的加速或减速指令，最终在匝道入口处发生侧滑失控。"
+  },
+  "scenario_family_id": "HHY223",
+  "scene_type": "高速场景 (Highway Scenes)",
+  "scenario_typical": "高速公路出口匝道",
+  "environment": null,
+  "source_hazards": "信号设施[信号灯设置不规范]",
+  "ego_role_names": [
+    "ego",
+    "hero"
+  ],
+  "ego_type_id": "vehicle.tesla.model3",
+  "ego_blueprint": "vehicle.tesla.model3",
+  "ego_start_match_radius_m": 8.0,
+  "route_source": "not_static_route_detected",
+  "route": [],
+  "route_waypoints": [],
+  "centerline_route": [],
+  "centerline_source": "not_static_route_detected",
+  "allowed_lateral_error_m": 2.0,
+  "hard_lateral_error_m": 4.0,
+  "reference_speed_kmh": 60.0,
+  "scenario_tags": [
+    "A.alignment_geometry",
+    "A.pavement_condition",
+    "B.emergency_avoidance",
+    "B.merging_flow",
+    "B.overtaking_bypass",
+    "C.rain_wet",
+    "C.wind_dust_visibility"
+  ],
+  "ability_tags": {
+    "A": [
+      "A.alignment_geometry",
+      "A.pavement_condition"
+    ],
+    "B": [
+      "B.emergency_avoidance",
+      "B.merging_flow",
+      "B.overtaking_bypass"
+    ],
+    "C": [
+      "C.rain_wet",
+      "C.wind_dust_visibility"
+    ]
+  },
+  "drivable_polygons": [],
+  "notes": [
+    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
+    "Use scenario-timeout as the termination fallback for this scene.",
+    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
+    "Hazard centers are route midpoint defaults unless manually reviewed.",
+    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+  ]
+}
