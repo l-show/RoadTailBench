@@ -1,0 +1,5 @@
+RoadTailBench is an independent Apache-2.0 project.
+
+This repository does not vendor Bench2Drive or Bench2DriveZoo top-level code licensed under CC BY-NC-ND 4.0. RoadTailBench code scenarios included here are treated as RoadTailBench-owned scenario assets.
+
+CARLA PythonAPI is an external runtime dependency.

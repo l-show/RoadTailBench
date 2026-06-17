@@ -1,0 +1,303 @@
+import importlib
+import os
+import subprocess
+import sys
+import time
+import traceback
+from datetime import datetime
+from pathlib import Path
+
+from roadtailbench.core.io import save_json
+from .carla_utils import dict_to_transform, metadata_location
+from .frame_logger import RuntimeFrameLogger
+
+
+EGO_MODE_ALIASES = {
+    "scene_ego": "scene_ego",
+    "script_ego": "scene_ego",
+    "agent_ego": "agent_ego",
+    "external_ego": "agent_ego",
+}
+
+
+def normalize_ego_mode(value):
+    if value not in EGO_MODE_ALIASES:
+        raise ValueError(f"Unsupported ego mode: {value}")
+    return EGO_MODE_ALIASES[value]
+
+
+def import_carla():
+    import carla
+    return carla
+
+
+class CodeScenarioRunner:
+    def __init__(self, args):
+        self.args = args
+        self.args.ego_mode = normalize_ego_mode(args.ego_mode)
+        self.carla = import_carla()
+        self.client = self.carla.Client(args.host, args.port)
+        self.client.set_timeout(args.timeout)
+        self.world = None
+
+    def connect_world(self, scenario):
+        metadata = scenario.metadata or {}
+        town = self.args.town or metadata.get("town")
+        if getattr(self.args, "skip_load_world", False):
+            print("[RoadTailBench] --skip-load-world set; using current CARLA world", flush=True)
+            self.world = self.client.get_world()
+        elif town:
+            candidates = [town]
+            if not str(town).startswith("/Game/"):
+                candidates.append(f"/Game/Carla/Maps/{town}")
+            last_error = None
+            for candidate in candidates:
+                try:
+                    print(f"[RoadTailBench] loading CARLA map: {candidate}", flush=True)
+                    self.world = self.client.load_world(candidate)
+                    print(f"[RoadTailBench] loaded CARLA map: {self.world.get_map().name}", flush=True)
+                    break
+                except RuntimeError as exc:
+                    last_error = exc
+                    print(f"[RoadTailBench] load_world failed for {candidate}: {exc}", flush=True)
+            if self.world is None:
+                raise RuntimeError(
+                    f"failed to load map for {scenario.scene_id}; tried {candidates}. "
+                    f"Last error: {last_error}"
+                )
+        else:
+            print("[RoadTailBench] no town configured; using current CARLA world", flush=True)
+            self.world = self.client.get_world()
+        settings = self.world.get_settings()
+        settings.synchronous_mode = True
+        settings.fixed_delta_seconds = float(self.args.fixed_delta_seconds)
+        self.world.apply_settings(settings)
+        return self.world
+
+    def restore_world(self):
+        if not self.world:
+            return
+        settings = self.world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        self.world.apply_settings(settings)
+
+    def find_scene_ego(self, scenario):
+        metadata = scenario.metadata or {}
+        role_values = []
+        for key in ("ego_role_names", "ego_role_name"):
+            value = metadata.get(key)
+            if isinstance(value, list):
+                role_values.extend(value)
+            elif isinstance(value, str):
+                role_values.extend(value.split(","))
+        role_values.extend(self.args.ego_role_name.split(","))
+        role_names = []
+        for value in role_values:
+            value = str(value).strip()
+            if value and value not in role_names:
+                role_names.append(value)
+
+        actors = list(self.world.get_actors().filter("vehicle.*"))
+        for role_name in role_names:
+            for actor in actors:
+                if actor.attributes.get("role_name") == role_name:
+                    return actor
+
+        ego_type_id = metadata.get("ego_type_id") or metadata.get("ego_blueprint") or self.args.ego_type_id
+        ego_start = metadata_location(metadata.get("ego_start") or metadata.get("ego_spawn"))
+        if ego_type_id:
+            matches = [actor for actor in actors if actor.type_id == ego_type_id]
+            if len(matches) == 1:
+                return matches[0]
+            if len(matches) > 1 and ego_start:
+                start = self.carla.Location(x=ego_start[0], y=ego_start[1], z=ego_start[2])
+                ranked = []
+                for actor in matches:
+                    try:
+                        ranked.append((actor.get_location().distance(start), actor))
+                    except RuntimeError:
+                        continue
+                ranked.sort(key=lambda item: item[0])
+                radius = float(metadata.get("ego_start_match_radius_m", 8.0))
+                close = [item for item in ranked if item[0] <= radius]
+                if len(close) == 1:
+                    return close[0][1]
+                if ranked and (len(ranked) == 1 or ranked[0][0] + 1.0 < ranked[1][0]):
+                    return ranked[0][1]
+            if len(matches) > 1:
+                raise RuntimeError(f"{scenario.scene_id}: ambiguous ego type_id={ego_type_id}; add role_name or ego_start metadata")
+
+        if ego_start:
+            start = self.carla.Location(x=ego_start[0], y=ego_start[1], z=ego_start[2])
+            ranked = []
+            for actor in actors:
+                try:
+                    ranked.append((actor.get_location().distance(start), actor))
+                except RuntimeError:
+                    continue
+            ranked.sort(key=lambda item: item[0])
+            radius = float(metadata.get("ego_start_match_radius_m", 8.0))
+            close = [item for item in ranked if item[0] <= radius]
+            if len(close) == 1:
+                return close[0][1]
+
+        if len(actors) == 1 and not (ego_type_id or ego_start or role_names):
+            return actors[0]
+        return None
+
+    def advance_world_for_collection(self, world):
+        if self.args.ego_mode == "scene_ego" and getattr(self.args, "scene_drives_ticks", True):
+            return world.wait_for_tick(seconds=float(self.args.tick_wait_timeout))
+        return world.tick()
+
+    def spawn_agent_ego(self, scenario):
+        metadata = scenario.metadata or {}
+        ego_meta = metadata.get("ego_start") or metadata.get("ego_spawn")
+        if not ego_meta:
+            raise RuntimeError(f"{scenario.scene_id}: missing ego_start for agent_ego")
+        bp_id = metadata.get("ego_blueprint") or metadata.get("ego_type_id") or self.args.ego_blueprint
+        bp = self.world.get_blueprint_library().find(bp_id)
+        bp.set_attribute("role_name", "hero")
+        transform = dict_to_transform(self.carla, ego_meta)
+        ego = self.world.try_spawn_actor(bp, transform)
+        if not ego:
+            raise RuntimeError(f"{scenario.scene_id}: failed to spawn agent ego {bp_id}")
+        return ego
+
+    def start_scene_process(self, scenario, output_dir):
+        env = os.environ.copy()
+        env["ROADTAILBENCH_SCENE_ID"] = scenario.scene_id
+        env["ROADTAILBENCH_OUTPUT_DIR"] = str(output_dir)
+        env["ROADTAILBENCH_EGO_MODE"] = self.args.ego_mode
+        env["ROADTAILBENCH_CARLA_HOST"] = self.args.host
+        env["ROADTAILBENCH_CARLA_PORT"] = str(self.args.port)
+        cmd = [sys.executable, str(scenario.script_path)]
+        return subprocess.Popen(
+            cmd,
+            cwd=str(scenario.script_path.parent),
+            env=env,
+            stdout=subprocess.PIPE if self.args.capture_scenario_stdout else None,
+            stderr=subprocess.STDOUT if self.args.capture_scenario_stdout else None,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+
+    def load_adapter(self):
+        if not self.args.agent:
+            return None
+        module_name, class_name = self.args.agent.split(":", 1) if ":" in self.args.agent else (self.args.agent, "Adapter")
+        module = importlib.import_module(module_name)
+        adapter_cls = getattr(module, class_name)
+        adapter = adapter_cls()
+        config = {"config": self.args.agent_config}
+        adapter.setup(config)
+        return adapter
+
+    def build_config(self, scenario):
+        metadata = dict(scenario.metadata or {})
+        config = {
+            "schema_version": "roadtailbench.runtime_config.v1",
+            "scenario_id": scenario.scene_id,
+            "route_id": scenario.scene_id,
+            "script_path": str(scenario.script_path),
+            "metadata_path": str(scenario.metadata_path) if scenario.metadata_path else None,
+            "town": metadata.get("town") or self.args.town or self.world.get_map().name.split("/")[-1],
+            "ego_mode": self.args.ego_mode,
+            "reference_speed_kmh": 50.0,
+            "route": [],
+            "centerline_route": [],
+        }
+        config.update(metadata)
+        if not config.get("route") and config.get("ego_start") and config.get("ego_end"):
+            config["route"] = [config["ego_start"]["location"], config["ego_end"]["location"]]
+        if not config.get("centerline_route"):
+            config["centerline_route"] = config.get("route", [])
+        return config
+
+    def run_scenario(self, scenario):
+        started_at = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = Path(self.args.output_root) / f"{scenario.scene_id}_{started_at}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        proc = logger = ego = adapter = None
+        status, error, ticks, script_exit_tick = "started", "", 0, None
+        try:
+            world = self.connect_world(scenario)
+            if self.args.ego_mode == "agent_ego":
+                ego = self.spawn_agent_ego(scenario)
+                adapter = self.load_adapter()
+            proc = self.start_scene_process(scenario, output_dir)
+            deadline = time.time() + float(self.args.ego_wait_timeout)
+            while time.time() < deadline:
+                self.advance_world_for_collection(world)
+                ego = ego or self.find_scene_ego(scenario)
+                if ego or (proc and proc.poll() is not None):
+                    break
+            if not ego:
+                raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
+            config = self.build_config(scenario)
+            logger = RuntimeFrameLogger(output_dir, scenario, config)
+            logger.attach_collision_sensor(self.carla, world, ego)
+            while ticks < int(self.args.max_ticks):
+                self.advance_world_for_collection(world)
+                ticks += 1
+                control = None
+                if adapter:
+                    obs = {"frame": ticks, "ego": ego, "world": world, "config": config}
+                    control = adapter.run_step(obs)
+                    if hasattr(control, "to_carla"):
+                        control = control.to_carla(self.carla)
+                    ego.apply_control(control)
+                else:
+                    try:
+                        control = ego.get_control()
+                    except RuntimeError:
+                        control = None
+                logger.log_tick(world, ego, control, actor_radius_m=self.args.actor_log_radius_m)
+                if proc and proc.poll() is not None:
+                    if script_exit_tick is None:
+                        script_exit_tick = ticks
+                    if ticks - script_exit_tick >= int(self.args.min_ticks_after_script_exit):
+                        break
+            status = "completed"
+        except Exception as exc:
+            status = "failed"
+            error = f"{exc}\n{traceback.format_exc()}"
+        finally:
+            if adapter:
+                try:
+                    adapter.destroy()
+                except Exception:
+                    pass
+            if proc and proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+            summary = {"scene_id": scenario.scene_id, "status": status, "error": error, "ticks": ticks, "output_dir": str(output_dir)}
+            if logger:
+                summary["outputs"] = logger.close(summary)
+            else:
+                save_json(output_dir / "roadtailbench_run_summary.json", summary)
+            if self.args.cleanup_ego and ego and ego.is_alive and self.args.ego_mode == "agent_ego":
+                ego.destroy()
+            try:
+                self.restore_world()
+            except Exception:
+                pass
+        return summary
+
+    def run(self, scenarios):
+        summaries = []
+        for scenario in scenarios:
+            print(f"[RoadTailBench] running {scenario.scene_id}: {scenario.script_path}", flush=True)
+            summary = self.run_scenario(scenario)
+            summaries.append(summary)
+            save_json(Path(self.args.output_root) / "roadtailbench_batch_summary.json", summaries)
+            print(f"[RoadTailBench] {scenario.scene_id} {summary['status']} ticks={summary['ticks']}", flush=True)
+            if summary.get("status") != "completed" and summary.get("error"):
+                first_line = summary["error"].splitlines()[0] if summary["error"].splitlines() else summary["error"]
+                print(f"[RoadTailBench] error: {first_line}", flush=True)
+        return summaries

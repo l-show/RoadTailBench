@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "roadtailbench"
+version = "0.1.0"
+description = "RoadTailBench closed-loop code-scenario evaluation toolkit for CARLA."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "RoadTailBench Authors" }]
+dependencies = []
+
+[project.scripts]
+rtb-run = "roadtailbench.cli.run:main"
+rtb-eval = "roadtailbench.cli.eval:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["roadtailbench*"]
