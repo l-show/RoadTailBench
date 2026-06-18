@@ -43,6 +43,14 @@ def import_carla():
     return carla
 
 
+def text_tail(path, max_chars=4000):
+    try:
+        text = Path(path).read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return ""
+    return text[-max_chars:]
+
+
 class CodeScenarioRunner:
     def __init__(self, args):
         self.args = args
@@ -372,6 +380,8 @@ class CodeScenarioRunner:
         env["ROADTAILBENCH_EGO_MODE"] = self.args.ego_mode
         env["ROADTAILBENCH_CARLA_HOST"] = self.args.host
         env["ROADTAILBENCH_CARLA_PORT"] = str(self.args.port)
+        env["PYTHONIOENCODING"] = "utf-8:replace"
+        env["PYTHONUTF8"] = "1"
         cmd = [sys.executable, str(scenario.script_path)]
         stdout_path = Path(output_dir) / "scenario_stdout.log"
         stdout_file = stdout_path.open("w", encoding="utf-8", errors="replace")
@@ -470,6 +480,15 @@ class CodeScenarioRunner:
                     break
             check_scenario_timeout()
             if not ego:
+                if proc and proc.poll() is not None:
+                    stdout_path = getattr(proc, "_leaderboard_stdout_path", None)
+                    tail = text_tail(stdout_path) if stdout_path else ""
+                    detail = f"{scenario.scene_id}: scene process exited before ego was found; returncode={proc.poll()}"
+                    if stdout_path:
+                        detail += f"; stdout={stdout_path}"
+                    if tail:
+                        detail += f"\n--- scenario_stdout tail ---\n{tail}"
+                    raise RuntimeError(detail)
                 raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
             config = self.build_config(scenario)
             goal_xy = self.natural_goal_xy(config)

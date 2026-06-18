@@ -432,6 +432,46 @@ def test_batch_aborts_on_carla_crash(tmp_path):
     assert (tmp_path / "leaderboard_batch_status.json").exists()
 
 
+def test_scene_process_forces_utf8_output(tmp_path):
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(
+        ego_mode="scene_ego",
+        host="localhost",
+        port=2000,
+    )
+    scenario = SimpleNamespace(scene_id="RTB_UTF8", script_path=ROOT / "scenes" / "RTB116.py")
+
+    captured = {}
+
+    class FakeProc:
+        def __init__(self):
+            self._leaderboard_stdout_file = None
+            self._leaderboard_stdout_path = None
+
+    def fake_popen(cmd, cwd=None, env=None, stdout=None, stderr=None, text=None, encoding=None, errors=None):
+        captured["env"] = env
+        captured["encoding"] = encoding
+        captured["errors"] = errors
+        proc = FakeProc()
+        proc._leaderboard_stdout_file = stdout
+        return proc
+
+    import leaderboard.runtime.runner as runner_module
+
+    original_popen = runner_module.subprocess.Popen
+    runner_module.subprocess.Popen = fake_popen
+    try:
+        proc = runner.start_scene_process(scenario, tmp_path)
+        proc._leaderboard_stdout_file.close()
+    finally:
+        runner_module.subprocess.Popen = original_popen
+
+    assert captured["env"]["PYTHONIOENCODING"] == "utf-8:replace"
+    assert captured["env"]["PYTHONUTF8"] == "1"
+    assert captured["encoding"] == "utf-8"
+    assert captured["errors"] == "replace"
+
+
 def test_scenario_marks_carla_crashed_before_start(tmp_path):
     runner = object.__new__(CodeScenarioRunner)
     runner.args = SimpleNamespace(

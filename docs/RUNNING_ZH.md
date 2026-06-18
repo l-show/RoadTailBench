@@ -93,7 +93,7 @@ leaderboard-run `
   --scenario-timeout 180 `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
-
+  --record-video --record-video-mode ego_6cam --video-fps 10
 ### 场景选择和路径
 
 - `--scene-root`: 必填。`RTBXXX.py` 场景脚本目录。
@@ -244,7 +244,7 @@ pip install opencv-python numpy
 
 ```powershell
 leaderboard-video `
-  --run-dir G:\Codex\RoadTailBench\outputs\RTB116_20260618_120000 `
+  --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503 `
   --mode synth-360 `
   --fps 10
 ```
@@ -259,9 +259,9 @@ leaderboard-video `
 
 ```powershell
 leaderboard-eval `
-  --frames G:\Codex\RoadTailBench\outputs\RTB116_20260618_120000\leaderboard_frame_log.jsonl `
-  --config G:\Codex\RoadTailBench\outputs\RTB116_20260618_120000\leaderboard_scenario_config.json `
-  --output G:\Codex\RoadTailBench\outputs\RTB116_20260618_120000\metrics_recomputed.json
+  --frames G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\leaderboard_frame_log.jsonl `
+  --config G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\leaderboard_scenario_config.json `
+  --output G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\metrics_recomputed.json
 ```
 
 `leaderboard-eval` 参数：
@@ -274,7 +274,7 @@ leaderboard-eval `
 
 ```powershell
 leaderboard-plot `
-  --run-dir G:\Codex\RoadTailBench\outputs\RTB116_20260618_120000 `
+  --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503 `
   --dpi 400
 ```
 
@@ -282,7 +282,7 @@ leaderboard-plot `
 
 ```powershell
 leaderboard-plot `
-  --run-dir G:\Codex\RoadTailBench\outputs\RTB116_20260618_120000 `
+  --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503 `
   --output G:\Codex\RoadTailBench\outputs\plots\RTB116_overview.png `
   --dpi 400
 ```
