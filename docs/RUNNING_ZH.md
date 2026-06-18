@@ -127,7 +127,7 @@ leaderboard-run `
   --carla-timeout 30 `
   --map-load-timeout 120 `
   --spectator-mode ego_start `
-  --scenario-timeout 60 `
+  --scenario-timeout 180 `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
 
