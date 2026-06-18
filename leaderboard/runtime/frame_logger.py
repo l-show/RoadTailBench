@@ -76,11 +76,18 @@ class RuntimeFrameLogger:
         self._file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._file.flush()
 
-    def close(self, run_summary=None):
+    def close(self, run_summary=None, carla_alive=True):
         try:
             if self._collision_sensor:
-                self._collision_sensor.stop()
-                self._collision_sensor.destroy()
+                try:
+                    self._collision_sensor.stop()
+                except Exception:
+                    pass
+                if carla_alive:
+                    try:
+                        self._collision_sensor.destroy()
+                    except Exception:
+                        pass
         finally:
             self._file.close()
         save_json(self.metrics_path, evaluate_leaderboard(self._frames, self.config))

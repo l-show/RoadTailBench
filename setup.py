@@ -12,6 +12,7 @@ setup(
             "leaderboard-run=leaderboard.cli.run:main",
             "leaderboard-eval=leaderboard.cli.eval:main",
             "leaderboard-plot=leaderboard.cli.plot_run:main",
+            "leaderboard-video=leaderboard.cli.video:main",
         ],
     },
 )

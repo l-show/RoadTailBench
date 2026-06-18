@@ -1,6 +1,7 @@
 import importlib
 import math
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -12,9 +13,14 @@ from leaderboard.core.io import save_json
 from leaderboard.core.trajectory import reference_xy, trajectory_goal_xy
 from .carla_utils import dict_to_transform, metadata_location
 from .frame_logger import RuntimeFrameLogger
+from .video_recorder import RuntimeVideoRecorder
 
 
 class ScenarioTimeoutError(RuntimeError):
+    pass
+
+
+class CarlaUnavailableError(RuntimeError):
     pass
 
 
@@ -45,12 +51,67 @@ class CodeScenarioRunner:
         self.client = self.carla.Client(args.host, args.port)
         self.client.set_timeout(args.carla_timeout)
         self.world = None
+        self._carla_alive = True
+        self._last_rpc = ""
+
+    def mark_rpc(self, name):
+        self._last_rpc = name
+
+    def is_carla_error(self, exc):
+        text = str(exc).lower()
+        markers = (
+            "time-out",
+            "timeout",
+            "connection failed",
+            "connection refused",
+            "actively refused",
+            "simulator",
+            "localhost",
+        )
+        return any(marker in text for marker in markers)
+
+    def check_carla_port(self):
+        timeout = max(0.2, float(getattr(self.args, "carla_health_timeout", 3.0)))
+        try:
+            with socket.create_connection((self.args.host, int(self.args.port)), timeout=timeout):
+                return True
+        except OSError:
+            return False
+
+    def probe_carla_alive(self):
+        if not self.check_carla_port():
+            self._carla_alive = False
+            return False
+        original_timeout = float(getattr(self.args, "carla_timeout", 180.0))
+        try:
+            self.client.set_timeout(max(0.5, float(getattr(self.args, "carla_health_timeout", 3.0))))
+            self.mark_rpc("health_get_world")
+            world = self.client.get_world()
+            self.mark_rpc("health_get_snapshot")
+            world.get_snapshot()
+            self._carla_alive = True
+            return True
+        except Exception:
+            self._carla_alive = False
+            return False
+        finally:
+            try:
+                self.client.set_timeout(original_timeout)
+            except Exception:
+                pass
+
+    def raise_if_carla_unavailable(self, exc, rpc_name):
+        if self.is_carla_error(exc):
+            self._carla_alive = False
+            raise CarlaUnavailableError(f"{rpc_name}: CARLA unavailable: {exc}") from exc
+        raise exc
 
     def connect_world(self, scenario):
         metadata = scenario.metadata or {}
         town = self.args.town or metadata.get("town")
         if getattr(self.args, "skip_load_world", False):
             print("[leaderboard] --skip-load-world set; using current CARLA world", flush=True)
+            self.mark_rpc("client.get_world")
             self.world = self.client.get_world()
         elif town:
             self.world = self.load_world(town, scenario.scene_id)
@@ -60,12 +121,13 @@ class CodeScenarioRunner:
         settings = self.world.get_settings()
         settings.synchronous_mode = True
         settings.fixed_delta_seconds = float(self.args.fixed_delta_seconds)
+        self.mark_rpc("world.apply_settings_sync")
         self.world.apply_settings(settings)
         self.set_spectator_from_metadata(metadata)
         return self.world
 
     def set_spectator_from_metadata(self, metadata):
-        if getattr(self.args, "spectator_mode", "ego_start") != "ego_start":
+        if getattr(self.args, "spectator_mode", "ego_start") == "none":
             return
         ego_start = metadata.get("ego_start") or metadata.get("ego_spawn")
         loc = metadata_location(ego_start)
@@ -75,6 +137,7 @@ class CodeScenarioRunner:
         yaw = float(rotation.get("yaw", 0.0)) if isinstance(rotation, dict) else 0.0
         try:
             spectator = self.world.get_spectator()
+            self.mark_rpc("spectator.set_transform_start")
             spectator.set_transform(
                 self.carla.Transform(
                     self.carla.Location(x=loc[0], y=loc[1], z=loc[2] + 25.0),
@@ -106,10 +169,15 @@ class CodeScenarioRunner:
             for candidate in candidates:
                 try:
                     print(f"[leaderboard] loading CARLA map via API: {candidate}", flush=True)
+                    self.mark_rpc(f"client.load_world:{candidate}")
                     world = self.client.load_world(candidate)
+                    self.mark_rpc("world.get_map")
                     print(f"[leaderboard] loaded CARLA map: {world.get_map().name}", flush=True)
                     return world
                 except RuntimeError as exc:
+                    if self.is_carla_error(exc) and not self.check_carla_port():
+                        self._carla_alive = False
+                        raise CarlaUnavailableError(f"{scene_id}: CARLA disappeared while loading {candidate}: {exc}") from exc
                     last_error = exc
                     print(f"[leaderboard] load_world failed for {candidate}: {exc}", flush=True)
             raise RuntimeError(
@@ -158,10 +226,36 @@ class CodeScenarioRunner:
     def restore_world(self):
         if not self.world:
             return
+        if not self._carla_alive and not self.probe_carla_alive():
+            return
         settings = self.world.get_settings()
         settings.synchronous_mode = False
         settings.fixed_delta_seconds = None
+        self.mark_rpc("world.apply_settings_async")
         self.world.apply_settings(settings)
+
+    def set_spectator_follow_ego(self, ego):
+        if getattr(self.args, "spectator_mode", "ego_start") != "ego_follow":
+            return
+        if not self.actor_alive(ego):
+            return
+        try:
+            tf = ego.get_transform()
+            forward = tf.get_forward_vector()
+            spectator = self.world.get_spectator()
+            loc = tf.location + self.carla.Location(z=3.0) - forward * 6.0
+            self.mark_rpc("spectator.set_transform_follow")
+            spectator.set_transform(
+                self.carla.Transform(
+                    loc,
+                    self.carla.Rotation(pitch=-15.0, yaw=tf.rotation.yaw, roll=0.0),
+                )
+            )
+        except RuntimeError as exc:
+            if self.is_carla_error(exc):
+                self._carla_alive = False
+            else:
+                print(f"[leaderboard] spectator follow skipped: {exc}", flush=True)
 
     def natural_goal_xy(self, config):
         return trajectory_goal_xy(config)
@@ -211,7 +305,11 @@ class CodeScenarioRunner:
             if value and value not in role_names:
                 role_names.append(value)
 
-        actors = list(self.world.get_actors().filter("vehicle.*"))
+        try:
+            self.mark_rpc("world.get_actors_find_ego")
+            actors = list(self.world.get_actors().filter("vehicle.*"))
+        except RuntimeError as exc:
+            self.raise_if_carla_unavailable(exc, "find_scene_ego.get_actors")
         for role_name in role_names:
             for actor in actors:
                 if actor.attributes.get("role_name") == role_name:
@@ -262,8 +360,16 @@ class CodeScenarioRunner:
     def advance_world_for_collection(self, world, wait_timeout=None):
         if self.args.ego_mode == "scene_ego" and getattr(self.args, "scene_drives_ticks", True):
             seconds = float(self.args.tick_wait_timeout) if wait_timeout is None else max(0.5, float(wait_timeout))
-            return world.wait_for_tick(seconds=seconds)
-        return world.tick()
+            try:
+                self.mark_rpc("world.wait_for_tick")
+                return world.wait_for_tick(seconds=seconds)
+            except RuntimeError as exc:
+                self.raise_if_carla_unavailable(exc, "world.wait_for_tick")
+        try:
+            self.mark_rpc("world.tick")
+            return world.tick()
+        except RuntimeError as exc:
+            self.raise_if_carla_unavailable(exc, "world.tick")
 
     def spawn_agent_ego(self, scenario):
         metadata = scenario.metadata or {}
@@ -292,16 +398,21 @@ class CodeScenarioRunner:
         env["ROADTAILBENCH_CARLA_HOST"] = self.args.host
         env["ROADTAILBENCH_CARLA_PORT"] = str(self.args.port)
         cmd = [sys.executable, str(scenario.script_path)]
-        return subprocess.Popen(
+        stdout_path = Path(output_dir) / "scenario_stdout.log"
+        stdout_file = stdout_path.open("w", encoding="utf-8", errors="replace")
+        proc = subprocess.Popen(
             cmd,
             cwd=str(scenario.script_path.parent),
             env=env,
-            stdout=subprocess.PIPE if self.args.capture_scenario_stdout else None,
-            stderr=subprocess.STDOUT if self.args.capture_scenario_stdout else None,
+            stdout=stdout_file,
+            stderr=subprocess.STDOUT,
             text=True,
             encoding="utf-8",
             errors="replace",
         )
+        proc._leaderboard_stdout_file = stdout_file
+        proc._leaderboard_stdout_path = stdout_path
+        return proc
 
     def load_adapter(self):
         if not self.args.agent:
@@ -342,14 +453,17 @@ class CodeScenarioRunner:
         started_at = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = Path(self.args.output_root) / f"{scenario.scene_id}_{started_at}"
         output_dir.mkdir(parents=True, exist_ok=True)
-        proc = logger = ego = adapter = None
+        proc = logger = ego = adapter = video = None
         status, error, ticks, script_exit_tick = "started", "", 0, None
         termination_reason = ""
+        failure_class = ""
         started_wall = time.time()
         first_sim_time = last_sim_time = None
         scenario_timeout = float(getattr(self.args, "scenario_timeout", 0.0) or 0.0)
         scenario_deadline = time.time() + scenario_timeout if scenario_timeout > 0.0 else None
         goal_reached_ticks = 0
+        carla_alive_before = self.probe_carla_alive()
+        carla_alive_after = carla_alive_before
 
         def check_scenario_timeout():
             if scenario_deadline is not None and time.time() >= scenario_deadline:
@@ -364,6 +478,8 @@ class CodeScenarioRunner:
             return min(float(self.args.tick_wait_timeout), remaining)
 
         try:
+            if not carla_alive_before:
+                raise CarlaUnavailableError(f"{scenario.scene_id}: CARLA is not reachable before scenario start")
             check_scenario_timeout()
             world = self.connect_world(scenario)
             if self.args.ego_mode == "agent_ego":
@@ -382,8 +498,12 @@ class CodeScenarioRunner:
                 raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
             config = self.build_config(scenario)
             goal_xy = self.natural_goal_xy(config)
+            self.set_spectator_follow_ego(ego)
             logger = RuntimeFrameLogger(output_dir, scenario, config)
             logger.attach_collision_sensor(self.carla, world, ego)
+            if getattr(self.args, "record_video", False):
+                video = RuntimeVideoRecorder(self.carla, world, ego, output_dir, self.args)
+                video.start()
             while ticks < int(self.args.max_ticks):
                 check_scenario_timeout()
                 self.advance_world_for_collection(world, remaining_wait_timeout())
@@ -401,9 +521,12 @@ class CodeScenarioRunner:
                 else:
                     try:
                         control = ego.get_control()
-                    except (AttributeError, RuntimeError):
+                    except AttributeError:
                         control = None
+                    except RuntimeError as exc:
+                        self.raise_if_carla_unavailable(exc, "ego.get_control")
                 logger.log_tick(world, ego, control, actor_radius_m=self.args.actor_log_radius_m)
+                self.set_spectator_follow_ego(ego)
                 latest_frame = logger._frames[-1] if logger._frames else None
                 if latest_frame:
                     frame_time = float(latest_frame.get("time", 0.0))
@@ -429,16 +552,32 @@ class CodeScenarioRunner:
         except ScenarioTimeoutError as exc:
             status = "completed_timeout"
             termination_reason = "scenario_timeout"
+            failure_class = "scenario_timeout"
             error = str(exc)
+        except CarlaUnavailableError as exc:
+            status = "carla_crashed"
+            termination_reason = "carla_unavailable"
+            failure_class = "carla_unavailable"
+            error = f"{exc}\n{traceback.format_exc()}"
         except Exception as exc:
             status = "failed"
             termination_reason = "exception"
+            failure_class = "exception"
             error = f"{exc}\n{traceback.format_exc()}"
         finally:
-            try:
-                self.restore_world()
-            except Exception:
-                pass
+            carla_alive_after = self._carla_alive and self.probe_carla_alive()
+            if video:
+                try:
+                    video_outputs = video.close(carla_alive=carla_alive_after)
+                except Exception as exc:
+                    video_outputs = {"video_error": str(exc)}
+            else:
+                video_outputs = {}
+            if carla_alive_after:
+                try:
+                    self.restore_world()
+                except Exception:
+                    pass
             if adapter:
                 try:
                     adapter.destroy()
@@ -447,9 +586,14 @@ class CodeScenarioRunner:
             if proc and proc.poll() is None:
                 proc.terminate()
                 try:
-                    proc.wait(timeout=5)
+                    proc.wait(timeout=float(getattr(self.args, "process_exit_timeout", 2.0)))
                 except subprocess.TimeoutExpired:
                     proc.kill()
+            if proc and getattr(proc, "_leaderboard_stdout_file", None):
+                try:
+                    proc._leaderboard_stdout_file.close()
+                except Exception:
+                    pass
             elapsed_wall = time.time() - started_wall
             elapsed_sim = None
             if first_sim_time is not None and last_sim_time is not None:
@@ -464,17 +608,43 @@ class CodeScenarioRunner:
                 "elapsed_sim_seconds": elapsed_sim,
                 "timeout_seconds": scenario_timeout or None,
                 "termination_reason": termination_reason or status,
+                "failure_class": failure_class,
+                "last_rpc": self._last_rpc,
+                "carla_alive_before": carla_alive_before,
+                "carla_alive_after": carla_alive_after,
+                "scenario_process_returncode": proc.poll() if proc else None,
             }
+            if proc and getattr(proc, "_leaderboard_stdout_path", None):
+                summary["scenario_stdout_log"] = str(proc._leaderboard_stdout_path)
             if logger:
-                summary["outputs"] = logger.close(summary)
+                summary["outputs"] = logger.close(summary, carla_alive=carla_alive_after)
             else:
                 save_json(output_dir / "leaderboard_run_summary.json", summary)
-            if self.args.cleanup_ego and ego and ego.is_alive and self.args.ego_mode == "agent_ego":
-                ego.destroy()
+                summary["outputs"] = {"summary": str(output_dir / "leaderboard_run_summary.json")}
+            if video_outputs:
+                summary.setdefault("outputs", {}).update(video_outputs)
+                save_json(output_dir / "leaderboard_run_summary.json", summary)
+            if getattr(self.args, "video_synth_360", False) and getattr(self.args, "video_save_frames", False):
+                try:
+                    from leaderboard.cli.video import synth_360
+
+                    path = synth_360(output_dir, fps=float(getattr(self.args, "video_fps", 10.0)))
+                    summary.setdefault("outputs", {})["video_360"] = path
+                    save_json(output_dir / "leaderboard_run_summary.json", summary)
+                except Exception as exc:
+                    summary.setdefault("outputs", {})["video_360_error"] = str(exc)
+                    save_json(output_dir / "leaderboard_run_summary.json", summary)
+            if carla_alive_after and self.args.cleanup_ego and ego and self.args.ego_mode == "agent_ego":
+                try:
+                    if ego.is_alive:
+                        ego.destroy()
+                except Exception:
+                    pass
         return summary
 
     def run(self, scenarios):
         summaries = []
+        batch_status = "completed"
         for scenario in scenarios:
             print(f"[leaderboard] running {scenario.scene_id}: {scenario.script_path}", flush=True)
             summary = self.run_scenario(scenario)
@@ -484,4 +654,14 @@ class CodeScenarioRunner:
             if summary.get("status") not in ("completed", "completed_timeout") and summary.get("error"):
                 first_line = summary["error"].splitlines()[0] if summary["error"].splitlines() else summary["error"]
                 print(f"[leaderboard] error: {first_line}", flush=True)
+            if summary.get("status") == "carla_crashed" and getattr(self.args, "abort_on_carla_crash", True):
+                batch_status = "aborted_carla_crash"
+                print("[leaderboard] CARLA is unavailable; aborting remaining scenarios", flush=True)
+                break
+        if batch_status != "completed":
+            save_json(Path(self.args.output_root) / "leaderboard_batch_status.json", {
+                "batch_status": batch_status,
+                "completed_scenarios": len(summaries),
+                "last_summary": summaries[-1] if summaries else None,
+            })
         return summaries

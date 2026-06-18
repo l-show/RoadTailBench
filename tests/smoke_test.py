@@ -36,6 +36,10 @@ def test_runner_cli_args():
         "--map-load-timeout", "45",
         "--map-load-sleep", "1",
         "--spectator-mode", "none",
+        "--abort-on-carla-crash",
+        "--record-video",
+        "--record-video-mode", "both",
+        "--video-fps", "8",
         "--restore-world-settings",
         "--scenario-timeout", "120",
         "--dry-run",
@@ -46,6 +50,10 @@ def test_runner_cli_args():
     assert args.map_load_timeout == 45
     assert args.map_load_sleep == 1
     assert args.spectator_mode == "none"
+    assert args.abort_on_carla_crash is True
+    assert args.record_video is True
+    assert args.record_video_mode == "both"
+    assert args.video_fps == 8
     assert args.restore_world_settings is True
     assert args.scenario_timeout == 120
 
@@ -57,6 +65,8 @@ def test_runner_cli_defaults():
     assert args.map_load_mode == "api"
     assert args.map_load_timeout == 300.0
     assert args.spectator_mode == "ego_start"
+    assert args.abort_on_carla_crash is True
+    assert args.process_exit_timeout == 2.0
     assert args.restore_world_settings is False
     assert args.scenario_timeout == 0.0
     assert args.natural_end_distance_m == 5.0
@@ -204,7 +214,14 @@ def test_scenario_timeout_writes_summary_and_continues_shape(tmp_path):
         disable_natural_end=False,
         natural_end_distance_m=5.0,
         natural_end_min_ticks=5,
+        carla_health_timeout=0.1,
+        process_exit_timeout=0.1,
+        record_video=False,
+        spectator_mode="none",
     )
+    runner._carla_alive = True
+    runner._last_rpc = ""
+    runner.probe_carla_alive = lambda: True
     runner.connect_world = lambda scenario: object()
     runner.restore_world = lambda: restored.__setitem__("called", True)
     runner.find_scene_ego = lambda scenario: SimpleNamespace(is_alive=True)
@@ -253,7 +270,14 @@ def test_natural_end_finishes_before_timeout(tmp_path):
         disable_natural_end=False,
         natural_end_distance_m=5.0,
         natural_end_min_ticks=1,
+        carla_health_timeout=0.1,
+        process_exit_timeout=0.1,
+        record_video=False,
+        spectator_mode="none",
     )
+    runner._carla_alive = True
+    runner._last_rpc = ""
+    runner.probe_carla_alive = lambda: True
     runner.connect_world = lambda scenario: object()
     runner.restore_world = lambda: restored.__setitem__("called", True)
     runner.advance_world_for_collection = lambda world, wait_timeout=None: None
@@ -279,7 +303,7 @@ def test_natural_end_finishes_before_timeout(tmp_path):
                 "collisions": [],
             })
 
-        def close(self, summary):
+        def close(self, summary, carla_alive=True):
             summary_path = self.output_dir / "leaderboard_run_summary.json"
             summary_path.write_text(json.dumps(summary), encoding="utf-8")
             return {"summary": str(summary_path)}
@@ -324,6 +348,7 @@ def test_natural_end_ignores_non_ego_actor_destroyed():
         disable_natural_end=False,
         natural_end_distance_m=5.0,
         natural_end_min_ticks=1,
+        spectator_mode="none",
     )
     ego = SimpleNamespace(id=1, is_alive=True)
     frame = {
@@ -381,7 +406,59 @@ def test_collision_logger_records_location(tmp_path):
         assert logger._collisions[0]["location"] == [1.0, 2.0, 3.0]
         assert logger._collisions[0]["other_actor_id"] == 99
     finally:
-        logger.close()
+        logger.close(carla_alive=False)
+
+
+def test_batch_aborts_on_carla_crash(tmp_path):
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(output_root=str(tmp_path), abort_on_carla_crash=True)
+    calls = []
+
+    def fake_run(scenario):
+        calls.append(scenario.scene_id)
+        return {
+            "scene_id": scenario.scene_id,
+            "status": "carla_crashed",
+            "error": "simulator unavailable",
+            "ticks": 0,
+        }
+
+    runner.run_scenario = fake_run
+    scenarios = [SimpleNamespace(scene_id="RTB_A", script_path="a.py"), SimpleNamespace(scene_id="RTB_B", script_path="b.py")]
+    summaries = runner.run(scenarios)
+
+    assert [s["scene_id"] for s in summaries] == ["RTB_A"]
+    assert calls == ["RTB_A"]
+    assert (tmp_path / "leaderboard_batch_status.json").exists()
+
+
+def test_scenario_marks_carla_crashed_before_start(tmp_path):
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(
+        output_root=str(tmp_path),
+        scenario_timeout=30.0,
+        cleanup_ego=False,
+        ego_mode="scene_ego",
+        process_exit_timeout=0.1,
+    )
+    runner._carla_alive = False
+    runner._last_rpc = ""
+    runner.probe_carla_alive = lambda: False
+    scenario = SimpleNamespace(scene_id="RTB_DEAD", script_path=ROOT / "scenes" / "RTB116.py", metadata={}, metadata_path=None)
+
+    summary = runner.run_scenario(scenario)
+
+    assert summary["status"] == "carla_crashed"
+    assert summary["termination_reason"] == "carla_unavailable"
+    assert summary["ticks"] == 0
+    assert (Path(summary["output_dir"]) / "leaderboard_run_summary.json").exists()
+
+
+def test_launch_script_uses_carla_control_for_map():
+    text = (ROOT / "scripts" / "launch_carla_editor.ps1").read_text(encoding="utf-8")
+    assert "carla_control.py" in text
+    assert "--map $MapName" in text
+    assert "SleepAfterLoad" in text
 
 
 def test_plot_run_writes_detailed_pngs(tmp_path, monkeypatch):

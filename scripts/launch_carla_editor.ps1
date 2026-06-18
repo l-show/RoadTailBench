@@ -2,8 +2,13 @@ param(
   [string]$CarlaRoot = "D:\carla0.9.15",
   [string]$VsDevCmd = "",
   [string]$MapName = "",
+  [string]$HostName = "localhost",
+  [int]$Port = 2000,
+  [double]$WaitTimeout = 300,
+  [double]$SleepAfterLoad = 3,
   [switch]$CommandPlay,
-  [switch]$Visible
+  [switch]$Visible,
+  [switch]$SkipMapLoad
 )
 
 $ErrorActionPreference = "Stop"
@@ -66,6 +71,26 @@ $process = Start-Process `
   -WindowStyle $(if ($Visible) { "Normal" } else { "Hidden" }) `
   -PassThru
 
+$mapLoadOutput = @()
+if ($CommandPlay -and !$SkipMapLoad -and ![string]::IsNullOrWhiteSpace($MapName)) {
+  $helper = Join-Path $repoRoot "scripts\carla_control.py"
+  $mapLoadOutput += "MAP_LOAD_HELPER=$helper"
+  $mapLoadOutput += "MAP_LOAD_WAIT_TIMEOUT=$WaitTimeout"
+  try {
+    $result = & python $helper `
+      --host $HostName `
+      --port $Port `
+      --timeout $WaitTimeout `
+      --wait `
+      --map $MapName `
+      --sleep-after-load $SleepAfterLoad `
+      --print-world 2>&1
+    $mapLoadOutput += $result
+  } catch {
+    $mapLoadOutput += "MAP_LOAD_ERROR=$($_.Exception.Message)"
+  }
+}
+
 "MAKE_LAUNCH_MODE=VS2019_X64_NATIVE_TOOLS_CMD"
 "CMD_SCRIPT=$temp"
 "CMD_PID=$($process.Id)"
@@ -76,4 +101,5 @@ if ($CommandPlay) {
   "COMMAND_PLAY=1"
   "MAP=$MapName"
   "PYTHONPATH_ADD=$repoRoot"
+  $mapLoadOutput
 }
