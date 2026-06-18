@@ -89,7 +89,7 @@ leaderboard-run `
   --ego-mode scene_ego `
   --carla-timeout 30 `
   --map-load-timeout 120 `
-  --spectator-mode ego_follow `
+  --spectator-mode ego_start `
   --scenario-timeout 180 `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
@@ -142,11 +142,10 @@ leaderboard-run `
 
 ### 观察者视角
 
-- `--spectator-mode ego_start`: 切图后把 spectator 放到 metadata `ego_start` 上方。
-- `--spectator-mode ego_follow`: 找到 ego 后，每帧把 spectator 放到 ego 后方约 6m、上方约 3m，并跟随 yaw。
+- `--spectator-mode ego_start`: 切图后把 spectator 放到 metadata `ego_start` 上方约 45m，并用俯视角向下看。这个位置只设置一次，不会在运行中跟随 ego。
 - `--spectator-mode none`: runner 不修改 spectator。
 
-如果场景脚本内部也在设置 spectator，可能会和 runner 的 `ego_follow` 互相覆盖。需要统一观察时，建议把场景脚本内部 spectator 更新注释掉，使用 runner 的 `--spectator-mode ego_follow`。
+如果场景脚本内部也在设置 spectator，运行过程中仍可能覆盖这个初始俯视角。runner 现在不再提供 ego 跟随观察者，避免额外依赖 ego 发现逻辑。
 
 ### Actor 记录和 stdout
 
@@ -181,7 +180,7 @@ scenario_stdout.log
 
 ## 4. 录像
 
-默认不录像。启用单视角 spectator 录像：
+默认不录像。当前只保留 ego 绑定的 6 路 RGB 相机录像，不再提供 spectator 单视角录像。
 
 ```powershell
 leaderboard-run `
@@ -190,29 +189,23 @@ leaderboard-run `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116 `
   --ego-mode scene_ego `
-  --spectator-mode ego_follow `
+  --spectator-mode ego_start `
   --record-video `
-  --record-video-mode spectator `
+  --record-video-mode ego_6cam `
   --video-fps 10 `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
 
-6 路 ego 车载相机：
+也可以在批量命令里直接加：
 
 ```powershell
 --record-video --record-video-mode ego_6cam --video-fps 10
 ```
 
-同时录 spectator 和 6 路相机：
-
-```powershell
---record-video --record-video-mode both --video-fps 10
-```
-
 录像参数：
 
 - `--record-video`: 启用录像。
-- `--record-video-mode spectator|ego_6cam|both`: `spectator` 为 ego 后方单视角；`ego_6cam` 为前、左前、右前、后、左后、右后 6 个 RGB camera；`both` 同时启用。
+- `--record-video-mode ego_6cam`: 录前、左前、右前、后、左后、右后 6 个 ego 车载 RGB camera。当前唯一模式，保留这个参数是为了命令显式。
 - `--video-fps`: 录像帧率，默认 `10`。建议低于仿真 20 FPS，减少文件体积。
 - `--video-width`: 相机宽度，默认 `1280`。
 - `--video-height`: 相机高度，默认 `720`。
@@ -224,7 +217,6 @@ leaderboard-run `
 输出位置：
 
 ```text
-<run-dir>\video\spectator.mp4
 <run-dir>\video\CAM_FRONT.mp4
 <run-dir>\video\CAM_FRONT_LEFT.mp4
 <run-dir>\video\CAM_FRONT_RIGHT.mp4
@@ -330,14 +322,14 @@ leaderboard-run `
   --scenes RTB122 `
   --ego-mode scene_ego `
   --scenario-timeout 180 `
-  --spectator-mode ego_follow `
+  --spectator-mode ego_start `
   --abort-on-carla-crash `
   --output-root G:\Codex\RoadTailBench\outputs
 ```
 
 如果 summary 的 `last_rpc` 是 `find_scene_ego.get_actors`、`world.wait_for_tick` 或 `client.load_world`，说明 runner 看到的是 CARLA 已不可用；真正 fatal error 原因需要看 UE/CARLA Editor 日志和 `scenario_stdout.log`。对于关卡蓝图场景，优先确认 trigger box 触发的 actor、碰撞体和 simulate physics 在 CARLA 0.9.15 中稳定。
 
- 完整批量命令如下：
+当前推荐的完整批量测试命令如下。crash 检测默认开启，不需要额外传 `--abort-on-carla-crash`；CARLA 崩溃后 runner 会保存当前场景 summary/stdout，并停止后续场景，避免终端长时间卡死。
 
 ```powershell
 leaderboard-run `
@@ -351,35 +343,35 @@ leaderboard-run `
   --carla-timeout 30 `
   --map-load-timeout 180 `
   --map-load-sleep 3 `
-  --spectator-mode ego_follow `
+  --spectator-mode ego_start `
   --scenario-timeout 180 `
   --tick-wait-timeout 5 `
   --natural-end-distance-m 5 `
   --natural-end-min-ticks 5 `
   --actor-log-radius-m 120 `
   --record-video `
-  --record-video-mode both `
+  --record-video-mode ego_6cam `
   --video-fps 10 `
   --video-width 1280 `
   --video-height 720 `
   --video-fov 90 `
   --video-image-format jpg `
+  --video-save-frames `
+  --video-synth-360 `
   --output-root G:\Codex\RoadTailBench\outputs
-  --no-abort-on-carla-crash
 ```
 
-  是的，crash 检测默认开启，不需要额外传 --abort-on-carla-crash。只有你想让 CARLA 崩了还继续尝试后续场景，才需要传：
+这条命令会记录 ego 绑定的 6 路相机，并在每个场景结束后尝试合成 360 全景视频。因为 `--video-save-frames` 会保留 6 路原始图片帧，磁盘占用会明显变大；如果只需要 6 路 mp4、不需要 360 合成，可以删掉：
 
+```powershell
+  --video-save-frames `
+  --video-synth-360 `
+```
 
-  如果你还想后续合成 360 全景视频，把下面两个也加进去：
+当前已经删除的旧参数不要再使用：
 
-  ```
-    --video-save-frames `
-    --video-synth-360 `
-  ```
+- `--spectator-mode ego_follow`
+- `--record-video-mode spectator`
+- `--record-video-mode both`
 
-  但这会保存 6 路原始图片帧，文件会明显变大。当前上面的命令会录：
-
-  - spectator 跟随 ego 的单视角视频
-  - ego 绑定的 6 路相机视频
-  - 不保存原始帧，体积小一些。
+只有你明确想让 CARLA 崩溃后还继续尝试后续场景，才传 `--no-abort-on-carla-crash`。一般不建议这么做，因为 CARLA 进程不可用时后续场景只会继续报连接失败或超时。

@@ -59,13 +59,9 @@ class RuntimeVideoRecorder:
 
     def start(self):
         self._load_image_libs()
-        mode = getattr(self.args, "record_video_mode", "spectator")
         bp = self._camera_blueprint()
-        if mode in ("spectator", "both"):
-            self._spawn_camera("spectator", bp, self._transform((-6.0, 0.0, 3.0), (-15.0, 0.0, 0.0)))
-        if mode in ("ego_6cam", "both"):
-            for name, (loc, rot) in self.CAMERA_TRANSFORMS.items():
-                self._spawn_camera(name, bp, self._transform(loc, rot))
+        for name, (loc, rot) in self.CAMERA_TRANSFORMS.items():
+            self._spawn_camera(name, bp, self._transform(loc, rot))
 
     def _spawn_camera(self, name, bp, transform):
         try:
@@ -154,7 +150,7 @@ class RuntimeVideoRecorder:
                 except Exception:
                     pass
         manifest = {
-            "mode": getattr(self.args, "record_video_mode", "spectator"),
+            "mode": "ego_6cam",
             "fps": float(getattr(self.args, "video_fps", 10.0)),
             "direct_mp4": self.direct_mp4,
             "frame_counts": self.frame_counts,

@@ -133,18 +133,16 @@ class CodeScenarioRunner:
         loc = metadata_location(ego_start)
         if not loc:
             return
-        rotation = ego_start.get("rotation", {}) if isinstance(ego_start, dict) else {}
-        yaw = float(rotation.get("yaw", 0.0)) if isinstance(rotation, dict) else 0.0
         try:
             spectator = self.world.get_spectator()
             self.mark_rpc("spectator.set_transform_start")
             spectator.set_transform(
                 self.carla.Transform(
-                    self.carla.Location(x=loc[0], y=loc[1], z=loc[2] + 25.0),
-                    self.carla.Rotation(pitch=-65.0, yaw=yaw, roll=0.0),
+                    self.carla.Location(x=loc[0], y=loc[1], z=loc[2] + 45.0),
+                    self.carla.Rotation(pitch=-90.0, yaw=0.0, roll=0.0),
                 )
             )
-            print(f"[leaderboard] spectator set near ego_start ({loc[0]:.1f}, {loc[1]:.1f}, {loc[2]:.1f})", flush=True)
+            print(f"[leaderboard] spectator set overhead at ego_start ({loc[0]:.1f}, {loc[1]:.1f}, {loc[2]:.1f})", flush=True)
         except RuntimeError as exc:
             print(f"[leaderboard] spectator setup skipped: {exc}", flush=True)
 
@@ -233,29 +231,6 @@ class CodeScenarioRunner:
         settings.fixed_delta_seconds = None
         self.mark_rpc("world.apply_settings_async")
         self.world.apply_settings(settings)
-
-    def set_spectator_follow_ego(self, ego):
-        if getattr(self.args, "spectator_mode", "ego_start") != "ego_follow":
-            return
-        if not self.actor_alive(ego):
-            return
-        try:
-            tf = ego.get_transform()
-            forward = tf.get_forward_vector()
-            spectator = self.world.get_spectator()
-            loc = tf.location + self.carla.Location(z=3.0) - forward * 6.0
-            self.mark_rpc("spectator.set_transform_follow")
-            spectator.set_transform(
-                self.carla.Transform(
-                    loc,
-                    self.carla.Rotation(pitch=-15.0, yaw=tf.rotation.yaw, roll=0.0),
-                )
-            )
-        except RuntimeError as exc:
-            if self.is_carla_error(exc):
-                self._carla_alive = False
-            else:
-                print(f"[leaderboard] spectator follow skipped: {exc}", flush=True)
 
     def natural_goal_xy(self, config):
         return trajectory_goal_xy(config)
@@ -498,7 +473,6 @@ class CodeScenarioRunner:
                 raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
             config = self.build_config(scenario)
             goal_xy = self.natural_goal_xy(config)
-            self.set_spectator_follow_ego(ego)
             logger = RuntimeFrameLogger(output_dir, scenario, config)
             logger.attach_collision_sensor(self.carla, world, ego)
             if getattr(self.args, "record_video", False):
@@ -526,7 +500,6 @@ class CodeScenarioRunner:
                     except RuntimeError as exc:
                         self.raise_if_carla_unavailable(exc, "ego.get_control")
                 logger.log_tick(world, ego, control, actor_radius_m=self.args.actor_log_radius_m)
-                self.set_spectator_follow_ego(ego)
                 latest_frame = logger._frames[-1] if logger._frames else None
                 if latest_frame:
                     frame_time = float(latest_frame.get("time", 0.0))

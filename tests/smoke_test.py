@@ -38,7 +38,7 @@ def test_runner_cli_args():
         "--spectator-mode", "none",
         "--abort-on-carla-crash",
         "--record-video",
-        "--record-video-mode", "both",
+        "--record-video-mode", "ego_6cam",
         "--video-fps", "8",
         "--restore-world-settings",
         "--scenario-timeout", "120",
@@ -52,7 +52,7 @@ def test_runner_cli_args():
     assert args.spectator_mode == "none"
     assert args.abort_on_carla_crash is True
     assert args.record_video is True
-    assert args.record_video_mode == "both"
+    assert args.record_video_mode == "ego_6cam"
     assert args.video_fps == 8
     assert args.restore_world_settings is True
     assert args.scenario_timeout == 120
