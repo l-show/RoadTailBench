@@ -1,29 +1,19 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB020",
   "town": "RTB020",
   "description": "在乡村道路一个几何设计不合理、无信号灯控制的T型交叉口，Ego车辆（自动驾驶）在傍晚侧逆光条件下，因侧向视距被植被严重遮挡，未能及时识别从辅路高速汇入且未减速的目标车辆，导致严重的碰撞风险。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 21,
-    "source": "李响训练集",
-    "original_scene_id": "LX167",
-    "source_hazards": "路段交叉[渠化不合理 + 信号设施缺失]",
-    "variant": 5,
-    "scenario_id": "RTB020",
-    "scenario_typical": "乡村道路T型交叉口",
-    "scene_type": "乡村场景 (Rural Scenes)",
-    "road": null,
-    "environment": null,
-    "maker": "HQJ",
-    "variant_hazard": null,
-    "description": "在乡村道路一个几何设计不合理、无信号灯控制的T型交叉口，Ego车辆（自动驾驶）在傍晚侧逆光条件下，因侧向视距被植被严重遮挡，未能及时识别从辅路高速汇入且未减速的目标车辆，导致严重的碰撞风险。"
-  },
   "scenario_family_id": "LX167",
   "scene_type": "乡村场景 (Rural Scenes)",
-  "scenario_typical": "乡村道路T型交叉口",
-  "environment": null,
   "source_hazards": "路段交叉[渠化不合理 + 信号设施缺失]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.lincoln.mkz_2020",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,514 +21,191 @@
   "ego_type_id": "vehicle.lincoln.mkz_2020",
   "ego_blueprint": "vehicle.lincoln.mkz_2020",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "EGO_TRAJECTORY",
-  "route": [
+  "reference_trajectory_source": "EGO_TRAJECTORY",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
     [
       -1.281,
       -90.671,
-      0.5
+      89.965
     ],
     [
       -1.281,
       -89.297,
-      0.5
+      89.328
     ],
     [
       -1.212,
       -86.298,
-      0.5
+      88.685
     ],
     [
       -1.028,
       -79.175,
-      0.5
+      88.475
     ],
     [
       -0.919,
       -74.801,
-      0.5
+      88.615
     ],
     [
       -0.766,
       -67.173,
-      0.5
+      89.043
     ],
     [
       -0.645,
       -59.673,
-      0.5
+      89.112
     ],
     [
       -0.621,
       -52.174,
-      0.5
+      90.46
     ],
     [
       -0.711,
       -44.549,
-      0.5
+      90.742
     ],
     [
       -0.809,
       -37.048,
-      0.5
+      90.742
     ],
     [
       -0.893,
       -29.546,
-      0.5
+      90.316
     ],
     [
       -0.907,
       -21.796,
-      0.5
+      90.033
     ],
     [
       -0.886,
       -14.295,
-      0.5
+      89.821
     ],
     [
       -0.862,
       -6.794,
-      0.5
+      89.821
     ],
     [
       -0.838,
       0.83,
-      0.5
+      89.821
     ],
     [
       -0.82,
       8.58,
-      0.5
+      89.891
     ],
     [
       -0.806,
       16.08,
-      0.5
+      89.891
     ],
     [
       -0.762,
       23.83,
-      0.5
+      89.608
     ],
     [
       -0.676,
       31.329,
-      0.5
+      89.186
     ],
     [
       -0.569,
       39.079,
-      0.5
+      89.326
     ],
     [
       -0.508,
       46.833,
-      0.5
+      89.888
     ],
     [
       -0.514,
       54.584,
-      0.5
+      91.172
     ],
     [
       -0.791,
       62.203,
-      0.5
+      92.737
     ],
     [
       -1.25,
       69.813,
-      0.5
+      93.939
     ],
     [
       -1.785,
       77.42,
-      0.5
+      93.722
     ],
     [
       -2.119,
       85.177,
-      0.5
+      91.711
     ],
     [
       -2.167,
       92.925,
-      0.5
+      89.566
     ],
     [
       -2.018,
       100.551,
-      0.5
+      88.504
     ],
     [
       -1.802,
       108.298,
-      0.5
+      88.292
     ],
     [
       -1.579,
       115.795,
-      0.5
+      88.292
     ],
     [
       -1.504,
       118.293,
-      0.5
+      88.292
     ]
   ],
-  "route_waypoints": [
-    [
-      -1.281,
-      -90.671,
-      0.5
-    ],
-    [
-      -1.281,
-      -89.297,
-      0.5
-    ],
-    [
-      -1.212,
-      -86.298,
-      0.5
-    ],
-    [
-      -1.028,
-      -79.175,
-      0.5
-    ],
-    [
-      -0.919,
-      -74.801,
-      0.5
-    ],
-    [
-      -0.766,
-      -67.173,
-      0.5
-    ],
-    [
-      -0.645,
-      -59.673,
-      0.5
-    ],
-    [
-      -0.621,
-      -52.174,
-      0.5
-    ],
-    [
-      -0.711,
-      -44.549,
-      0.5
-    ],
-    [
-      -0.809,
-      -37.048,
-      0.5
-    ],
-    [
-      -0.893,
-      -29.546,
-      0.5
-    ],
-    [
-      -0.907,
-      -21.796,
-      0.5
-    ],
-    [
-      -0.886,
-      -14.295,
-      0.5
-    ],
-    [
-      -0.862,
-      -6.794,
-      0.5
-    ],
-    [
-      -0.838,
-      0.83,
-      0.5
-    ],
-    [
-      -0.82,
-      8.58,
-      0.5
-    ],
-    [
-      -0.806,
-      16.08,
-      0.5
-    ],
-    [
-      -0.762,
-      23.83,
-      0.5
-    ],
-    [
-      -0.676,
-      31.329,
-      0.5
-    ],
-    [
-      -0.569,
-      39.079,
-      0.5
-    ],
-    [
-      -0.508,
-      46.833,
-      0.5
-    ],
-    [
-      -0.514,
-      54.584,
-      0.5
-    ],
-    [
-      -0.791,
-      62.203,
-      0.5
-    ],
-    [
-      -1.25,
-      69.813,
-      0.5
-    ],
-    [
-      -1.785,
-      77.42,
-      0.5
-    ],
-    [
-      -2.119,
-      85.177,
-      0.5
-    ],
-    [
-      -2.167,
-      92.925,
-      0.5
-    ],
-    [
-      -2.018,
-      100.551,
-      0.5
-    ],
-    [
-      -1.802,
-      108.298,
-      0.5
-    ],
-    [
-      -1.579,
-      115.795,
-      0.5
-    ],
-    [
-      -1.504,
-      118.293,
-      0.5
-    ]
-  ],
-  "centerline_route": [
-    [
-      -1.281,
-      -90.671,
-      0.5
-    ],
-    [
-      -1.281,
-      -89.297,
-      0.5
-    ],
-    [
-      -1.212,
-      -86.298,
-      0.5
-    ],
-    [
-      -1.028,
-      -79.175,
-      0.5
-    ],
-    [
-      -0.919,
-      -74.801,
-      0.5
-    ],
-    [
-      -0.766,
-      -67.173,
-      0.5
-    ],
-    [
-      -0.645,
-      -59.673,
-      0.5
-    ],
-    [
-      -0.621,
-      -52.174,
-      0.5
-    ],
-    [
-      -0.711,
-      -44.549,
-      0.5
-    ],
-    [
-      -0.809,
-      -37.048,
-      0.5
-    ],
-    [
-      -0.893,
-      -29.546,
-      0.5
-    ],
-    [
-      -0.907,
-      -21.796,
-      0.5
-    ],
-    [
-      -0.886,
-      -14.295,
-      0.5
-    ],
-    [
-      -0.862,
-      -6.794,
-      0.5
-    ],
-    [
-      -0.838,
-      0.83,
-      0.5
-    ],
-    [
-      -0.82,
-      8.58,
-      0.5
-    ],
-    [
-      -0.806,
-      16.08,
-      0.5
-    ],
-    [
-      -0.762,
-      23.83,
-      0.5
-    ],
-    [
-      -0.676,
-      31.329,
-      0.5
-    ],
-    [
-      -0.569,
-      39.079,
-      0.5
-    ],
-    [
-      -0.508,
-      46.833,
-      0.5
-    ],
-    [
-      -0.514,
-      54.584,
-      0.5
-    ],
-    [
-      -0.791,
-      62.203,
-      0.5
-    ],
-    [
-      -1.25,
-      69.813,
-      0.5
-    ],
-    [
-      -1.785,
-      77.42,
-      0.5
-    ],
-    [
-      -2.119,
-      85.177,
-      0.5
-    ],
-    [
-      -2.167,
-      92.925,
-      0.5
-    ],
-    [
-      -2.018,
-      100.551,
-      0.5
-    ],
-    [
-      -1.802,
-      108.298,
-      0.5
-    ],
-    [
-      -1.579,
-      115.795,
-      0.5
-    ],
-    [
-      -1.504,
-      118.293,
-      0.5
-    ]
-  ],
-  "centerline_source": "ego_trajectory_from_RTB_script",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.lighting_facility",
     "A.sight_distance",
-    "B.emergency_avoidance",
-    "B.merging_flow",
-    "B.yielding_priority",
-    "C.glare",
-    "C.low_light",
-    "C.wind_dust_visibility"
+    "B.emergency_avoidance"
   ],
   "ability_tags": {
     "A": [
-      "A.lighting_facility",
       "A.sight_distance"
     ],
     "B": [
-      "B.emergency_avoidance",
-      "B.merging_flow",
-      "B.yielding_priority"
+      "B.emergency_avoidance"
     ],
-    "C": [
-      "C.glare",
-      "C.low_light",
-      "C.wind_dust_visibility"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "ego_start": {
     "location": {
       "x": -1.281,
-      "y": -90.671,
-      "z": 0.5
+      "y": -90.671
     },
     "rotation": {
       "pitch": 0.0,
@@ -549,8 +216,7 @@
   "ego_end": {
     "location": {
       "x": -1.504,
-      "y": 118.293,
-      "z": 0.5
+      "y": 118.293
     },
     "rotation": {
       "pitch": 0.0,
@@ -563,29 +229,25 @@
       "id": "rtb020_primary_speed_zone",
       "center": [
         -0.82,
-        8.58,
-        0.5
+        8.58
       ],
       "radius": 35.0,
       "target_speed_kmh": 40.0,
-      "reason": "yield_or_stop_for_priority_conflict",
-      "metadata_quality": "auto_generated_review_recommended"
+      "reason": "slow_or_avoid"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb020_primary_hazard_zone",
       "category": "A",
-      "subtype": "lighting_facility",
+      "subtype": "sight_distance",
       "behavior_subtype": "emergency_avoidance",
       "center": [
         -0.82,
-        8.58,
-        0.5
+        8.58
       ],
       "radius_m": 10.0,
-      "target_speed_kmh": 40.0,
-      "metadata_quality": "auto_generated_review_recommended"
+      "target_speed_kmh": 40.0
     }
   ],
   "hazards": [
@@ -594,20 +256,13 @@
       "type": "emergency_avoidance",
       "center": [
         -0.82,
-        8.58,
-        0.5
+        8.58
       ],
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
-      "allow_enter_danger_zone": true,
-      "expected_behavior": "yield_or_stop_for_priority_conflict",
-      "metadata_quality": "auto_generated_review_recommended"
+      "allow_enter_danger_zone": false,
+      "expected_behavior": "slow_or_avoid"
     }
-  ],
-  "notes": [
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

@@ -1,29 +1,19 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB084",
   "town": "RTB084",
   "description": "在城市主干道的匝道汇入区域，Ego车辆（自动驾驶L2+模式）在拥挤车流中刚完成右转切入，即将加速时，遭遇一个因事故而严重破损并侵入车道的波形梁护栏。该护栏因其不规则形态及所处阴影区，对Ego的感知系统构成挑战。同时，一名被护栏遮挡的行人突然从破损处横穿，而相邻车道存在快速跟进的车辆，导致Ego的避让决策空间被极度压缩，形成碰撞风险极高的长尾场景。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 85,
-    "source": "黄虎翼训练集",
-    "original_scene_id": "HHY13",
-    "source_hazards": "隔离防护[护栏损坏]",
-    "variant": 3,
-    "scenario_id": "RTB084",
-    "scenario_typical": "城市主干道的匝道汇入区",
-    "scene_type": "城市场景 (Urban Scenes)",
-    "road": null,
-    "environment": null,
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "在城市主干道的匝道汇入区域，Ego车辆（自动驾驶L2+模式）在拥挤车流中刚完成右转切入，即将加速时，遭遇一个因事故而严重破损并侵入车道的波形梁护栏。该护栏因其不规则形态及所处阴影区，对Ego的感知系统构成挑战。同时，一名被护栏遮挡的行人突然从破损处横穿，而相邻车道存在快速跟进的车辆，导致Ego的避让决策空间被极度压缩，形成碰撞风险极高的长尾场景。"
-  },
   "scenario_family_id": "HHY13",
   "scene_type": "城市场景 (Urban Scenes)",
-  "scenario_typical": "城市主干道的匝道汇入区",
-  "environment": null,
   "source_hazards": "隔离防护[护栏损坏]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.harley-davidson.low_rider",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,48 +21,33 @@
   "ego_type_id": "vehicle.harley-davidson.low_rider",
   "ego_blueprint": "vehicle.harley-davidson.low_rider",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.clearance_intrusion",
-    "A.separation_protection",
     "A.sight_distance",
-    "B.emergency_avoidance",
-    "B.merging_flow",
-    "B.overtaking_bypass",
-    "B.yielding_priority",
-    "C.wind_dust_visibility"
+    "B.emergency_avoidance"
   ],
   "ability_tags": {
     "A": [
-      "A.alignment_geometry",
-      "A.clearance_intrusion",
-      "A.separation_protection",
       "A.sight_distance"
     ],
     "B": [
-      "B.emergency_avoidance",
-      "B.merging_flow",
-      "B.overtaking_bypass",
-      "B.yielding_priority"
+      "B.emergency_avoidance"
     ],
-    "C": [
-      "C.wind_dust_visibility"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

@@ -1,89 +1,119 @@
-# RoadTailBench 指标说明 v1
+# RoadTailBench 指标说明 v2
 
-本文档描述当前 `leaderboard-eval` 使用的离线指标。输入是 `leaderboard_frame_log.jsonl` 和 `leaderboard_scenario_config.json`。
+本文档对应当前 `leaderboard-eval` 的离线指标实现，输入为 `leaderboard_frame_log.jsonl` 和 `leaderboard_scenario_config.json`。
 
-## 运行终止
+## 与 Bench2Drive 的主要差异
 
-- `scene_ego` 场景脚本自己控制 ego，runner 只记录和评价。
-- 自然结束只看 ego：ego 到达 `ego_end` / route 终点，或 ego actor 被销毁。
-- `scenario_timeout` 是现实墙钟时间兜底，不是 CARLA 仿真时间。同步模式和场景脚本调度可能导致 60s 现实时间只推进更少仿真时间。
-- 每个场景退出时都会强制恢复 CARLA 异步模式。
+Bench2Drive 的 leaderboard 评分核心是 `score_composed = score_route * score_penalty`。`score_route` 来自 `RouteCompletionTest`，`score_penalty` 由 infractions 乘法扣分得到，包含行人/车辆/静态碰撞、红灯、停牌、场景超时、应急车辆让行、车道外行驶、路线偏离、车辆阻塞等。对应实现可见 `G:\Bench2Drive\leaderboard\leaderboard\utils\statistics_manager.py` 和 `G:\Bench2Drive\scenario_runner\srunner\scenarios\route_scenario.py`。
+
+RoadTailBench 保留路线完成和安全扣分，但不完全照搬 Bench2Drive。原因是这里的场景是代码场景和长尾隐患场景，除了“完成路线且少犯规”，还需要评估隐患响应、交互风险、速度适配、舒适性、控制稳定和 A/B/C 能力标签。
 
 ## 10 类核心指标
 
-- `route_completion`：把 ego 位置投影到 metadata route / centerline，取最大进度除以路线总长。
-- `collision_penalty`：合并短时间重复碰撞后，按对象类型给连续惩罚。walker 权重最高，vehicle 次之，static/prop 较低；可通过 `collision_type_weights`、`collision_tolerance_weight`、`collision_penalty_scale` 调整。
-- `driving_efficiency`：ego 平均速度相对 `reference_speed_kmh` 的比例，逐帧 clamp 到 `[0,1]`。
-- `speed_appropriateness`：逐帧比较 ego 速度和全局/区域目标速度，偏离越大分越低。
-- `drivable_area`：当前没有手工可行驶多边形时，使用 route/centerline corridor 近似；它评价的是“是否偏离预设路线”，不是严格道路可行域。
-- `omnidirectional_interaction_risk`：基于 ego 与动态 actor 最近距离、danger/caution frame ratio、近似 TTC 计算交互风险。
-- `road_engineering_hazard_adaptation`：在 `hazard_zones` 内综合碰撞、可行域、交互和速度适配。
+- `route_completion`：把每一帧 ego 位置投影到 `reference_trajectory`，取最大进度除以参考轨迹总长。缺少参考轨迹时返回 1.0，并在 details 里标注 `missing_route`，避免没有固定路线的场景被错误扣分。
+- `collision_penalty`：合并短时间重复碰撞后按对象类型加权扣分。默认 walker=1.0、vehicle=0.75、static=0.35、prop=0.25、other=0.5。静态物和道具碰撞不会直接归零，但仍会降低安全分。
+- `driving_efficiency`：逐帧计算 `ego_speed / reference_speed` 并 clamp 到 `[0,1]` 后取均值。
+- `speed_appropriateness`：逐帧比较 ego 速度与全局 `reference_speed_kmh` 或局部 `speed_zones` 目标速度，偏差越大分数越低。
+- `drivable_area`：名称保留兼容，但语义改为“预设路线时空偏差”。它不再是道路 polygon 可行域，而是比较 ego 与参考轨迹在空间、进度/时间、航向趋势上的偏差。
+- `omnidirectional_interaction_risk`：基于 ego 与动态 actor 的最近距离、危险帧比例、谨慎帧比例和近似 TTC 评估全向交互风险。当前 TTC 仍较粗糙，后续可继续加入相对速度方向和车体包围盒。
+- `road_engineering_hazard_adaptation`：在 `hazard_zones` 内综合碰撞、时空偏差、交互风险和速度适配，评价道路工程类隐患适应能力。
 - `comfort`：基于 ego 平面加速度是否超过 `comfort_accel_limit_mps2`。
-- `control_stability`：基于相邻帧 steer 变化是否超过阈值。
-- `long_tail_hazard_response`：进入 hazard perception radius 后，检查刹车、转向、减速或速度达标的响应时间，并结合最低速度、碰撞和 danger zone 使用情况评分。
+- `control_stability`：基于相邻帧方向盘输入变化是否超过 `control_steer_delta_limit`。
+- `long_tail_hazard_response`：进入 hazard 感知半径后，检查刹车、转向、减速或速度达标的响应时间，并结合最低速度、碰撞和 danger zone 使用情况评分。让行类场景可以允许进入 danger zone。
+
+## 新的 `drivable_area` 计算
+
+`drivable_area` 现在使用 `reference_trajectory`，默认格式为 `[[x, y, yaw], ...]`。这个轨迹只代表“合理参考”，不是专家最优解，所以阈值故意宽松：
+
+- 横向偏差：允许 4 m，硬惩罚 12 m。
+- 进度/时间偏差：允许 20 m 或 3 s，硬惩罚 60 m 或 8 s。
+- 航向偏差：有 yaw 时参与，允许 45 度，硬惩罚 120 度。
+- 聚合权重：横向 45%，进度/时间 35%，航向 20%。
+
+details 会输出 `mean/max_lateral_deviation_m`、`mean/max_progress_error_m`、`mean/max_heading_error_deg`、`final_progress_m`。如果没有参考轨迹，分数为 1.0，并标注 `missing_reference_trajectory`。
 
 ## 总分和能力分
 
-- `leaderboard_driving_score`：连续分，总分 0-100。当前由任务完成 gate、交互安全 gate、效率、速度、舒适、稳定、hazard response 共同决定。
-- `ability_score`：按 `scenario_tags` 分 A/B/C 能力组。
-  - A 组侧重道路工程隐患适应：route、drivable、hazard adaptation、speed。
-  - B 组侧重交通参与者交互：route、collision、interaction、hazard response。
-  - C 组侧重天气/环境鲁棒：route、speed、comfort、control stability。
+`leaderboard_driving_score` 是 0-100 分。当前实现用任务 gate 和安全 gate 作为主约束：
+
+- `task_gate = 0.60 * route_completion + 0.20 * drivable_area + 0.20 * road_engineering_hazard_adaptation`
+- `safety_gate = 0.65 * collision_penalty + 0.35 * omnidirectional_interaction_risk`
+
+之后再乘以效率、速度适配、舒适、稳定和长尾响应修正项。这样路线没完成或安全很差时，总分会明显受限；但轻微静态碰撞不会像 Bench2Drive 一样直接造成极端归零。
+
+`ability_score` 按 `scenario_tags` 聚合：
+
+- A：道路工程隐患适应，侧重路线完成、时空偏差、hazard adaptation、速度适配。
+- B：交通参与者交互，侧重路线完成、碰撞、交互风险、hazard response。
+- C：天气/环境鲁棒，侧重路线完成、速度、舒适、控制稳定。
 
 ## Metadata 依赖
 
-100 个现有 `scenes/RTB*.py` 已由 `scripts/generate_metadata.py` 从 Excel 和脚本静态解析生成 metadata。字段来源：
+当前 schema 是 `roadtailbench.code_scene_metadata.v4`。metadata 只保留测试需要的信息，不再保存完整 Excel 行、重复 route、重复 centerline 或伪造 z。
 
-- Excel E 列：`scenario_id`
-- Excel F/G：典型场景和场景类型
-- Excel L：场景描述
-- 场景脚本：ego route、ego blueprint、reference speed、天气/交互关键词辅助
+核心字段：
 
-当前生成结果：
+- `scenario_id`、`town`、`description`
+- `ego.role_names`、`ego.type_id`、`ego.start_match_radius_m`
+- 兼容字段 `ego_role_names`、`ego_type_id`、`ego_blueprint`
+- `reference_trajectory_source`
+- `reference_trajectory_format`: `x_y` 或 `x_y_yaw`
+- `reference_trajectory`
+- `ego_start`、`ego_end`
+- `reference_speed_kmh`
+- `scenario_tags`、`ability_tags`
+- `hazards`、`hazard_zones`、`speed_zones`
+- 指标阈值：横向、进度/时间、航向容忍度
 
-- metadata 文件数：100。
-- 有静态 ego route 的场景：65。
-- 未静态识别 ego route 的场景：35，`route_source=not_static_route_detected`。这些多为 TrafficManager、lane-keeping、函数动态生成路径或非显式 ego route 的脚本。
-- A/B 标签覆盖 100 个场景，C 天气/环境标签覆盖 69 个场景。
+`z=0.5` 已不再自动写入。原始场景轨迹第三列通常是 yaw，不是 z。只有源数据真实提供 `x,y,z,yaw` 时才应该保留 z。
 
-已知限制：
+## 当前审计结果
 
-- 仍有一部分场景没有静态 ego route，metadata 会标记 `route_source=not_static_route_detected`，需要人工或运行日志补齐。
-- 自动 hazard center 默认取 route 中点，必须人工复核。RTB117 已暴露真实风险点与自动 center 可能错位。
-- drivable polygon 暂未手工录入，后续应优先接 CARLA lane/waypoint 或 OpenDRIVE road/lane 判定。
-- B 类交互能力标签来自 Excel 文本和代码关键词推断，正式发布前需要人工审核。
-- Excel 母体行通常没有 L 列描述，因此母体场景的 description 会使用 family fallback，后续应补人工描述。
+审计报告位于 `metadata/metadata_audit.json` 和 `metadata/metadata_audit.csv`。
 
-## RTB116-RTB118 当前观察
+缺少静态 ego 参考轨迹的 36 个场景：
 
-- RTB116：60s wall timeout 时只推进 37.25s 仿真，ego 距终点约 89m，结果不能作为完整成绩，只说明 timeout 太短或场景未自然结束。
-- RTB117：ego 到终点，但在 y≈-100 附近发生 HGV/static mesh 碰撞；metadata hazard center 原先在 y≈-176，需修正。
-- RTB118：ego 到终点且无碰撞，在行人/对向车 hazard 附近明显刹车减速；新 hazard response 不再简单因进入 danger radius 判失败。
+`RTB001, RTB002, RTB003, RTB004, RTB005, RTB006, RTB007, RTB008, RTB010, RTB026, RTB027, RTB028, RTB056, RTB067, RTB070, RTB073, RTB076, RTB077, RTB078, RTB079, RTB080, RTB083, RTB084, RTB085, RTB101, RTB103, RTB104, RTB105, RTB106, RTB107, RTB108, RTB109, RTB110, RTB114, RTB115, RTB123`
 
-## 复评观察
+疑似有 ego actor 但没有 `role_name='ego'/'hero'` 的 25 个场景：
 
-用旧 RTB116/117/118 run 日志重算新指标后：
+`RTB002, RTB003, RTB008, RTB009, RTB010, RTB016, RTB020, RTB028, RTB029, RTB030, RTB031, RTB057, RTB076, RTB077, RTB080, RTB082, RTB083, RTB096, RTB097, RTB098, RTB099, RTB100, RTB121, RTB122, RTB124`
 
-- RTB116：总分约 10。原因仍是未完整跑完、车辆碰撞严重、hazard response 低。
-- RTB117：总分约 22.6。车辆/静态物碰撞不再硬归零，但 B 交互能力仍明显受罚。
-- RTB118：总分约 60.8。无碰撞、到终点、hazard 前减速，分数高于旧公式；ability 约 0.88，不再虚高为 1.0。
+静态分析无法明确识别 ego actor 的 18 个场景：
 
-本轮尝试直接运行 CARLA 复核时，当前执行环境加载 `carla` egg 失败：`DLL load failed while importing libcarla`。需要在用户的 `(Carla-0915)` 环境中重新运行验证命令。
+`RTB004, RTB006, RTB007, RTB017, RTB018, RTB026, RTB027, RTB067, RTB070, RTB073, RTB078, RTB079, RTB084, RTB085, RTB114, RTB115, RTB123, RTB125`
 
-## 建议验证命令
+注意：这三类不是同一个问题。缺参考轨迹不代表没有 ego；没有 role_name 也不代表没有 ego，只是 runner 发现 ego 会不稳定。
 
-```powershell
-leaderboard-run `
-  --host localhost --port 2000 `
-  --scene-root scenes `
-  --metadata-root metadata `
-  --scenes RTB117-RTB118 `
-  --ego-mode scene_ego `
-  --scenario-timeout 90 `
-  --tick-wait-timeout 5 `
-  --natural-end-distance-m 5 `
-  --natural-end-min-ticks 5 `
-  --output-root outputs\metric_upgrade_validation
+## Scene 手动修改模板
+
+后续逐个修 scene py 时，优先做这三件事：
+
+1. ego 生成前设置 role name。
+
+```python
+bp_ego = bp_lib.find("vehicle.xxx")
+bp_ego.set_attribute("role_name", "ego")
+ego = world.try_spawn_actor(bp_ego, transform)
 ```
 
-RTB116 建议使用更长 timeout，例如 150s wall-clock，因为 60s wall-clock 只推进了约 37s CARLA 仿真时间。
+如果用 `RTB.spawn_vehicle`：
+
+```python
+ego = RTB.spawn_vehicle(world, "vehicle.xxx", x=..., y=..., yaw=..., role_name="ego")
+```
+
+2. 如果 ego 有固定轨迹，把原始 `x,y,yaw` 轨迹保留为明确变量名，例如 `RAW_TRAJ_EGO` 或 `EGO_TRAJECTORY`，并在控制逻辑中让 ego 跟随该轨迹。
+
+3. 如果 ego 是 TrafficManager、随机车道保持或动态路线，至少补一个明确的 `ego_end` 或终止区域。否则只能依赖 timeout，可能导致 ego 控制结束后继续靠惯性撞墙，污染指标。
+
+## 运行终止规则
+
+自然结束只看 ego：
+
+- ego 到达 `ego_end` 或参考轨迹终点。
+- ego actor 被销毁。
+- 其他 actor 销毁不结束场景。
+- timeout 只作为兜底。
+
+每个场景结束、timeout 或异常退出时，runner 都会先恢复 CARLA 异步模式，再清理进程或进入下一个场景，避免 CARLA 卡死。

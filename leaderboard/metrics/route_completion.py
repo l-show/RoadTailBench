@@ -1,13 +1,14 @@
 from .base import BaseMetric, MetricResult
 from ..core.extractors import ego, location_xy
-from ..core.geometry import clamp, point_xy, project_point_to_polyline
+from ..core.geometry import clamp, project_point_to_polyline
+from ..core.trajectory import reference_xy
 
 
 class RouteCompletionMetric(BaseMetric):
     name = "route_completion"
 
     def compute(self, frames, config, context=None):
-        route = [point_xy(p) for p in config.get("route") or config.get("centerline_route") or []]
+        route = reference_xy(config)
         if not frames:
             return MetricResult.make(self.name, 0.0, {"reason": "missing_frames"})
         if len(route) < 2:

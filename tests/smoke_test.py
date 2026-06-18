@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from leaderboard.cli.plot_run import main as plot_main
 from leaderboard.cli.run import build_argparser
 from leaderboard.runtime.carla_utils import actor_to_record
+from leaderboard.core.trajectory import normalize_reference_trajectory
 from leaderboard.runtime.frame_logger import RuntimeFrameLogger
 from leaderboard.metrics.collision_penalty import CollisionPenaltyMetric
 from leaderboard.metrics.drivable_area import DrivableAreaMetric
@@ -68,30 +69,52 @@ def test_metadata_json():
         data = json.loads(path.read_text(encoding="utf-8"))
         assert data["scenario_id"] == path.stem
         assert data["ego_type_id"]
-        if data.get("route_source") == "not_static_route_detected":
+        assert "excel_metadata" not in data
+        assert "route_waypoints" not in data
+        assert "centerline_route" not in data
+        if data.get("reference_trajectory_source") == "not_static_ego_reference_detected":
             assert data.get("notes")
         else:
-            assert len(data["centerline_route"]) >= 2
+            assert len(data["reference_trajectory"]) >= 2
+            assert data["reference_trajectory_format"] in ("x_y", "x_y_yaw", "x_y_z_yaw")
 
 
-def test_centerline_lane_change():
+def test_reference_trajectory_deviation_is_loose_for_reasonable_path():
     frames = [
-        {"ego": {"location": [0.0, 0.5, 0.0]}},
-        {"ego": {"location": [5.0, 0.5, 0.0]}},
-        {"ego": {"location": [10.0, 3.1, 0.0]}},
-        {"ego": {"location": [15.0, 3.2, 0.0]}},
+        {"time": 0.0, "ego": {"location": [0.0, 0.5, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 0.5, "ego": {"location": [5.0, 0.5, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 1.0, "ego": {"location": [10.0, 0.8, 0.0], "rotation": [0.0, 0.0, 5.0]}},
+        {"time": 1.5, "ego": {"location": [15.0, 1.0, 0.0], "rotation": [0.0, 0.0, 5.0]}},
     ]
     config = {
-        "allowed_lateral_error_m": 1.0,
-        "hard_lateral_error_m": 3.0,
-        "centerline_segments": [
-            {"id": "lane_0", "points": [[0, 0, 0], [10, 0, 0]]},
-            {"id": "lane_1", "points": [[10, 3, 0], [20, 3, 0]]},
-        ],
+        "reference_speed_kmh": 36.0,
+        "reference_trajectory": [[0, 0, 0], [20, 0, 0]],
+        "allowed_lateral_error_m": 4.0,
+        "hard_lateral_error_m": 12.0,
     }
     result = DrivableAreaMetric().compute(frames, config)
-    assert result["score"] == 1.0
-    assert result["details"]["selected_segment_counts"] == {"lane_0": 2, "lane_1": 2}
+    assert result["score"] > 0.95
+    assert result["details"]["mode"] == "spatiotemporal_reference_deviation"
+    assert result["details"]["max_lateral_deviation_m"] <= 1.0
+
+
+def test_reference_trajectory_deviation_penalizes_large_offset():
+    frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 20.0, 0.0], "rotation": [0.0, 0.0, 180.0]}},
+        {"time": 1.0, "ego": {"location": [1.0, 20.0, 0.0], "rotation": [0.0, 0.0, 180.0]}},
+    ]
+    config = {
+        "reference_speed_kmh": 36.0,
+        "reference_trajectory": [[0, 0, 0], [20, 0, 0]],
+    }
+    result = DrivableAreaMetric().compute(frames, config)
+    assert result["score"] < 0.5
+    assert result["details"]["max_heading_error_deg"] >= 120.0
+
+
+def test_legacy_route_third_column_is_not_treated_as_yaw():
+    points = normalize_reference_trajectory({"route": [[0, 0, 0.5], [10, 0, 0.5]]})
+    assert points == [{"x": 0.0, "y": 0.0}, {"x": 10.0, "y": 0.0}]
 
 
 def test_evaluator_uses_leaderboard_score_name():
@@ -320,7 +343,7 @@ def test_natural_end_ignores_non_ego_actor_destroyed():
 
 
 def test_collision_logger_records_location(tmp_path):
-    config = {"scenario_id": "RTB_COLLISION", "route": [[0, 0, 0], [1, 0, 0]]}
+    config = {"scenario_id": "RTB_COLLISION", "reference_trajectory": [[0, 0, 0], [1, 0, 0]]}
     logger = RuntimeFrameLogger(tmp_path, SimpleNamespace(scene_id="RTB_COLLISION"), config)
 
     class FakeSensor:
@@ -403,10 +426,10 @@ def test_plot_run_writes_detailed_pngs(tmp_path, monkeypatch):
             f.write(json.dumps(frame) + "\n")
     (run_dir / "leaderboard_scenario_config.json").write_text(json.dumps({
         "scenario_id": "RTB_PLOT",
-        "route": [[0, 0, 0], [1, 0, 0]],
+        "reference_trajectory": [[0, 0, 0], [1, 0, 0]],
         "hazards": [{"center": [0.5, 0.0, 0.0]}],
     }), encoding="utf-8")
-    metrics = evaluate_leaderboard(frames, {"scenario_id": "RTB_PLOT", "route": [[0, 0, 0], [1, 0, 0]], "scenario_tags": ["A.test", "B.test", "C.test"]})
+    metrics = evaluate_leaderboard(frames, {"scenario_id": "RTB_PLOT", "reference_trajectory": [[0, 0, 0], [1, 0, 0]], "scenario_tags": ["A.test", "B.test", "C.test"]})
     (run_dir / "leaderboard_metrics.json").write_text(json.dumps(metrics), encoding="utf-8")
 
     monkeypatch.setattr("sys.argv", ["leaderboard-plot", "--run-dir", str(run_dir)])

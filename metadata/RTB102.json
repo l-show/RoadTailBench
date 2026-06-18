@@ -1,29 +1,19 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB102",
   "town": "RTB102",
   "description": "Ego车辆在自动驾驶模式下，接近一个T型交叉口。一个关键的减速慢行黄闪警告信号灯因安装角度严重错误且表面污损，叠加傍晚低角度太阳的强烈眩光，导致Ego的感知系统未能及时识别。同时，右侧车道一辆大型货车形成动态视线遮挡，使Ego无法提前观察到从匝道汇入、行为犹豫的SUV，而过时的高精地图也未能提供该路口信号灯异常的预警，最终导致严重的碰撞冲突风险。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 103,
-    "source": "黄虎翼训练集",
-    "original_scene_id": "HHY223",
-    "source_hazards": "信号设施[信号灯设置不规范]",
-    "variant": 1,
-    "scenario_id": "RTB102",
-    "scenario_typical": "城市主干道与匝道汇合的T型交叉口",
-    "scene_type": "城市场景 (Urban Scenes)",
-    "road": null,
-    "environment": null,
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "Ego车辆在自动驾驶模式下，接近一个T型交叉口。一个关键的减速慢行黄闪警告信号灯因安装角度严重错误且表面污损，叠加傍晚低角度太阳的强烈眩光，导致Ego的感知系统未能及时识别。同时，右侧车道一辆大型货车形成动态视线遮挡，使Ego无法提前观察到从匝道汇入、行为犹豫的SUV，而过时的高精地图也未能提供该路口信号灯异常的预警，最终导致严重的碰撞冲突风险。"
-  },
   "scenario_family_id": "HHY223",
   "scene_type": "城市场景 (Urban Scenes)",
-  "scenario_typical": "城市主干道与匝道汇合的T型交叉口",
-  "environment": null,
   "source_hazards": "信号设施[信号灯设置不规范]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.tesla.model3",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,8 +21,9 @@
   "ego_type_id": "vehicle.tesla.model3",
   "ego_blueprint": "vehicle.tesla.model3",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "EGO_RAW_TRAJ",
-  "route": [
+  "reference_trajectory_source": "EGO_RAW_TRAJ",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
     [
       5.105,
       88.198,
@@ -99,178 +90,34 @@
       0.712
     ]
   ],
-  "route_waypoints": [
-    [
-      5.105,
-      88.198,
-      1.56
-    ],
-    [
-      3.827,
-      70.758,
-      1.403
-    ],
-    [
-      4.011,
-      35.485,
-      0.937
-    ],
-    [
-      4.56,
-      8.375,
-      0.85
-    ],
-    [
-      5.053,
-      -5.616,
-      0.695
-    ],
-    [
-      6.93,
-      -20.645,
-      0.728
-    ],
-    [
-      7.254,
-      -33.679,
-      0.981
-    ],
-    [
-      7.42,
-      -53.209,
-      1.303
-    ],
-    [
-      8.224,
-      -83.234,
-      0.783
-    ],
-    [
-      8.631,
-      -102.476,
-      0.551
-    ],
-    [
-      9.046,
-      -130.472,
-      0.698
-    ],
-    [
-      8.663,
-      -165.461,
-      0.714
-    ],
-    [
-      8.627,
-      -176.835,
-      0.712
-    ]
-  ],
-  "centerline_route": [
-    [
-      5.105,
-      88.198,
-      1.56
-    ],
-    [
-      3.827,
-      70.758,
-      1.403
-    ],
-    [
-      4.011,
-      35.485,
-      0.937
-    ],
-    [
-      4.56,
-      8.375,
-      0.85
-    ],
-    [
-      5.053,
-      -5.616,
-      0.695
-    ],
-    [
-      6.93,
-      -20.645,
-      0.728
-    ],
-    [
-      7.254,
-      -33.679,
-      0.981
-    ],
-    [
-      7.42,
-      -53.209,
-      1.303
-    ],
-    [
-      8.224,
-      -83.234,
-      0.783
-    ],
-    [
-      8.631,
-      -102.476,
-      0.551
-    ],
-    [
-      9.046,
-      -130.472,
-      0.698
-    ],
-    [
-      8.663,
-      -165.461,
-      0.714
-    ],
-    [
-      8.627,
-      -176.835,
-      0.712
-    ]
-  ],
-  "centerline_source": "ego_trajectory_from_RTB_script",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.lighting_facility",
     "A.sight_distance",
     "B.emergency_avoidance",
-    "B.merging_flow",
-    "B.yielding_priority",
-    "C.glare",
-    "C.low_light",
-    "C.wind_dust_visibility"
+    "B.merging_flow"
   ],
   "ability_tags": {
     "A": [
-      "A.alignment_geometry",
-      "A.lighting_facility",
       "A.sight_distance"
     ],
     "B": [
       "B.emergency_avoidance",
-      "B.merging_flow",
-      "B.yielding_priority"
+      "B.merging_flow"
     ],
-    "C": [
-      "C.glare",
-      "C.low_light",
-      "C.wind_dust_visibility"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "ego_start": {
     "location": {
       "x": 5.105,
-      "y": 88.198,
-      "z": 1.56
+      "y": 88.198
     },
     "rotation": {
       "pitch": 0.0,
@@ -281,8 +128,7 @@
   "ego_end": {
     "location": {
       "x": 8.627,
-      "y": -176.835,
-      "z": 0.712
+      "y": -176.835
     },
     "rotation": {
       "pitch": 0.0,
@@ -295,29 +141,25 @@
       "id": "rtb102_primary_speed_zone",
       "center": [
         7.254,
-        -33.679,
-        0.981
+        -33.679
       ],
       "radius": 35.0,
       "target_speed_kmh": 40.0,
-      "reason": "yield_or_stop_for_priority_conflict",
-      "metadata_quality": "auto_generated_review_recommended"
+      "reason": "maintain_safe_gap_for_merge"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb102_primary_hazard_zone",
       "category": "A",
-      "subtype": "alignment_geometry",
+      "subtype": "sight_distance",
       "behavior_subtype": "emergency_avoidance",
       "center": [
         7.254,
-        -33.679,
-        0.981
+        -33.679
       ],
       "radius_m": 10.0,
-      "target_speed_kmh": 40.0,
-      "metadata_quality": "auto_generated_review_recommended"
+      "target_speed_kmh": 40.0
     }
   ],
   "hazards": [
@@ -326,20 +168,13 @@
       "type": "emergency_avoidance",
       "center": [
         7.254,
-        -33.679,
-        0.981
+        -33.679
       ],
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
-      "allow_enter_danger_zone": true,
-      "expected_behavior": "yield_or_stop_for_priority_conflict",
-      "metadata_quality": "auto_generated_review_recommended"
+      "allow_enter_danger_zone": false,
+      "expected_behavior": "maintain_safe_gap_for_merge"
     }
-  ],
-  "notes": [
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

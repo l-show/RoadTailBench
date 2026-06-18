@@ -1,679 +1,259 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB057",
   "town": "RTB057",
   "description": "Ego车辆在傍晚小雨天气中，接近一个信号灯为绿灯的城市主干道十字路口。由于逆光眩光与路面湿滑反光，本已严重磨损的地面标线更加难以识别。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 58,
-    "source": "李响训练集",
-    "original_scene_id": "LX1229",
-    "source_hazards": "交通标线[交通标线磨损]\n + 交通标志[指路标志缺失]\n + 道路交叉[交叉口渠化缺失]",
-    "variant": 1,
-    "scenario_id": "RTB057",
-    "scenario_typical": "城市主干道十字路口",
-    "scene_type": "城市场景 (Urban Scenes)",
-    "road": null,
-    "environment": "傍晚小雨天气",
-    "maker": "HQJ",
-    "variant_hazard": null,
-    "description": "Ego车辆在傍晚小雨天气中，接近一个信号灯为绿灯的城市主干道十字路口。由于逆光眩光与路面湿滑反光，本已严重磨损的地面标线更加难以识别。"
-  },
   "scenario_family_id": "LX1229",
   "scene_type": "城市场景 (Urban Scenes)",
-  "scenario_typical": "城市主干道十字路口",
   "environment": "傍晚小雨天气",
   "source_hazards": "交通标线[交通标线磨损]\n + 交通标志[指路标志缺失]\n + 道路交叉[交叉口渠化缺失]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.audi.tt",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
   ],
-  "ego_type_id": "vehicle.dodge.charger_police",
-  "ego_blueprint": "vehicle.dodge.charger_police",
+  "ego_type_id": "vehicle.audi.tt",
+  "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "raw_traj_ego",
-  "route": [
+  "reference_trajectory_source": "raw_traj_ego",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
     [
       12.852,
       103.868,
-      0.5
+      -87.625
     ],
     [
       13.06,
       97.169,
-      0.5
+      -88.783
     ],
     [
       13.177,
       88.938,
-      0.5
+      -89.263
     ],
     [
       13.356,
       78.07,
-      0.5
+      -89.033
     ],
     [
       13.499,
       68.24,
-      0.5
+      -89.767
     ],
     [
       13.495,
       58.122,
-      0.5
+      -90.117
     ],
     [
       13.214,
       47.688,
-      0.5
+      -95.239
     ],
     [
       11.867,
       38.418,
-      0.5
+      -101.995
     ],
     [
       9.802,
       28.675,
-      0.5
+      -101.645
     ],
     [
       8.481,
       19.314,
-      0.5
+      -91.891
     ],
     [
       8.429,
       7.969,
-      0.5
+      -93.398
     ],
     [
       4.884,
       -1.926,
-      0.5
+      -108.811
     ],
     [
       2.554,
       -11.25,
-      0.5
+      -94.488
     ],
     [
       3.464,
       -20.784,
-      0.5
+      -75.214
     ],
     [
       6.112,
       -30.942,
-      0.5
+      -77.878
     ],
     [
       8.289,
       -41.914,
-      0.5
+      -81.973
     ],
     [
       9.219,
       -51.918,
-      0.5
+      -88.37
     ],
     [
       9.376,
       -62.549,
-      0.5
+      -89.769
     ],
     [
       9.247,
       -71.665,
-      0.5
+      -92.292
     ],
     [
       8.854,
       -81.151,
-      0.5
+      -92.222
     ],
     [
       8.63,
       -92.976,
-      0.5
+      -89.657
     ],
     [
       8.697,
       -101.1,
-      0.5
+      -89.237
     ],
     [
       8.836,
       -111.541,
-      0.5
+      -89.587
     ],
     [
       8.804,
       -122.579,
-      0.5
+      -91.056
     ],
     [
       8.573,
       -133.438,
-      0.5
+      -91.266
     ],
     [
       8.392,
       -141.712,
-      0.5
+      -91.196
     ],
     [
       8.223,
       -152.008,
-      0.5
+      -90.287
     ],
     [
       8.238,
       -162.311,
-      0.5
+      -89.517
     ],
     [
       8.337,
       -174.013,
-      0.5
+      -89.517
     ],
     [
       8.414,
       -183.121,
-      0.5
+      -89.517
     ],
     [
       8.551,
       -193.366,
-      0.5
+      -88.28
     ],
     [
       9.132,
       -202.99,
-      0.5
+      -83.898
     ],
     [
       10.549,
       -213.695,
-      0.5
+      -81.342
     ],
     [
       12.092,
       -223.798,
-      0.5
+      -80.792
     ],
     [
       14.812,
       -234.131,
-      0.5
+      -64.682
     ],
     [
       20.282,
       -242.18,
-      0.5
+      -47.984
     ],
     [
       28.328,
       -249.279,
-      0.5
+      -36.997
     ],
     [
       36.446,
       -255.372,
-      0.5
+      -36.787
     ],
     [
       44.715,
       -261.357,
-      0.5
+      -35.276
     ],
     [
       47.713,
       -263.474,
-      0.5
+      -35.206
     ]
   ],
-  "route_waypoints": [
-    [
-      12.852,
-      103.868,
-      0.5
-    ],
-    [
-      13.06,
-      97.169,
-      0.5
-    ],
-    [
-      13.177,
-      88.938,
-      0.5
-    ],
-    [
-      13.356,
-      78.07,
-      0.5
-    ],
-    [
-      13.499,
-      68.24,
-      0.5
-    ],
-    [
-      13.495,
-      58.122,
-      0.5
-    ],
-    [
-      13.214,
-      47.688,
-      0.5
-    ],
-    [
-      11.867,
-      38.418,
-      0.5
-    ],
-    [
-      9.802,
-      28.675,
-      0.5
-    ],
-    [
-      8.481,
-      19.314,
-      0.5
-    ],
-    [
-      8.429,
-      7.969,
-      0.5
-    ],
-    [
-      4.884,
-      -1.926,
-      0.5
-    ],
-    [
-      2.554,
-      -11.25,
-      0.5
-    ],
-    [
-      3.464,
-      -20.784,
-      0.5
-    ],
-    [
-      6.112,
-      -30.942,
-      0.5
-    ],
-    [
-      8.289,
-      -41.914,
-      0.5
-    ],
-    [
-      9.219,
-      -51.918,
-      0.5
-    ],
-    [
-      9.376,
-      -62.549,
-      0.5
-    ],
-    [
-      9.247,
-      -71.665,
-      0.5
-    ],
-    [
-      8.854,
-      -81.151,
-      0.5
-    ],
-    [
-      8.63,
-      -92.976,
-      0.5
-    ],
-    [
-      8.697,
-      -101.1,
-      0.5
-    ],
-    [
-      8.836,
-      -111.541,
-      0.5
-    ],
-    [
-      8.804,
-      -122.579,
-      0.5
-    ],
-    [
-      8.573,
-      -133.438,
-      0.5
-    ],
-    [
-      8.392,
-      -141.712,
-      0.5
-    ],
-    [
-      8.223,
-      -152.008,
-      0.5
-    ],
-    [
-      8.238,
-      -162.311,
-      0.5
-    ],
-    [
-      8.337,
-      -174.013,
-      0.5
-    ],
-    [
-      8.414,
-      -183.121,
-      0.5
-    ],
-    [
-      8.551,
-      -193.366,
-      0.5
-    ],
-    [
-      9.132,
-      -202.99,
-      0.5
-    ],
-    [
-      10.549,
-      -213.695,
-      0.5
-    ],
-    [
-      12.092,
-      -223.798,
-      0.5
-    ],
-    [
-      14.812,
-      -234.131,
-      0.5
-    ],
-    [
-      20.282,
-      -242.18,
-      0.5
-    ],
-    [
-      28.328,
-      -249.279,
-      0.5
-    ],
-    [
-      36.446,
-      -255.372,
-      0.5
-    ],
-    [
-      44.715,
-      -261.357,
-      0.5
-    ],
-    [
-      47.713,
-      -263.474,
-      0.5
-    ]
-  ],
-  "centerline_route": [
-    [
-      12.852,
-      103.868,
-      0.5
-    ],
-    [
-      13.06,
-      97.169,
-      0.5
-    ],
-    [
-      13.177,
-      88.938,
-      0.5
-    ],
-    [
-      13.356,
-      78.07,
-      0.5
-    ],
-    [
-      13.499,
-      68.24,
-      0.5
-    ],
-    [
-      13.495,
-      58.122,
-      0.5
-    ],
-    [
-      13.214,
-      47.688,
-      0.5
-    ],
-    [
-      11.867,
-      38.418,
-      0.5
-    ],
-    [
-      9.802,
-      28.675,
-      0.5
-    ],
-    [
-      8.481,
-      19.314,
-      0.5
-    ],
-    [
-      8.429,
-      7.969,
-      0.5
-    ],
-    [
-      4.884,
-      -1.926,
-      0.5
-    ],
-    [
-      2.554,
-      -11.25,
-      0.5
-    ],
-    [
-      3.464,
-      -20.784,
-      0.5
-    ],
-    [
-      6.112,
-      -30.942,
-      0.5
-    ],
-    [
-      8.289,
-      -41.914,
-      0.5
-    ],
-    [
-      9.219,
-      -51.918,
-      0.5
-    ],
-    [
-      9.376,
-      -62.549,
-      0.5
-    ],
-    [
-      9.247,
-      -71.665,
-      0.5
-    ],
-    [
-      8.854,
-      -81.151,
-      0.5
-    ],
-    [
-      8.63,
-      -92.976,
-      0.5
-    ],
-    [
-      8.697,
-      -101.1,
-      0.5
-    ],
-    [
-      8.836,
-      -111.541,
-      0.5
-    ],
-    [
-      8.804,
-      -122.579,
-      0.5
-    ],
-    [
-      8.573,
-      -133.438,
-      0.5
-    ],
-    [
-      8.392,
-      -141.712,
-      0.5
-    ],
-    [
-      8.223,
-      -152.008,
-      0.5
-    ],
-    [
-      8.238,
-      -162.311,
-      0.5
-    ],
-    [
-      8.337,
-      -174.013,
-      0.5
-    ],
-    [
-      8.414,
-      -183.121,
-      0.5
-    ],
-    [
-      8.551,
-      -193.366,
-      0.5
-    ],
-    [
-      9.132,
-      -202.99,
-      0.5
-    ],
-    [
-      10.549,
-      -213.695,
-      0.5
-    ],
-    [
-      12.092,
-      -223.798,
-      0.5
-    ],
-    [
-      14.812,
-      -234.131,
-      0.5
-    ],
-    [
-      20.282,
-      -242.18,
-      0.5
-    ],
-    [
-      28.328,
-      -249.279,
-      0.5
-    ],
-    [
-      36.446,
-      -255.372,
-      0.5
-    ],
-    [
-      44.715,
-      -261.357,
-      0.5
-    ],
-    [
-      47.713,
-      -263.474,
-      0.5
-    ]
-  ],
-  "centerline_source": "ego_trajectory_from_RTB_script",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
   "reference_speed_kmh": 30.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.lighting_facility",
-    "A.pavement_condition",
-    "A.traffic_sign_marking",
+    "A.sight_distance",
     "B.emergency_avoidance",
-    "B.yielding_priority",
-    "C.glare",
-    "C.low_light",
-    "C.rain_wet"
+    "B.yielding_priority"
   ],
   "ability_tags": {
     "A": [
-      "A.lighting_facility",
-      "A.pavement_condition",
-      "A.traffic_sign_marking"
+      "A.sight_distance"
     ],
     "B": [
       "B.emergency_avoidance",
       "B.yielding_priority"
     ],
-    "C": [
-      "C.glare",
-      "C.low_light",
-      "C.rain_wet"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "ego_start": {
     "location": {
       "x": 12.852,
-      "y": 103.868,
-      "z": 0.5
+      "y": 103.868
     },
     "rotation": {
       "pitch": 0.0,
@@ -684,8 +264,7 @@
   "ego_end": {
     "location": {
       "x": 47.713,
-      "y": -263.474,
-      "z": 0.5
+      "y": -263.474
     },
     "rotation": {
       "pitch": 0.0,
@@ -698,29 +277,25 @@
       "id": "rtb057_primary_speed_zone",
       "center": [
         8.63,
-        -92.976,
-        0.5
+        -92.976
       ],
       "radius": 35.0,
       "target_speed_kmh": 30.0,
-      "reason": "yield_or_stop_for_priority_conflict",
-      "metadata_quality": "auto_generated_review_recommended"
+      "reason": "yield_or_stop_for_priority_conflict"
     }
   ],
   "hazard_zones": [
     {
       "id": "rtb057_primary_hazard_zone",
       "category": "A",
-      "subtype": "lighting_facility",
+      "subtype": "sight_distance",
       "behavior_subtype": "emergency_avoidance",
       "center": [
         8.63,
-        -92.976,
-        0.5
+        -92.976
       ],
       "radius_m": 10.0,
-      "target_speed_kmh": 30.0,
-      "metadata_quality": "auto_generated_review_recommended"
+      "target_speed_kmh": 30.0
     }
   ],
   "hazards": [
@@ -729,20 +304,13 @@
       "type": "emergency_avoidance",
       "center": [
         8.63,
-        -92.976,
-        0.5
+        -92.976
       ],
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
       "allow_enter_danger_zone": true,
-      "expected_behavior": "yield_or_stop_for_priority_conflict",
-      "metadata_quality": "auto_generated_review_recommended"
+      "expected_behavior": "yield_or_stop_for_priority_conflict"
     }
-  ],
-  "notes": [
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
   ]
 }

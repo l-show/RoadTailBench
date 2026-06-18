@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from leaderboard.core.io import save_json
-from leaderboard.core.geometry import point_xy
+from leaderboard.core.trajectory import reference_xy, trajectory_goal_xy
 from .carla_utils import dict_to_transform, metadata_location
 from .frame_logger import RuntimeFrameLogger
 
@@ -164,14 +164,7 @@ class CodeScenarioRunner:
         self.world.apply_settings(settings)
 
     def natural_goal_xy(self, config):
-        for key in ("ego_end", "ego_goal"):
-            loc = metadata_location(config.get(key))
-            if loc:
-                return (loc[0], loc[1])
-        route = config.get("route") or config.get("centerline_route") or []
-        if route:
-            return point_xy(route[-1])
-        return None
+        return trajectory_goal_xy(config)
 
     def actor_alive(self, actor):
         try:
@@ -332,16 +325,17 @@ class CodeScenarioRunner:
             "town": metadata.get("town") or self.args.town or self.world.get_map().name.split("/")[-1],
             "ego_mode": self.args.ego_mode,
             "reference_speed_kmh": 50.0,
-            "route": [],
-            "centerline_route": [],
+            "reference_trajectory": [],
             "natural_end_distance_m": float(getattr(self.args, "natural_end_distance_m", 5.0)),
             "natural_end_min_ticks": int(getattr(self.args, "natural_end_min_ticks", 5)),
         }
         config.update(metadata)
-        if not config.get("route") and config.get("ego_start") and config.get("ego_end"):
-            config["route"] = [config["ego_start"]["location"], config["ego_end"]["location"]]
-        if not config.get("centerline_route"):
-            config["centerline_route"] = config.get("route", [])
+        if not config.get("reference_trajectory"):
+            config["reference_trajectory"] = config.get("route") or config.get("centerline_route") or []
+        if not config.get("reference_trajectory") and config.get("ego_start") and config.get("ego_end"):
+            config["reference_trajectory"] = [config["ego_start"]["location"], config["ego_end"]["location"]]
+        config.setdefault("route", reference_xy(config))
+        config.setdefault("centerline_route", config.get("route", []))
         return config
 
     def run_scenario(self, scenario):

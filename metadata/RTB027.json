@@ -1,29 +1,20 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB027",
   "town": "RTB027",
   "description": "在傍晚雷雨后，Ego车辆沿一段下坡弯道乡村公路接近一个铁路下穿涵洞。由于涵洞入口前的排水系统被杂物严重堵塞，在光线昏暗的涵洞内部形成了一个长而深的积水区。Ego车辆在进入涵洞时因光线骤变、路面标线缺失和积水未能及时识别危险并减速，导致车辆在积水中发生侧滑偏移。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 28,
-    "source": "李响训练集",
-    "original_scene_id": "LX339",
-    "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
-    "variant": 1,
-    "scenario_id": "RTB027",
-    "scenario_typical": "下坡弯道乡村公路接近一个铁路下穿涵洞",
-    "scene_type": "郊区场景 (Suburban Scenes)",
-    "road": null,
-    "environment": "傍晚雷雨后",
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "在傍晚雷雨后，Ego车辆沿一段下坡弯道乡村公路接近一个铁路下穿涵洞。由于涵洞入口前的排水系统被杂物严重堵塞，在光线昏暗的涵洞内部形成了一个长而深的积水区。Ego车辆在进入涵洞时因光线骤变、路面标线缺失和积水未能及时识别危险并减速，导致车辆在积水中发生侧滑偏移。"
-  },
   "scenario_family_id": "LX339",
   "scene_type": "郊区场景 (Suburban Scenes)",
-  "scenario_typical": "下坡弯道乡村公路接近一个铁路下穿涵洞",
   "environment": "傍晚雷雨后",
   "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.dodge.charger_police_2020",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,46 +22,33 @@
   "ego_type_id": "vehicle.dodge.charger_police_2020",
   "ego_blueprint": "vehicle.dodge.charger_police_2020",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.pavement_condition",
     "A.sight_distance",
-    "A.traffic_sign_marking",
-    "B.emergency_avoidance",
-    "B.merging_flow",
-    "C.low_light",
-    "C.rain_wet"
+    "B.emergency_avoidance"
   ],
   "ability_tags": {
     "A": [
-      "A.alignment_geometry",
-      "A.pavement_condition",
-      "A.sight_distance",
-      "A.traffic_sign_marking"
+      "A.sight_distance"
     ],
     "B": [
-      "B.emergency_avoidance",
-      "B.merging_flow"
+      "B.emergency_avoidance"
     ],
-    "C": [
-      "C.low_light",
-      "C.rain_wet"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

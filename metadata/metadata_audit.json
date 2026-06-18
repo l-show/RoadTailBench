@@ -1,0 +1,1281 @@
+[
+  {
+    "scenario_id": "RTB001",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB002",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "c3_ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB003",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB004",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB005",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB006",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB007",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB008",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB009",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 57,
+    "reference_trajectory_source": "EGO_TRAJECTORY_DATA",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB010",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB016",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 45,
+    "reference_trajectory_source": "EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB017",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 75,
+    "reference_trajectory_source": "EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected"
+    ]
+  },
+  {
+    "scenario_id": "RTB018",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 80,
+    "reference_trajectory_source": "TRAJ_EGO",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected"
+    ]
+  },
+  {
+    "scenario_id": "RTB019",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego_vehicle",
+      "npc_vehicle"
+    ],
+    "reference_trajectory_points": 23,
+    "reference_trajectory_source": "EGO_TRAJECTORY",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB020",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 31,
+    "reference_trajectory_source": "EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB026",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB027",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB028",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB029",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 28,
+    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB030",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 248,
+    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB031",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 87,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB032",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "v3_ego"
+    ],
+    "reference_trajectory_points": 53,
+    "reference_trajectory_source": "RAW_TRAJ_V3_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB033",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 95,
+    "reference_trajectory_source": "TRAJ_STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB034",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 58,
+    "reference_trajectory_source": "TRAJ_STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB035",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 165,
+    "reference_trajectory_source": "EGO_TRAJ_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB041",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 59,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB042",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 74,
+    "reference_trajectory_source": "raw_traj_ego",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB043",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 78,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB044",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 73,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB045",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 72,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB046",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 48,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB047",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 27,
+    "reference_trajectory_source": "TRAJ_EGO_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB048",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 47,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB049",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 18,
+    "reference_trajectory_source": "TRAJ_STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB050",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 117,
+    "reference_trajectory_source": "TRAJ_STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB051",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 74,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB052",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 32,
+    "reference_trajectory_source": "raw_traj_ego",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB053",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 56,
+    "reference_trajectory_source": "TRAJ_EGO_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB054",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 60,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB055",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 40,
+    "reference_trajectory_source": "EGO_TRAJ_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB056",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB057",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 40,
+    "reference_trajectory_source": "raw_traj_ego",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB058",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 55,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB059",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 67,
+    "reference_trajectory_source": "RAW_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB060",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 45,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB061",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 56,
+    "reference_trajectory_source": "TRAJ_STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB062",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 56,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB063",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "vehicle_ego"
+    ],
+    "reference_trajectory_points": 55,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB064",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "v2_ego"
+    ],
+    "reference_trajectory_points": 50,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB065",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 47,
+    "reference_trajectory_source": "RAW_EGO_TRAJ",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB066",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 54,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB067",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB068",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 59,
+    "reference_trajectory_source": "TRAJ_EGO_RAW",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB069",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 93,
+    "reference_trajectory_source": "RAW_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB070",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB071",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "vehicle_ego"
+    ],
+    "reference_trajectory_points": 73,
+    "reference_trajectory_source": "TRAJ_STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB072",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 54,
+    "reference_trajectory_source": "TRAJ_EGO_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB073",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB074",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 42,
+    "reference_trajectory_source": "EGO_TRAJ_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB075",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 111,
+    "reference_trajectory_source": "RAW_EGO_TEXT",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB076",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB077",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB078",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB079",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB080",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB081",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 33,
+    "reference_trajectory_source": "STR_EGO_TT",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB082",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "vehicle_ego"
+    ],
+    "reference_trajectory_points": 58,
+    "reference_trajectory_source": "RAW_PATH_ego",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB083",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [
+      "vehicle_ego"
+    ],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB084",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB085",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB096",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 49,
+    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB097",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 42,
+    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB098",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 39,
+    "reference_trajectory_source": "RAW_EGO_TRAJ",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB099",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 63,
+    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB100",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "v6_ego"
+    ],
+    "reference_trajectory_points": 51,
+    "reference_trajectory_source": "RAW_V6_EGO_TRAJ",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB101",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB102",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 13,
+    "reference_trajectory_source": "EGO_RAW_TRAJ",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB103",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB104",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB105",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB106",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB107",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB108",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB109",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB110",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB111",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 48,
+    "reference_trajectory_source": "EGO_TRAJ_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB112",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 108,
+    "reference_trajectory_source": "EGO_TRAJ_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB113",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 58,
+    "reference_trajectory_source": "STR_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB114",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB115",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB116",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 56,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB117",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 33,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB118",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego_vehicle"
+    ],
+    "reference_trajectory_points": 31,
+    "reference_trajectory_source": "EGO_TRAJ_STR",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB119",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 50,
+    "reference_trajectory_source": "raw_traj_ego_str",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB120",
+    "has_ego_actor": true,
+    "has_role_name_ego": true,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 82,
+    "reference_trajectory_source": "RAW_TRAJ_EGO",
+    "needs_scene_edit_reason": []
+  },
+  {
+    "scenario_id": "RTB121",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 46,
+    "reference_trajectory_source": "RAW_EGO_TRAJ",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB122",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 98,
+    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB123",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": false,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 0,
+    "reference_trajectory_source": "not_static_ego_reference_detected",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected",
+      "missing_static_ego_reference_trajectory"
+    ]
+  },
+  {
+    "scenario_id": "RTB124",
+    "has_ego_actor": true,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [
+      "ego"
+    ],
+    "reference_trajectory_points": 85,
+    "reference_trajectory_source": "RAW_EGO_TRAJ",
+    "needs_scene_edit_reason": [
+      "ego_actor_missing_role_name"
+    ]
+  },
+  {
+    "scenario_id": "RTB125",
+    "has_ego_actor": false,
+    "has_role_name_ego": false,
+    "has_static_ego_trajectory": true,
+    "ego_actor_names": [],
+    "reference_trajectory_points": 71,
+    "reference_trajectory_source": "TRAJ_3_EGO",
+    "needs_scene_edit_reason": [
+      "no_clear_ego_actor_detected"
+    ]
+  }
+]

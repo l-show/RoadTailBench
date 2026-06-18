@@ -1,29 +1,19 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB114",
   "town": "RTB114",
   "description": "在一条视距受限的乡村双向两车道道路上，自动驾驶车辆（Ego）在低能见度（浓雾）和道路基础设施（凸面镜缺失、警告标志缺失、护栏缺失）不完善的复合影响下，遭遇一辆突然从盲区出现的农业机械车。Ego车辆在感知和决策上受到多重挑战，被迫执行紧急变道避让操作，且避让方向偏左，面临驶出路面或与对向来车发生次生事故的风险。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 115,
-    "source": "黄虎翼训练集",
-    "original_scene_id": "HHY1185",
-    "source_hazards": "交通标志[交通标志缺失]\n + 隔离防护[护栏缺失]",
-    "variant": 4,
-    "scenario_id": "RTB114",
-    "scenario_typical": "乡村双向两车道道路",
-    "scene_type": "郊区场景 (Suburban Scenes)",
-    "road": null,
-    "environment": null,
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "在一条视距受限的乡村双向两车道道路上，自动驾驶车辆（Ego）在低能见度（浓雾）和道路基础设施（凸面镜缺失、警告标志缺失、护栏缺失）不完善的复合影响下，遭遇一辆突然从盲区出现的农业机械车。Ego车辆在感知和决策上受到多重挑战，被迫执行紧急变道避让操作，且避让方向偏左，面临驶出路面或与对向来车发生次生事故的风险。"
-  },
   "scenario_family_id": "HHY1185",
   "scene_type": "郊区场景 (Suburban Scenes)",
-  "scenario_typical": "乡村双向两车道道路",
-  "environment": null,
   "source_hazards": "交通标志[交通标志缺失]\n + 隔离防护[护栏缺失]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.tesla.model3",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,48 +21,33 @@
   "ego_type_id": "vehicle.tesla.model3",
   "ego_blueprint": "vehicle.tesla.model3",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.pavement_condition",
-    "A.separation_protection",
     "A.sight_distance",
-    "A.traffic_sign_marking",
-    "B.emergency_avoidance",
-    "B.overtaking_bypass",
-    "B.yielding_priority",
-    "C.fog",
-    "C.wind_dust_visibility"
+    "B.emergency_avoidance"
   ],
   "ability_tags": {
     "A": [
-      "A.pavement_condition",
-      "A.separation_protection",
-      "A.sight_distance",
-      "A.traffic_sign_marking"
+      "A.sight_distance"
     ],
     "B": [
-      "B.emergency_avoidance",
-      "B.overtaking_bypass",
-      "B.yielding_priority"
+      "B.emergency_avoidance"
     ],
-    "C": [
-      "C.fog",
-      "C.wind_dust_visibility"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

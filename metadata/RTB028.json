@@ -1,78 +1,54 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB028",
   "town": "RTB028",
   "description": "Ego车辆在一条设计时速较高的城市快速路下坡匝道上行驶，时值傍晚且有中度雾霾。由于匝道纵坡较大且路侧排水沟被落叶堵塞，形成了一个横向的片状水流区域。同时，该路段缺失必要的减速标线和“事故多发”警示，导致依赖高精地图和视觉感知的Ego车辆未能提前减速。在低能见度下，Ego车辆高速进入湿滑水膜区域，同时前方出现一辆因作业而低速行驶的养护车，最终导致车辆发生水滑效应并失控。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 29,
-    "source": "李响训练集",
-    "original_scene_id": "LX339",
-    "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
-    "variant": 2,
-    "scenario_id": "RTB028",
-    "scenario_typical": "城市快速路下坡匝道",
-    "scene_type": "高速场景 (Highway Scenes)",
-    "road": null,
-    "environment": "傍晚且有中度雾霾",
-    "maker": "HQJ",
-    "variant_hazard": null,
-    "description": "Ego车辆在一条设计时速较高的城市快速路下坡匝道上行驶，时值傍晚且有中度雾霾。由于匝道纵坡较大且路侧排水沟被落叶堵塞，形成了一个横向的片状水流区域。同时，该路段缺失必要的减速标线和“事故多发”警示，导致依赖高精地图和视觉感知的Ego车辆未能提前减速。在低能见度下，Ego车辆高速进入湿滑水膜区域，同时前方出现一辆因作业而低速行驶的养护车，最终导致车辆发生水滑效应并失控。"
-  },
   "scenario_family_id": "LX339",
   "scene_type": "高速场景 (Highway Scenes)",
-  "scenario_typical": "城市快速路下坡匝道",
   "environment": "傍晚且有中度雾霾",
   "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.citroen.c3",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
   ],
-  "ego_type_id": "vehicle.mercedes.sprinter",
-  "ego_blueprint": "vehicle.mercedes.sprinter",
+  "ego_type_id": "vehicle.citroen.c3",
+  "ego_blueprint": "vehicle.citroen.c3",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.pavement_condition",
     "A.sight_distance",
-    "A.traffic_sign_marking",
-    "B.emergency_avoidance",
-    "B.merging_flow",
-    "C.fog",
-    "C.low_light",
-    "C.rain_wet"
+    "B.emergency_avoidance"
   ],
   "ability_tags": {
     "A": [
-      "A.alignment_geometry",
-      "A.pavement_condition",
-      "A.sight_distance",
-      "A.traffic_sign_marking"
+      "A.sight_distance"
     ],
     "B": [
-      "B.emergency_avoidance",
-      "B.merging_flow"
+      "B.emergency_avoidance"
     ],
-    "C": [
-      "C.fog",
-      "C.low_light",
-      "C.rain_wet"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

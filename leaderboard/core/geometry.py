@@ -78,3 +78,32 @@ def point_xy(point):
             return (float(loc.get("x", 0.0)), float(loc.get("y", 0.0)))
         return (float(loc[0]), float(loc[1]))
     return (float(point[0]), float(point[1]))
+
+
+def angle_delta_deg(a, b):
+    delta = (float(a) - float(b) + 180.0) % 360.0 - 180.0
+    return abs(delta)
+
+
+def polyline_lengths(polyline):
+    lengths = [0.0]
+    for index in range(1, len(polyline)):
+        lengths.append(lengths[-1] + distance2(polyline[index - 1], polyline[index]))
+    return lengths
+
+
+def sample_polyline_at_s(polyline, distances, s):
+    if not polyline:
+        return (0.0, 0.0), 0
+    if len(polyline) == 1 or s <= 0.0:
+        return polyline[0], 0
+    if s >= distances[-1]:
+        return polyline[-1], max(0, len(polyline) - 2)
+    for index in range(len(polyline) - 1):
+        if distances[index] <= s <= distances[index + 1]:
+            span = max(distances[index + 1] - distances[index], EPS)
+            t = clamp((s - distances[index]) / span)
+            ax, ay = polyline[index]
+            bx, by = polyline[index + 1]
+            return (ax + (bx - ax) * t, ay + (by - ay) * t), index
+    return polyline[-1], max(0, len(polyline) - 2)

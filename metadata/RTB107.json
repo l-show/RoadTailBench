@@ -1,29 +1,19 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB107",
   "town": "RTB107",
   "description": "在高速公路行驶场景中，Ego车辆因前方大型货车遮挡，未能及时识别车道内一个未被高精地图记录的灰色混凝土构造物，同时，一个临时养护区的工人突然横穿形成干扰，叠加傍晚的强眩光和湿滑路面，导致感知、决策与执行系统面临复合失效风险。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 108,
-    "source": "黄虎翼训练集",
-    "original_scene_id": "HHY466",
-    "source_hazards": "限界侵入[路基范围内的构造物]\n + 路面质量[道路破损]",
-    "variant": 1,
-    "scenario_id": "RTB107",
-    "scenario_typical": "高速公路",
-    "scene_type": "高速场景 (Highway Scenes)",
-    "road": null,
-    "environment": null,
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "在高速公路行驶场景中，Ego车辆因前方大型货车遮挡，未能及时识别车道内一个未被高精地图记录的灰色混凝土构造物，同时，一个临时养护区的工人突然横穿形成干扰，叠加傍晚的强眩光和湿滑路面，导致感知、决策与执行系统面临复合失效风险。"
-  },
   "scenario_family_id": "HHY466",
   "scene_type": "高速场景 (Highway Scenes)",
-  "scenario_typical": "高速公路",
-  "environment": null,
   "source_hazards": "限界侵入[路基范围内的构造物]\n + 路面质量[道路破损]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.nissan.patrol",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,50 +21,35 @@
   "ego_type_id": "vehicle.nissan.patrol",
   "ego_blueprint": "vehicle.nissan.patrol",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.clearance_intrusion",
-    "A.lighting_facility",
-    "A.pavement_condition",
     "A.sight_distance",
     "B.emergency_avoidance",
-    "B.yielding_priority",
-    "C.glare",
-    "C.low_light",
-    "C.rain_wet",
-    "C.wind_dust_visibility"
+    "B.yielding_priority"
   ],
   "ability_tags": {
     "A": [
-      "A.clearance_intrusion",
-      "A.lighting_facility",
-      "A.pavement_condition",
       "A.sight_distance"
     ],
     "B": [
       "B.emergency_avoidance",
       "B.yielding_priority"
     ],
-    "C": [
-      "C.glare",
-      "C.low_light",
-      "C.rain_wet",
-      "C.wind_dust_visibility"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

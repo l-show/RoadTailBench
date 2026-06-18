@@ -1,29 +1,20 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB085",
   "town": "RTB085",
   "description": "Ego车辆（自动驾驶L3模式）在清晨浓雾天气下，沿一段双向双车道的山区公路右转下坡行驶。在进入一个半径较小的回头弯时，面临一个由多重风险因素叠加形成的长尾挑战。+在傍晚时分，Ego车辆于一条弯曲且有下坡的山区公路上高速巡航。在进入一个被植被遮挡的右转弯道时，Ego车辆遭遇由前方落日造成的强烈眩光，导致感知系统性能瞬时下降。几乎同时，对向车道一辆重型卡车驶过，其碾压的道路遗留物被弹起并飞向Ego车道。紧接着，一只小型野生动物从弯道外侧（右侧）的破损护栏缺口处突然窜出，横穿道路。Ego车辆的自动驾驶系统需在感知受限、多重动态障碍物和物理防护设施失效的复合风险下，做出极限规避决策。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 86,
-    "source": "黄虎翼训练集",
-    "original_scene_id": "HHY13",
-    "source_hazards": "隔离防护[护栏损坏]",
-    "variant": "4+5",
-    "scenario_id": "RTB085",
-    "scenario_typical": "双向双车道的山区公路",
-    "scene_type": "山区场景 (Mountain Scenes)",
-    "road": null,
-    "environment": "清晨浓雾天气",
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "Ego车辆（自动驾驶L3模式）在清晨浓雾天气下，沿一段双向双车道的山区公路右转下坡行驶。在进入一个半径较小的回头弯时，面临一个由多重风险因素叠加形成的长尾挑战。+在傍晚时分，Ego车辆于一条弯曲且有下坡的山区公路上高速巡航。在进入一个被植被遮挡的右转弯道时，Ego车辆遭遇由前方落日造成的强烈眩光，导致感知系统性能瞬时下降。几乎同时，对向车道一辆重型卡车驶过，其碾压的道路遗留物被弹起并飞向Ego车道。紧接着，一只小型野生动物从弯道外侧（右侧）的破损护栏缺口处突然窜出，横穿道路。Ego车辆的自动驾驶系统需在感知受限、多重动态障碍物和物理防护设施失效的复合风险下，做出极限规避决策。"
-  },
   "scenario_family_id": "HHY13",
   "scene_type": "山区场景 (Mountain Scenes)",
-  "scenario_typical": "双向双车道的山区公路",
   "environment": "清晨浓雾天气",
   "source_hazards": "隔离防护[护栏损坏]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.chevrolet.impala",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,54 +22,33 @@
   "ego_type_id": "vehicle.chevrolet.impala",
   "ego_blueprint": "vehicle.chevrolet.impala",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.clearance_intrusion",
-    "A.lighting_facility",
-    "A.separation_protection",
     "A.sight_distance",
-    "B.emergency_avoidance",
-    "B.overtaking_bypass",
-    "B.yielding_priority",
-    "C.fog",
-    "C.glare",
-    "C.low_light",
-    "C.wind_dust_visibility"
+    "B.emergency_avoidance"
   ],
   "ability_tags": {
     "A": [
-      "A.alignment_geometry",
-      "A.clearance_intrusion",
-      "A.lighting_facility",
-      "A.separation_protection",
       "A.sight_distance"
     ],
     "B": [
-      "B.emergency_avoidance",
-      "B.overtaking_bypass",
-      "B.yielding_priority"
+      "B.emergency_avoidance"
     ],
-    "C": [
-      "C.fog",
-      "C.glare",
-      "C.low_light",
-      "C.wind_dust_visibility"
-    ]
+    "C": []
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

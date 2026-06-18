@@ -1,29 +1,19 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v3",
+  "schema_version": "roadtailbench.code_scene_metadata.v4",
   "scenario_id": "RTB070",
   "town": "RTB070",
   "description": "在一条双向两车道的县道上，Ego车辆为躲避前方因故障抛锚的道路养护车，需借用对向车道完成变道超车。然而，核心挑战在于，此时正值傍晚，强烈的日落眩光严重干扰了Ego的视觉传感器性能，同时车道中心标线磨损严重，导致感知系统难以准确识别车道边界。更危险的是，在一个轻微的弯道后，一辆超速行驶的社会车辆从对向驶来，由于弯道遮挡和眩光影响，Ego车辆对其的探测距离被大幅缩短。",
-  "metadata_quality": "auto_generated_from_excel_and_script_review_recommended",
-  "excel_metadata": {
-    "excel_row": 71,
-    "source": "黄虎翼训练集",
-    "original_scene_id": "HHY2",
-    "source_hazards": "交通标线[交通标线磨损+交通标线缺失]",
-    "variant": 5,
-    "scenario_id": "RTB070",
-    "scenario_typical": "双向两车道的县道上",
-    "scene_type": "郊区场景 (Suburban Scenes)",
-    "road": null,
-    "environment": null,
-    "maker": "LX",
-    "variant_hazard": null,
-    "description": "在一条双向两车道的县道上，Ego车辆为躲避前方因故障抛锚的道路养护车，需借用对向车道完成变道超车。然而，核心挑战在于，此时正值傍晚，强烈的日落眩光严重干扰了Ego的视觉传感器性能，同时车道中心标线磨损严重，导致感知系统难以准确识别车道边界。更危险的是，在一个轻微的弯道后，一辆超速行驶的社会车辆从对向驶来，由于弯道遮挡和眩光影响，Ego车辆对其的探测距离被大幅缩短。"
-  },
   "scenario_family_id": "HHY2",
   "scene_type": "郊区场景 (Suburban Scenes)",
-  "scenario_typical": "双向两车道的县道上",
-  "environment": null,
   "source_hazards": "交通标线[交通标线磨损+交通标线缺失]",
+  "ego": {
+    "role_names": [
+      "ego",
+      "hero"
+    ],
+    "type_id": "vehicle.tesla.model3",
+    "start_match_radius_m": 8.0
+  },
   "ego_role_names": [
     "ego",
     "hero"
@@ -31,14 +21,18 @@
   "ego_type_id": "vehicle.tesla.model3",
   "ego_blueprint": "vehicle.tesla.model3",
   "ego_start_match_radius_m": 8.0,
-  "route_source": "not_static_route_detected",
-  "route": [],
-  "route_waypoints": [],
-  "centerline_route": [],
-  "centerline_source": "not_static_route_detected",
-  "allowed_lateral_error_m": 2.0,
-  "hard_lateral_error_m": 4.0,
+  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_format": "x_y",
+  "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
+  "allowed_lateral_error_m": 4.0,
+  "hard_lateral_error_m": 12.0,
+  "allowed_progress_error_m": 20.0,
+  "hard_progress_error_m": 60.0,
+  "allowed_time_error_s": 3.0,
+  "hard_time_error_s": 8.0,
+  "allowed_heading_error_deg": 45.0,
+  "hard_heading_error_deg": 120.0,
   "scenario_tags": [
     "A.alignment_geometry",
     "A.lighting_facility",
@@ -65,12 +59,8 @@
       "C.low_light"
     ]
   },
-  "drivable_polygons": [],
   "notes": [
-    "No fixed ego route was statically detected; natural end by ego goal is unavailable until metadata is manually refined.",
-    "Use scenario-timeout as the termination fallback for this scene.",
-    "Generated from RoadTailGen spreadsheet columns E/F/G/L and static scene-code parsing.",
-    "Hazard centers are route midpoint defaults unless manually reviewed.",
-    "Drivable area metric uses centerline corridor until map/lane based evaluation is available."
+    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
+    "Scenario timeout remains the termination fallback for this scene."
   ]
 }

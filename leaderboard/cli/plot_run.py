@@ -4,6 +4,8 @@ import math
 from collections import defaultdict
 from pathlib import Path
 
+from leaderboard.core.trajectory import reference_xy
+
 
 CORE_METRIC_NAMES = [
     "route_completion",
@@ -94,8 +96,8 @@ def collect_actor_tracks(frames):
 
 
 def route_xy(config):
-    route = config.get("centerline_route") or config.get("route") or []
-    return [point_xy(p) for p in route]
+    route = reference_xy(config)
+    return route
 
 
 def plot_trajectory(frames, config, output, plt, dpi):
@@ -106,8 +108,8 @@ def plot_trajectory(frames, config, output, plt, dpi):
 
     fig, ax = plt.subplots(figsize=(10, 8), constrained_layout=True)
     if route:
-        ax.plot([p[0] for p in route], [p[1] for p in route], "--", color="#6E6E6E", linewidth=1.2, label="metadata route")
-        ax.scatter([route[-1][0]], [route[-1][1]], color="#CC79A7", s=36, marker="*", label="route goal")
+        ax.plot([p[0] for p in route], [p[1] for p in route], "--", color="#6E6E6E", linewidth=1.2, label="reference trajectory")
+        ax.scatter([route[-1][0]], [route[-1][1]], color="#CC79A7", s=36, marker="*", label="ego goal")
     for track in actor_tracks.values():
         if len(track) < 2:
             continue
@@ -267,7 +269,7 @@ def plot_overview(frames, metrics, config, output, plt, dpi):
     ax2 = fig.add_subplot(gs[1, 1])
     route = route_xy(config)
     if route:
-        ax0.plot([p[0] for p in route], [p[1] for p in route], "--", color="#777777", linewidth=1.2, label="metadata route")
+        ax0.plot([p[0] for p in route], [p[1] for p in route], "--", color="#777777", linewidth=1.2, label="reference trajectory")
     if ego_xy:
         ax0.plot([p[0] for p in ego_xy], [p[1] for p in ego_xy], color="#0072B2", linewidth=1.6, label="ego")
         ax0.scatter([ego_xy[0][0]], [ego_xy[0][1]], color="#009E73", s=28, label="start")
