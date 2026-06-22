@@ -16,8 +16,8 @@ def _score_error(value, allowed, hard):
     return 1.0 - clamp((value - allowed) / max(hard - allowed, 0.1))
 
 
-class DrivableAreaMetric(BaseMetric):
-    name = "drivable_area"
+class TrajectoryAdherenceMetric(BaseMetric):
+    name = "trajectory_adherence"
 
     def compute(self, frames, config, context=None):
         if not frames:
@@ -26,9 +26,9 @@ class DrivableAreaMetric(BaseMetric):
         reference = normalize_reference_trajectory(config)
         route = [(p["x"], p["y"]) for p in reference]
         if len(route) < 2:
-            return MetricResult.make(self.name, 1.0, {
+            return MetricResult.make(self.name, 0.0, {
                 "mode": "spatiotemporal_reference_deviation",
-                "reason": "missing_reference_trajectory",
+                "reason": "invalid_missing_reference_trajectory",
             })
 
         distances = polyline_lengths(route)
@@ -47,19 +47,19 @@ class DrivableAreaMetric(BaseMetric):
         frame_scores, lateral_errors, progress_errors, heading_errors = [], [], [], []
         progress_values = []
         for index, frame in enumerate(frames):
-            pos = location_xy(ego(frame))
+            e = ego(frame)
+            pos = location_xy(e)
             actual_s, lateral, seg_index = project_point_to_polyline(pos, route)
             expected_s = min(route_length, times[index] * ref_speed_mps)
             progress_error = abs(actual_s - expected_s)
-            time_error_m = min(hard_progress, abs(actual_s - expected_s))
-            actual_yaw = yaw_deg(ego(frame)) if ego(frame).get("rotation") else None
+            actual_yaw = yaw_deg(e) if e.get("rotation") else None
             ref_yaw = reference_yaw_at(reference, seg_index)
             heading_error = heading_error_deg(actual_yaw, ref_yaw)
 
             lateral_score = _score_error(lateral, allowed_lat, hard_lat)
             progress_score = min(
                 _score_error(progress_error, allowed_progress, hard_progress),
-                _score_error(time_error_m / ref_speed_mps, allowed_time, hard_time),
+                _score_error(progress_error / ref_speed_mps, allowed_time, hard_time),
             )
             if heading_error is None:
                 heading_score = 1.0

@@ -18,10 +18,11 @@ class LongTailHazardResponseMetric(BaseMetric):
             center = tuple(hazard.get("center", [0.0, 0.0])[:2])
             perception = float(hazard.get("perception_radius_m", hazard.get("radius_m", 10.0) + 15.0))
             danger = float(hazard.get("danger_radius_m", hazard.get("radius_m", 5.0)))
-            expected = str(hazard.get("expected_behavior", "slow_or_avoid"))
-            target_speed = float(hazard.get("target_speed_kmh", config.get("hazard_target_speed_kmh", 40.0))) / 3.6
             enter_time, response_time, min_distance, min_speed = None, None, float("inf"), float("inf")
             collision_violation, prev_speed = False, None
+            entry_speed = None
+            response_reason = None
+            response_streak = 0
             danger_frames = 0
             for frame in frames:
                 t = float(frame.get("time", frame.get("frame", 0) * 0.05))
@@ -32,18 +33,30 @@ class LongTailHazardResponseMetric(BaseMetric):
                 min_speed = min(min_speed, cur_speed)
                 if enter_time is None and d <= perception:
                     enter_time = t
+                    entry_speed = cur_speed
                 if enter_time is not None and d <= danger:
                     danger_frames += 1
                 if frame.get("collisions"):
                     collision_violation = True
                 if enter_time is not None and response_time is None:
                     c = control(e)
-                    braking = float(c.get("brake", 0.0)) > float(config.get("response_brake_threshold", 0.15))
-                    steering = abs(float(c.get("steer", 0.0))) > float(config.get("response_steer_threshold", 0.20))
-                    slowing = prev_speed is not None and (prev_speed - cur_speed) > float(config.get("response_speed_drop_mps", 0.5))
-                    speed_compliant = cur_speed <= target_speed
-                    if braking or steering or slowing or speed_compliant:
+                    braking = float(c.get("brake", 0.0)) >= float(config.get("response_brake_threshold", 0.20))
+                    steering = abs(float(c.get("steer", 0.0))) >= float(config.get("response_steer_threshold", 0.25))
+                    throttle_release = float(c.get("throttle", 0.0)) <= float(config.get("response_throttle_release_threshold", 0.05))
+                    slowing = prev_speed is not None and (prev_speed - cur_speed) >= float(config.get("response_speed_drop_mps", 0.4))
+                    cumulative_drop = entry_speed is not None and (entry_speed - cur_speed) >= float(config.get("response_cumulative_speed_drop_mps", 1.5))
+                    triggered = slowing or cumulative_drop or braking or steering or throttle_release
+                    response_streak = response_streak + 1 if triggered else 0
+                    if response_streak >= int(config.get("response_min_consecutive_frames", 2)):
                         response_time = t
+                        if cumulative_drop or slowing:
+                            response_reason = "speed_drop"
+                        elif braking:
+                            response_reason = "brake"
+                        elif throttle_release:
+                            response_reason = "throttle_release"
+                        else:
+                            response_reason = "steer"
                 prev_speed = cur_speed
             if enter_time is None:
                 score, rt, reason = 1.0, None, "not_encountered"
@@ -51,25 +64,27 @@ class LongTailHazardResponseMetric(BaseMetric):
                 score, rt, reason = 0.0, None, "no_response"
             else:
                 rt = max(0.0, response_time - enter_time)
-                response_score = math.exp(-rt / tau)
-                speed_score = 1.0 - clamp(max(0.0, min_speed - target_speed) / max(target_speed, 0.1))
-                score = 0.55 * response_score + 0.45 * speed_score
+                score = math.exp(-rt / tau)
                 reason = "responded"
             if collision_violation:
                 score *= 0.25
                 reason = "collision"
-            elif danger_frames and not hazard.get("allow_enter_danger_zone", False) and not expected.startswith("yield"):
+            elif reason != "no_response" and danger_frames and not hazard.get("allow_enter_danger_zone", False):
                 score *= 0.7
                 reason = "entered_danger_zone"
             results.append({
                 "id": hazard.get("id"),
                 "type": hazard.get("type"),
-                "expected_behavior": expected,
                 "reaction_time_s": rt,
+                "enter_time_s": enter_time,
+                "response_time_s": response_time,
                 "min_distance_m": min_distance,
                 "min_speed_kmh": min_speed * 3.6 if min_speed < float("inf") else None,
+                "entry_speed_kmh": entry_speed * 3.6 if entry_speed is not None else None,
+                "speed_drop_kmh": (entry_speed - min_speed) * 3.6 if entry_speed is not None and min_speed < float("inf") else None,
                 "danger_frames": danger_frames,
                 "reason": reason,
+                "response_reason": response_reason,
                 "score": score,
             })
         return MetricResult.make(self.name, sum(r["score"] for r in results) / len(results), {"hazard_responses": results})

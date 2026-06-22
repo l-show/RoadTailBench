@@ -1,101 +1,101 @@
-scenario_id,has_ego_actor,has_role_name_ego,has_static_ego_trajectory,ego_actor_names,reference_trajectory_points,reference_trajectory_source,needs_scene_edit_reason
-RTB001,TRUE,TRUE,FALSE,['ego'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB002,TRUE,FALSE,FALSE,['c3_ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB003,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB004,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB005,TRUE,TRUE,FALSE,['ego_vehicle'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB006,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB007,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB008,TRUE,FALSE,FALSE,['ego_vehicle'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB009,TRUE,FALSE,TRUE,['ego'],57,EGO_TRAJECTORY_DATA,['ego_actor_missing_role_name']
-RTB010,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB016,TRUE,FALSE,TRUE,['ego'],45,EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB017,FALSE,FALSE,TRUE,[],75,EGO_TRAJECTORY,['no_clear_ego_actor_detected']
-RTB018,FALSE,FALSE,TRUE,[],80,TRAJ_EGO,['no_clear_ego_actor_detected']
-RTB019,TRUE,TRUE,TRUE,"['ego_vehicle', 'npc_vehicle']",23,EGO_TRAJECTORY,[]
-RTB020,TRUE,FALSE,TRUE,['ego'],31,EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB026,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB027,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB028,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB029,TRUE,FALSE,TRUE,['ego'],28,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB030,TRUE,FALSE,TRUE,['ego'],248,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB031,TRUE,FALSE,TRUE,['ego'],87,RAW_TRAJ_EGO,['ego_actor_missing_role_name']
-RTB032,TRUE,TRUE,TRUE,['v3_ego'],53,RAW_TRAJ_V3_EGO,[]
-RTB033,TRUE,TRUE,TRUE,['ego'],95,TRAJ_STR_EGO,[]
-RTB034,TRUE,TRUE,TRUE,['ego'],58,TRAJ_STR_EGO,[]
-RTB035,TRUE,TRUE,TRUE,['ego_vehicle'],165,EGO_TRAJ_STR,[]
-RTB041,TRUE,TRUE,TRUE,['ego'],59,RAW_TRAJ_EGO,[]
-RTB042,TRUE,TRUE,TRUE,['ego'],74,raw_traj_ego,[]
-RTB043,TRUE,TRUE,TRUE,['ego'],78,RAW_TRAJ_EGO,[]
-RTB044,TRUE,TRUE,TRUE,['ego_vehicle'],73,RAW_TRAJ_EGO,[]
-RTB045,TRUE,TRUE,TRUE,['ego'],72,RAW_TRAJ_EGO,[]
-RTB046,TRUE,TRUE,TRUE,['ego'],48,RAW_TRAJ_EGO,[]
-RTB047,TRUE,TRUE,TRUE,['ego'],27,TRAJ_EGO_STR,[]
-RTB048,TRUE,TRUE,TRUE,['ego'],47,RAW_TRAJ_EGO,[]
-RTB049,TRUE,TRUE,TRUE,['ego'],18,TRAJ_STR_EGO,[]
-RTB050,TRUE,TRUE,TRUE,['ego'],117,TRAJ_STR_EGO,[]
-RTB051,TRUE,TRUE,TRUE,['ego'],74,RAW_TRAJ_EGO,[]
-RTB052,TRUE,TRUE,TRUE,['ego_vehicle'],32,raw_traj_ego,[]
-RTB053,TRUE,TRUE,TRUE,['ego'],56,TRAJ_EGO_STR,[]
-RTB054,TRUE,TRUE,TRUE,['ego_vehicle'],60,RAW_TRAJ_EGO,[]
-RTB055,TRUE,TRUE,TRUE,['ego'],40,EGO_TRAJ_STR,[]
-RTB056,TRUE,TRUE,FALSE,['ego'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB057,TRUE,FALSE,TRUE,['ego'],40,raw_traj_ego,['ego_actor_missing_role_name']
-RTB058,TRUE,TRUE,TRUE,['ego'],55,RAW_TRAJ_EGO,[]
-RTB059,TRUE,TRUE,TRUE,['ego'],67,RAW_EGO,[]
-RTB060,TRUE,TRUE,TRUE,['ego'],45,RAW_TRAJ_EGO,[]
-RTB061,TRUE,TRUE,TRUE,[],56,TRAJ_STR_EGO,[]
-RTB062,TRUE,TRUE,TRUE,['ego'],56,RAW_TRAJ_EGO,[]
-RTB063,TRUE,TRUE,TRUE,['vehicle_ego'],55,RAW_TRAJ_EGO,[]
-RTB064,TRUE,TRUE,TRUE,['v2_ego'],50,RAW_TRAJ_EGO,[]
-RTB065,TRUE,TRUE,TRUE,['ego'],47,RAW_EGO_TRAJ,[]
-RTB066,TRUE,TRUE,TRUE,['ego'],54,RAW_TRAJ_EGO,[]
-RTB067,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB068,TRUE,TRUE,TRUE,['ego'],59,TRAJ_EGO_RAW,[]
-RTB069,TRUE,TRUE,TRUE,['ego'],93,RAW_EGO,[]
-RTB070,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB071,TRUE,TRUE,TRUE,['vehicle_ego'],73,TRAJ_STR_EGO,[]
-RTB072,TRUE,TRUE,TRUE,['ego'],54,TRAJ_EGO_STR,[]
-RTB073,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB074,TRUE,TRUE,TRUE,['ego'],42,EGO_TRAJ_STR,[]
-RTB075,TRUE,TRUE,TRUE,['ego'],111,RAW_EGO_TEXT,[]
-RTB076,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB077,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB078,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB079,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB080,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB081,TRUE,TRUE,TRUE,['ego'],33,STR_EGO_TT,[]
-RTB082,TRUE,FALSE,TRUE,['vehicle_ego'],58,RAW_PATH_ego,['ego_actor_missing_role_name']
-RTB083,TRUE,FALSE,FALSE,['vehicle_ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']"
-RTB084,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB085,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB096,TRUE,FALSE,TRUE,['ego'],49,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB097,TRUE,FALSE,TRUE,['ego'],42,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB098,TRUE,FALSE,TRUE,['ego'],39,RAW_EGO_TRAJ,['ego_actor_missing_role_name']
-RTB099,TRUE,FALSE,TRUE,['ego'],63,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB100,TRUE,FALSE,TRUE,['v6_ego'],51,RAW_V6_EGO_TRAJ,['ego_actor_missing_role_name']
-RTB101,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB102,TRUE,TRUE,TRUE,['ego'],13,EGO_RAW_TRAJ,[]
-RTB103,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB104,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB105,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB106,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB107,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB108,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB109,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB110,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory']
-RTB111,TRUE,TRUE,TRUE,['ego'],48,EGO_TRAJ_STR,[]
-RTB112,TRUE,TRUE,TRUE,['ego'],108,EGO_TRAJ_STR,[]
-RTB113,TRUE,TRUE,TRUE,['ego'],58,STR_EGO,[]
-RTB114,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB115,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB116,TRUE,TRUE,TRUE,['ego'],56,RAW_TRAJ_EGO,[]
-RTB117,TRUE,TRUE,TRUE,['ego'],33,RAW_TRAJ_EGO,[]
-RTB118,TRUE,TRUE,TRUE,['ego_vehicle'],31,EGO_TRAJ_STR,[]
-RTB119,TRUE,TRUE,TRUE,['ego'],50,raw_traj_ego_str,[]
-RTB120,TRUE,TRUE,TRUE,['ego'],82,RAW_TRAJ_EGO,[]
-RTB121,TRUE,FALSE,TRUE,['ego'],46,RAW_EGO_TRAJ,['ego_actor_missing_role_name']
-RTB122,TRUE,FALSE,TRUE,['ego'],98,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name']
-RTB123,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']"
-RTB124,TRUE,FALSE,TRUE,['ego'],85,RAW_EGO_TRAJ,['ego_actor_missing_role_name']
-RTB125,FALSE,FALSE,TRUE,[],71,TRAJ_3_EGO,['no_clear_ego_actor_detected']
+scenario_id,has_ego_actor,has_role_name_ego,has_static_ego_trajectory,ego_actor_names,reference_trajectory_points,reference_trajectory_source,needs_scene_edit_reason,blocking_metadata_issues
+RTB001,True,True,False,['ego'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB002,True,False,False,['c3_ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB003,True,False,False,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB004,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB005,True,True,False,['ego_vehicle'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB006,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB007,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB008,True,False,False,['ego_vehicle'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB009,True,False,True,['ego'],57,EGO_TRAJECTORY_DATA,['ego_actor_missing_role_name'],[]
+RTB010,True,False,False,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB016,True,False,True,['ego'],45,EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB017,False,False,True,[],75,EGO_TRAJECTORY,['no_clear_ego_actor_detected'],[]
+RTB018,False,False,True,[],80,TRAJ_EGO,['no_clear_ego_actor_detected'],[]
+RTB019,True,True,True,"['ego_vehicle', 'npc_vehicle']",23,EGO_TRAJECTORY,[],[]
+RTB020,True,False,True,['ego'],31,EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB026,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB027,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB028,True,False,False,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB029,True,False,True,['ego'],28,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB030,True,False,True,['ego'],248,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB031,True,False,True,['ego'],87,RAW_TRAJ_EGO,['ego_actor_missing_role_name'],[]
+RTB032,True,True,True,['v3_ego'],53,RAW_TRAJ_V3_EGO,[],[]
+RTB033,True,True,True,['ego'],95,TRAJ_STR_EGO,[],[]
+RTB034,True,True,True,['ego'],58,TRAJ_STR_EGO,[],[]
+RTB035,True,True,True,['ego_vehicle'],165,EGO_TRAJ_STR,[],[]
+RTB041,True,True,True,['ego'],59,RAW_TRAJ_EGO,[],[]
+RTB042,True,True,True,['ego'],74,raw_traj_ego,[],[]
+RTB043,True,True,True,['ego'],78,RAW_TRAJ_EGO,[],[]
+RTB044,True,True,True,['ego_vehicle'],73,RAW_TRAJ_EGO,[],[]
+RTB045,True,True,True,['ego'],72,RAW_TRAJ_EGO,[],[]
+RTB046,True,True,True,['ego'],48,RAW_TRAJ_EGO,[],[]
+RTB047,True,True,True,['ego'],27,TRAJ_EGO_STR,[],[]
+RTB048,True,True,True,['ego'],47,RAW_TRAJ_EGO,[],[]
+RTB049,True,True,True,['ego'],18,TRAJ_STR_EGO,[],[]
+RTB050,True,True,True,['ego'],117,TRAJ_STR_EGO,[],[]
+RTB051,True,True,True,['ego'],74,RAW_TRAJ_EGO,[],[]
+RTB052,True,True,True,['ego_vehicle'],32,raw_traj_ego,[],[]
+RTB053,True,True,True,['ego'],56,TRAJ_EGO_STR,[],[]
+RTB054,True,True,True,['ego_vehicle'],60,RAW_TRAJ_EGO,[],[]
+RTB055,True,True,True,['ego'],40,EGO_TRAJ_STR,[],[]
+RTB056,True,True,False,['ego'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB057,True,False,True,['ego'],40,raw_traj_ego,['ego_actor_missing_role_name'],[]
+RTB058,True,True,True,['ego'],55,RAW_TRAJ_EGO,[],[]
+RTB059,True,True,True,['ego'],67,RAW_EGO,[],[]
+RTB060,True,True,True,['ego'],45,RAW_TRAJ_EGO,[],[]
+RTB061,True,True,True,[],56,TRAJ_STR_EGO,[],[]
+RTB062,True,True,True,['ego'],56,RAW_TRAJ_EGO,[],[]
+RTB063,True,True,True,['vehicle_ego'],55,RAW_TRAJ_EGO,[],[]
+RTB064,True,True,True,['v2_ego'],50,RAW_TRAJ_EGO,[],[]
+RTB065,True,True,True,['ego'],47,RAW_EGO_TRAJ,[],[]
+RTB066,True,True,True,['ego'],54,RAW_TRAJ_EGO,[],[]
+RTB067,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB068,True,True,True,['ego'],59,TRAJ_EGO_RAW,[],[]
+RTB069,True,True,True,['ego'],93,RAW_EGO,[],[]
+RTB070,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB071,True,True,True,['vehicle_ego'],73,TRAJ_STR_EGO,[],[]
+RTB072,True,True,True,['ego'],54,TRAJ_EGO_STR,[],[]
+RTB073,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB074,True,True,True,['ego'],42,EGO_TRAJ_STR,[],[]
+RTB075,True,True,True,['ego'],111,RAW_EGO_TEXT,[],[]
+RTB076,True,False,False,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB077,True,False,False,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB078,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB079,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB080,True,False,False,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB081,True,True,True,['ego'],33,STR_EGO_TT,[],[]
+RTB082,True,False,True,['vehicle_ego'],58,RAW_PATH_ego,['ego_actor_missing_role_name'],[]
+RTB083,True,False,False,['vehicle_ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB084,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB085,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB096,True,False,True,['ego'],49,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB097,True,False,True,['ego'],42,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB098,True,False,True,['ego'],39,RAW_EGO_TRAJ,['ego_actor_missing_role_name'],[]
+RTB099,True,False,True,['ego'],63,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB100,True,False,True,['v6_ego'],51,RAW_V6_EGO_TRAJ,['ego_actor_missing_role_name'],[]
+RTB101,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB102,True,True,True,['ego'],13,EGO_RAW_TRAJ,[],[]
+RTB103,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB104,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB105,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB106,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB107,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB108,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB109,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB110,True,True,False,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB111,True,True,True,['ego'],48,EGO_TRAJ_STR,[],[]
+RTB112,True,True,True,['ego'],108,EGO_TRAJ_STR,[],[]
+RTB113,True,True,True,['ego'],58,STR_EGO,[],[]
+RTB114,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB115,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB116,True,True,True,['ego'],56,RAW_TRAJ_EGO,[],[]
+RTB117,True,True,True,['ego'],33,RAW_TRAJ_EGO,[],[]
+RTB118,True,True,True,['ego_vehicle'],31,EGO_TRAJ_STR,[],[]
+RTB119,True,True,True,['ego'],50,raw_traj_ego_str,[],[]
+RTB120,True,True,True,['ego'],82,RAW_TRAJ_EGO,[],[]
+RTB121,True,False,True,['ego'],46,RAW_EGO_TRAJ,['ego_actor_missing_role_name'],[]
+RTB122,True,False,True,['ego'],98,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
+RTB123,False,False,False,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
+RTB124,True,False,True,['ego'],85,RAW_EGO_TRAJ,['ego_actor_missing_role_name'],[]
+RTB125,False,False,True,[],71,TRAJ_3_EGO,['no_clear_ego_actor_detected'],[]

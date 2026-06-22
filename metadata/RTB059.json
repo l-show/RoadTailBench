@@ -362,6 +362,7 @@
     ]
   ],
   "reference_speed_kmh": 40.0,
+  "speed_limit_kmh": 40.0,
   "allowed_lateral_error_m": 4.0,
   "hard_lateral_error_m": 12.0,
   "allowed_progress_error_m": 20.0,
@@ -371,31 +372,15 @@
   "allowed_heading_error_deg": 45.0,
   "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.pavement_condition",
-    "A.traffic_sign_marking",
-    "B.merging_flow",
-    "B.overtaking_bypass",
-    "B.yielding_priority",
-    "C.low_light",
-    "C.rain_wet"
+    "A",
+    "B",
+    "C"
   ],
-  "ability_tags": {
-    "A": [
-      "A.alignment_geometry",
-      "A.pavement_condition",
-      "A.traffic_sign_marking"
-    ],
-    "B": [
-      "B.merging_flow",
-      "B.overtaking_bypass",
-      "B.yielding_priority"
-    ],
-    "C": [
-      "C.low_light",
-      "C.rain_wet"
-    ]
-  },
+  "ability_tags": [
+    "A",
+    "B",
+    "C"
+  ],
   "ego_start": {
     "location": {
       "x": 61.399,
@@ -418,36 +403,10 @@
       "roll": 0.0
     }
   },
-  "speed_zones": [
-    {
-      "id": "rtb059_primary_speed_zone",
-      "center": [
-        -7.979,
-        -28.511
-      ],
-      "radius": 35.0,
-      "target_speed_kmh": 40.0,
-      "reason": "yield_or_stop_for_priority_conflict"
-    }
-  ],
-  "hazard_zones": [
-    {
-      "id": "rtb059_primary_hazard_zone",
-      "category": "A",
-      "subtype": "alignment_geometry",
-      "behavior_subtype": "merging_flow",
-      "center": [
-        -7.979,
-        -28.511
-      ],
-      "radius_m": 10.0,
-      "target_speed_kmh": 40.0
-    }
-  ],
   "hazards": [
     {
       "id": "rtb059_primary_hazard",
-      "type": "merging_flow",
+      "type": "emergency_avoidance",
       "center": [
         -7.979,
         -28.511
@@ -455,8 +414,9 @@
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
-      "allow_enter_danger_zone": true,
-      "expected_behavior": "yield_or_stop_for_priority_conflict"
+      "reference_speed_kmh": 40.0,
+      "allow_enter_danger_zone": false,
+      "expected_behavior": "slow_or_avoid"
     }
   ]
 }

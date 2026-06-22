@@ -424,12 +424,17 @@ class CodeScenarioRunner:
             "reference_trajectory": [],
             "natural_end_distance_m": float(getattr(self.args, "natural_end_distance_m", 5.0)),
             "natural_end_min_ticks": int(getattr(self.args, "natural_end_min_ticks", 5)),
+            "environment_raycast_interval_frames": int(getattr(self.args, "environment_raycast_interval_frames", 5)),
+            "environment_raycast_distance_m": float(getattr(self.args, "environment_raycast_distance_m", 30.0)),
         }
+        angles = getattr(self.args, "environment_raycast_angles_deg", "-90,-60,-30,0,30,60,90")
+        if isinstance(angles, str):
+            config["environment_raycast_angles_deg"] = [float(item.strip()) for item in angles.split(",") if item.strip()]
+        else:
+            config["environment_raycast_angles_deg"] = list(angles)
         config.update(metadata)
         if not config.get("reference_trajectory"):
             config["reference_trajectory"] = config.get("route") or config.get("centerline_route") or []
-        if not config.get("reference_trajectory") and config.get("ego_start") and config.get("ego_end"):
-            config["reference_trajectory"] = [config["ego_start"]["location"], config["ego_end"]["location"]]
         config.setdefault("route", reference_xy(config))
         config.setdefault("centerline_route", config.get("route", []))
         return config
@@ -492,7 +497,7 @@ class CodeScenarioRunner:
                 raise RuntimeError(f"{scenario.scene_id}: ego vehicle not found")
             config = self.build_config(scenario)
             goal_xy = self.natural_goal_xy(config)
-            logger = RuntimeFrameLogger(output_dir, scenario, config)
+            logger = RuntimeFrameLogger(output_dir, scenario, config, carla_module=self.carla)
             logger.attach_collision_sensor(self.carla, world, ego)
             if getattr(self.args, "record_video", False):
                 video = RuntimeVideoRecorder(self.carla, world, ego, output_dir, self.args)

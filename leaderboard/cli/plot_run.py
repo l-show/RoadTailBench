@@ -12,11 +12,11 @@ CORE_METRIC_NAMES = [
     "collision_penalty",
     "driving_efficiency",
     "speed_appropriateness",
-    "drivable_area",
-    "omnidirectional_interaction_risk",
-    "road_engineering_hazard_adaptation",
+    "trajectory_adherence",
+    "proximity_risk",
     "comfort",
     "control_stability",
+    "energy_efficiency",
     "long_tail_hazard_response",
 ]
 
@@ -195,17 +195,89 @@ def plot_timeseries(frames, output, plt, dpi):
     plt.close(fig)
 
 
+def plot_proximity_timeseries(frames, metrics, output, plt, dpi):
+    times = rel_times(frames)
+    prox = metrics.get("metrics", {}).get("proximity_risk", {}).get("details", {})
+    min_dist = []
+    lateral = []
+    longitudinal = []
+    ttc = []
+    for frame in frames:
+        p = frame.get("proximity", {})
+        min_dist.append(p.get("nearest_environment_distance_m"))
+        lateral.append(None)
+        longitudinal.append(None)
+        ttc.append(None)
+        ego = frame.get("ego", {})
+        actors = frame.get("actors", [])
+        if not ego or not actors:
+            continue
+        ex, ey = ego.get("location", [0.0, 0.0])[:2]
+        yaw = math.radians(float(ego.get("rotation", [0.0, 0.0, 0.0])[2]))
+        fx, fy = math.cos(yaw), math.sin(yaw)
+        lx, ly = -fy, fx
+        nearest = None
+        for actor in actors:
+            loc = actor.get("location", [0.0, 0.0])
+            dx, dy = float(loc[0]) - float(ex), float(loc[1]) - float(ey)
+            d = math.hypot(dx, dy)
+            if nearest is None or d < nearest[0]:
+                nearest = (d, dx, dy, actor)
+        if nearest:
+            _, dx, dy, actor = nearest
+            long_d = dx * fx + dy * fy
+            lat_d = dx * lx + dy * ly
+            longitudinal[-1] = abs(long_d)
+            lateral[-1] = abs(lat_d)
+            ev = ego.get("velocity", [0.0, 0.0])
+            av = actor.get("velocity", [0.0, 0.0])
+            closing = (float(ev[0]) - float(av[0])) * fx + (float(ev[1]) - float(av[1])) * fy
+            if long_d > 0 and closing > 0.1:
+                ttc[-1] = long_d / closing
+            if min_dist[-1] is None or nearest[0] < float(min_dist[-1]):
+                min_dist[-1] = nearest[0]
+
+    def clean(vals):
+        return [float(v) if v is not None else float("nan") for v in vals]
+
+    fig, (ax0, ax1) = plt.subplots(2, 1, figsize=(11, 7), sharex=True, constrained_layout=True)
+    ax0.plot(times, clean(longitudinal), color="#0072B2", linewidth=1.1, label="longitudinal distance")
+    ax0.plot(times, clean(min_dist), color="#009E73", linewidth=1.0, label="min proximity distance")
+    ax0b = ax0.twinx()
+    ax0b.plot(times, clean(ttc), color="#D55E00", linewidth=1.0, label="TTC")
+    ax0.set_ylabel("distance (m)")
+    ax0b.set_ylabel("TTC (s)")
+    ax0.grid(True, alpha=0.25)
+    lines, labels = ax0.get_legend_handles_labels()
+    lines_b, labels_b = ax0b.get_legend_handles_labels()
+    ax0.legend(lines + lines_b, labels + labels_b, fontsize=8)
+
+    ax1.plot(times, clean(lateral), color="#CC79A7", linewidth=1.1, label="lateral distance")
+    if prox.get("lateral_danger_distance_m") is not None:
+        ax1.axhline(float(prox["lateral_danger_distance_m"]), color="#D55E00", linestyle="--", linewidth=0.9, label="lateral danger")
+    if prox.get("lateral_caution_distance_m") is not None:
+        ax1.axhline(float(prox["lateral_caution_distance_m"]), color="#E69F00", linestyle=":", linewidth=0.9, label="lateral caution")
+    ax1.set_xlabel("time (s)")
+    ax1.set_ylabel("lateral distance (m)")
+    ax1.grid(True, alpha=0.25)
+    ax1.legend(fontsize=8)
+    fig.suptitle("proximity risk time series", fontsize=11)
+    fig.savefig(output, dpi=dpi)
+    plt.close(fig)
+
+
 def plot_metric_scores(metrics, output, plt, dpi):
     metric_map = metrics.get("metrics", {})
-    labels = [name.replace("_", "\n") for name in CORE_METRIC_NAMES]
-    values = [float(metric_map.get(name, {}).get("score", 0.0)) for name in CORE_METRIC_NAMES]
+    names = [name for name in CORE_METRIC_NAMES if name in metric_map]
+    labels = [name.replace("_", "\n") for name in names]
+    values = [float(metric_map.get(name, {}).get("score", 0.0)) for name in names]
     driving = float(metric_map.get("leaderboard_driving_score", {}).get("score", 0.0))
 
     fig, ax = plt.subplots(figsize=(12, 5), constrained_layout=True)
     ax.bar(labels, values, color="#56B4E9")
     ax.set_ylim(0, 1.05)
     ax.set_ylabel("score")
-    ax.set_title(f"10 core metric scores; driving score={driving:.2f}")
+    ax.set_title(f"core metric scores; driving score={driving:.2f}")
     ax.tick_params(axis="x", labelsize=8)
     ax.grid(True, axis="y", alpha=0.25)
     fig.savefig(output, dpi=dpi)
@@ -216,11 +288,9 @@ def plot_ability_breakdown(metrics, output, plt, dpi):
     metric_map = metrics.get("metrics", {})
     ability = metric_map.get("ability_score", {})
     group_scores = ability.get("details", {}).get("group_scores", {})
-    subtype_scores = ability.get("details", {}).get("subtype_scores", {})
-    hazard_zones = metric_map.get("road_engineering_hazard_adaptation", {}).get("details", {}).get("zone_scores", [])
     hazard_responses = metric_map.get("long_tail_hazard_response", {}).get("details", {}).get("hazard_responses", [])
 
-    fig, axes = plt.subplots(4, 1, figsize=(11, 11), constrained_layout=True)
+    fig, axes = plt.subplots(2, 1, figsize=(11, 7), constrained_layout=True)
     group_labels = ["A", "B", "C"]
     group_values = [group_scores.get(label) for label in group_labels]
     axes[0].bar(group_labels, [0.0 if v is None else float(v) for v in group_values], color="#009E73")
@@ -228,29 +298,13 @@ def plot_ability_breakdown(metrics, output, plt, dpi):
     axes[0].set_title(f"ability groups; ability score={float(ability.get('score', 0.0)):.2f}")
     axes[0].grid(True, axis="y", alpha=0.25)
 
-    subtype_labels = list(subtype_scores.keys())
-    subtype_values = [float(subtype_scores[label]) for label in subtype_labels]
-    axes[1].bar(subtype_labels or ["no ability subtypes"], subtype_values or [0.0], color="#56B4E9")
-    axes[1].set_ylim(0, 1.05)
-    axes[1].set_title("ability subtype scores")
-    axes[1].tick_params(axis="x", rotation=25, labelsize=8)
-    axes[1].grid(True, axis="y", alpha=0.25)
-
-    zone_labels = [str(item.get("subtype") or item.get("id") or index) for index, item in enumerate(hazard_zones)]
-    zone_values = [float(item.get("score", 0.0)) for item in hazard_zones]
-    axes[2].bar(zone_labels or ["no hazard zones"], zone_values or [0.0], color="#E69F00")
-    axes[2].set_ylim(0, 1.05)
-    axes[2].set_title("road engineering hazard sub-scores")
-    axes[2].tick_params(axis="x", rotation=25, labelsize=8)
-    axes[2].grid(True, axis="y", alpha=0.25)
-
     response_labels = [str(item.get("type") or item.get("id") or index) for index, item in enumerate(hazard_responses)]
     response_values = [float(item.get("score", 0.0)) for item in hazard_responses]
-    axes[3].bar(response_labels or ["no hazard responses"], response_values or [0.0], color="#CC79A7")
-    axes[3].set_ylim(0, 1.05)
-    axes[3].set_title("long-tail hazard response sub-scores")
-    axes[3].tick_params(axis="x", rotation=25, labelsize=8)
-    axes[3].grid(True, axis="y", alpha=0.25)
+    axes[1].bar(response_labels or ["no hazard responses"], response_values or [0.0], color="#CC79A7")
+    axes[1].set_ylim(0, 1.05)
+    axes[1].set_title("long-tail hazard response")
+    axes[1].tick_params(axis="x", rotation=25, labelsize=8)
+    axes[1].grid(True, axis="y", alpha=0.25)
     fig.savefig(output, dpi=dpi)
     plt.close(fig)
 
@@ -326,6 +380,7 @@ def main():
         run_dir / "leaderboard_ego_timeseries.png",
         run_dir / "leaderboard_metric_scores.png",
         run_dir / "leaderboard_ability_breakdown.png",
+        run_dir / "leaderboard_proximity_timeseries.png",
     ]
     for output in outputs:
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -333,6 +388,7 @@ def main():
     plot_timeseries(frames, outputs[1], plt, args.dpi)
     plot_metric_scores(metrics, outputs[2], plt, args.dpi)
     plot_ability_breakdown(metrics, outputs[3], plt, args.dpi)
+    plot_proximity_timeseries(frames, metrics, outputs[4], plt, args.dpi)
 
     if args.output:
         overview = Path(args.output)

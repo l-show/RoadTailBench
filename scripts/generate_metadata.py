@@ -328,6 +328,15 @@ def build_tags(excel, source, old):
     return sorted(dict.fromkeys(tags))
 
 
+def simplify_ability_tags(tags):
+    groups = []
+    for tag in tags:
+        group = str(tag).split(".", 1)[0]
+        if group in ("A", "B", "C") and group not in groups:
+            groups.append(group)
+    return groups or ["A", "B"]
+
+
 def expected_behavior_for_b(tags):
     if "B.yielding_priority" in tags:
         return "yield_or_stop_for_priority_conflict"
@@ -406,6 +415,7 @@ def build_metadata(scene_path, excel, old):
         "reference_trajectory_format": "x_y_yaw" if reference and len(reference[0]) >= 3 else "x_y",
         "reference_trajectory": reference,
         "reference_speed_kmh": reference_speed,
+        "speed_limit_kmh": reference_speed,
         "allowed_lateral_error_m": 4.0,
         "hard_lateral_error_m": 12.0,
         "allowed_progress_error_m": 20.0,
@@ -414,8 +424,8 @@ def build_metadata(scene_path, excel, old):
         "hard_time_error_s": 8.0,
         "allowed_heading_error_deg": 45.0,
         "hard_heading_error_deg": 120.0,
-        "scenario_tags": tags,
-        "ability_tags": {"A": a_tags, "B": b_tags, "C": c_tags},
+        "scenario_tags": simplify_ability_tags(tags),
+        "ability_tags": simplify_ability_tags(tags),
     }
     if reference:
         metadata["ego_start"] = {
@@ -428,22 +438,6 @@ def build_metadata(scene_path, excel, old):
         }
         center = hazard_center(reference)
         expected = expected_behavior_for_b(tags)
-        metadata["speed_zones"] = [{
-            "id": f"{scene_path.stem.lower()}_primary_speed_zone",
-            "center": center,
-            "radius": 35.0,
-            "target_speed_kmh": min(40.0, reference_speed),
-            "reason": expected,
-        }]
-        metadata["hazard_zones"] = [{
-            "id": f"{scene_path.stem.lower()}_primary_hazard_zone",
-            "category": "A",
-            "subtype": primary_a,
-            "behavior_subtype": primary_b,
-            "center": center,
-            "radius_m": 10.0,
-            "target_speed_kmh": min(40.0, reference_speed),
-        }]
         metadata["hazards"] = [{
             "id": f"{scene_path.stem.lower()}_primary_hazard",
             "type": primary_b,
@@ -451,6 +445,7 @@ def build_metadata(scene_path, excel, old):
             "radius_m": 10.0,
             "perception_radius_m": 40.0,
             "danger_radius_m": 4.0,
+            "reference_speed_kmh": min(40.0, reference_speed),
             "allow_enter_danger_zone": expected.startswith("yield"),
             "expected_behavior": expected,
         }]
@@ -459,6 +454,9 @@ def build_metadata(scene_path, excel, old):
             "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
             "Scenario timeout remains the termination fallback for this scene.",
         ]
+        metadata["blocking_metadata_issues"] = ["missing_reference_trajectory"]
+    if not reference and not (metadata.get("ego_start") and metadata.get("ego_end")):
+        metadata.setdefault("blocking_metadata_issues", []).append("missing_reference_trajectory_and_ego_end")
     return {key: value for key, value in metadata.items() if value not in (None, [], {}) or key in {"reference_trajectory", "scenario_tags"}}
 
 
@@ -483,6 +481,7 @@ def main():
             "reference_trajectory_points": len(metadata.get("reference_trajectory", [])),
             "reference_trajectory_source": metadata.get("reference_trajectory_source"),
             "needs_scene_edit_reason": audit["needs_scene_edit_reason"],
+            "blocking_metadata_issues": metadata.get("blocking_metadata_issues", []),
         }
         report.append(row)
     write_json(OUTPUTS / "metadata_generation_report.json", report)

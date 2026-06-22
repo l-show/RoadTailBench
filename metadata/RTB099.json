@@ -341,6 +341,7 @@
     ]
   ],
   "reference_speed_kmh": 60.0,
+  "speed_limit_kmh": 60.0,
   "allowed_lateral_error_m": 4.0,
   "hard_lateral_error_m": 12.0,
   "allowed_progress_error_m": 20.0,
@@ -350,18 +351,13 @@
   "allowed_heading_error_deg": 45.0,
   "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.sight_distance",
-    "B.emergency_avoidance"
+    "A",
+    "B"
   ],
-  "ability_tags": {
-    "A": [
-      "A.sight_distance"
-    ],
-    "B": [
-      "B.emergency_avoidance"
-    ],
-    "C": []
-  },
+  "ability_tags": [
+    "A",
+    "B"
+  ],
   "ego_start": {
     "location": {
       "x": 28.192,
@@ -384,32 +380,6 @@
       "roll": 0.0
     }
   },
-  "speed_zones": [
-    {
-      "id": "rtb099_primary_speed_zone",
-      "center": [
-        7.629,
-        -16.12
-      ],
-      "radius": 35.0,
-      "target_speed_kmh": 40.0,
-      "reason": "slow_or_avoid"
-    }
-  ],
-  "hazard_zones": [
-    {
-      "id": "rtb099_primary_hazard_zone",
-      "category": "A",
-      "subtype": "sight_distance",
-      "behavior_subtype": "emergency_avoidance",
-      "center": [
-        7.629,
-        -16.12
-      ],
-      "radius_m": 10.0,
-      "target_speed_kmh": 40.0
-    }
-  ],
   "hazards": [
     {
       "id": "rtb099_primary_hazard",
@@ -421,6 +391,7 @@
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
+      "reference_speed_kmh": 40.0,
       "allow_enter_danger_zone": false,
       "expected_behavior": "slow_or_avoid"
     }

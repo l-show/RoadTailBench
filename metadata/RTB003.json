@@ -26,6 +26,7 @@
   "reference_trajectory_format": "x_y",
   "reference_trajectory": [],
   "reference_speed_kmh": 80.0,
+  "speed_limit_kmh": 80.0,
   "allowed_lateral_error_m": 4.0,
   "hard_lateral_error_m": 12.0,
   "allowed_progress_error_m": 20.0,
@@ -35,37 +36,21 @@
   "allowed_heading_error_deg": 45.0,
   "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.lighting_facility",
-    "A.speed_control_facility",
-    "A.traffic_sign_marking",
-    "B.emergency_avoidance",
-    "B.merging_flow",
-    "C.glare",
-    "C.low_light",
-    "C.rain_wet",
-    "C.wind_dust_visibility"
+    "A",
+    "B",
+    "C"
   ],
-  "ability_tags": {
-    "A": [
-      "A.alignment_geometry",
-      "A.lighting_facility",
-      "A.speed_control_facility",
-      "A.traffic_sign_marking"
-    ],
-    "B": [
-      "B.emergency_avoidance",
-      "B.merging_flow"
-    ],
-    "C": [
-      "C.glare",
-      "C.low_light",
-      "C.rain_wet",
-      "C.wind_dust_visibility"
-    ]
-  },
+  "ability_tags": [
+    "A",
+    "B",
+    "C"
+  ],
   "notes": [
     "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
     "Scenario timeout remains the termination fallback for this scene."
+  ],
+  "blocking_metadata_issues": [
+    "missing_reference_trajectory",
+    "missing_reference_trajectory_and_ego_end"
   ]
 }

@@ -9,9 +9,15 @@ from leaderboard.runtime.carla_utils import actor_to_record
 from leaderboard.core.trajectory import normalize_reference_trajectory
 from leaderboard.runtime.frame_logger import RuntimeFrameLogger
 from leaderboard.metrics.collision_penalty import CollisionPenaltyMetric
-from leaderboard.metrics.drivable_area import DrivableAreaMetric
+from leaderboard.metrics.control_stability import ControlStabilityMetric
+from leaderboard.metrics.driving_efficiency import DrivingEfficiencyMetric
+from leaderboard.metrics.energy_efficiency import EnergyEfficiencyMetric
 from leaderboard.metrics.evaluator import evaluate_leaderboard
+from leaderboard.metrics.interaction_risk import InteractionRiskMetric
 from leaderboard.metrics.long_tail_hazard_response import LongTailHazardResponseMetric
+from leaderboard.metrics.route_completion import RouteCompletionMetric
+from leaderboard.metrics.speed_appropriateness import SpeedAppropriatenessMetric
+from leaderboard.metrics.trajectory_adherence import TrajectoryAdherenceMetric
 from leaderboard.runtime.runner import CodeScenarioRunner
 from leaderboard.scenarios.discovery import discover_scenarios
 
@@ -42,6 +48,9 @@ def test_runner_cli_args():
         "--video-fps", "8",
         "--restore-world-settings",
         "--scenario-timeout", "120",
+        "--environment-raycast-interval-frames", "4",
+        "--environment-raycast-distance-m", "25",
+        "--environment-raycast-angles-deg=-90,0,90",
         "--dry-run",
     ])
     assert args.limit == 2
@@ -56,6 +65,9 @@ def test_runner_cli_args():
     assert args.video_fps == 8
     assert args.restore_world_settings is True
     assert args.scenario_timeout == 120
+    assert args.environment_raycast_interval_frames == 4
+    assert args.environment_raycast_distance_m == 25.0
+    assert args.environment_raycast_angles_deg == "-90,0,90"
 
 
 def test_runner_cli_defaults():
@@ -72,6 +84,8 @@ def test_runner_cli_defaults():
     assert args.natural_end_distance_m == 5.0
     assert args.natural_end_min_ticks == 5
     assert args.disable_natural_end is False
+    assert args.environment_raycast_interval_frames == 5
+    assert args.environment_raycast_distance_m == 30.0
 
 
 def test_metadata_json():
@@ -102,7 +116,7 @@ def test_reference_trajectory_deviation_is_loose_for_reasonable_path():
         "allowed_lateral_error_m": 4.0,
         "hard_lateral_error_m": 12.0,
     }
-    result = DrivableAreaMetric().compute(frames, config)
+    result = TrajectoryAdherenceMetric().compute(frames, config)
     assert result["score"] > 0.95
     assert result["details"]["mode"] == "spatiotemporal_reference_deviation"
     assert result["details"]["max_lateral_deviation_m"] <= 1.0
@@ -117,7 +131,7 @@ def test_reference_trajectory_deviation_penalizes_large_offset():
         "reference_speed_kmh": 36.0,
         "reference_trajectory": [[0, 0, 0], [20, 0, 0]],
     }
-    result = DrivableAreaMetric().compute(frames, config)
+    result = TrajectoryAdherenceMetric().compute(frames, config)
     assert result["score"] < 0.5
     assert result["details"]["max_heading_error_deg"] >= 120.0
 
@@ -127,10 +141,51 @@ def test_legacy_route_third_column_is_not_treated_as_yaw():
     assert points == [{"x": 0.0, "y": 0.0}, {"x": 10.0, "y": 0.0}]
 
 
+def test_route_completion_missing_route_without_goal_is_zero():
+    frames = [{"ego": {"location": [0.0, 0.0, 0.0]}}]
+    result = RouteCompletionMetric().compute(frames, {})
+    assert result["score"] == 0.0
+    assert result["details"]["reason"] == "invalid_missing_route_and_goal"
+
+
+def test_route_completion_uses_start_goal_fallback():
+    frames = [
+        {"ego": {"location": [0.0, 0.0, 0.0]}},
+        {"ego": {"location": [9.8, 0.0, 0.0]}},
+    ]
+    config = {"ego_start": {"location": {"x": 0.0, "y": 0.0}}, "ego_end": {"location": {"x": 10.0, "y": 0.0}}}
+    result = RouteCompletionMetric().compute(frames, config)
+    assert result["score"] == 1.0
+    assert result["details"]["mode"] == "start_goal_fallback"
+
+
+def test_route_completion_goal_can_succeed_off_reference_trajectory():
+    frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 20.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 1.0, "ego": {"location": [10.0, 20.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+    ]
+    config = {
+        "reference_trajectory": [[0, 0, 0], [10, 0, 0]],
+        "ego_end": {"location": {"x": 10.0, "y": 20.0}},
+        "route_goal_tolerance_m": 1.0,
+    }
+    assert RouteCompletionMetric().compute(frames, config)["score"] == 1.0
+    assert TrajectoryAdherenceMetric().compute(frames, config)["score"] < 0.6
+
+
+def test_trajectory_adherence_missing_reference_is_zero():
+    frames = [{"ego": {"location": [0.0, 0.0, 0.0]}}]
+    result = TrajectoryAdherenceMetric().compute(frames, {})
+    assert result["score"] == 0.0
+    assert result["details"]["reason"] == "invalid_missing_reference_trajectory"
+
+
 def test_evaluator_uses_leaderboard_score_name():
     result = evaluate_leaderboard([], {"scenario_id": "RTB_TEST"})
     assert result["scenario_id"] == "RTB_TEST"
     assert "leaderboard_driving_score" in result["metrics"]
+    assert "proximity_risk" in result["metrics"]
+    assert "road_engineering_hazard_adaptation" not in result["metrics"]
 
 
 def test_collision_penalty_is_weighted_not_binary():
@@ -156,7 +211,7 @@ def test_yield_hazard_allows_danger_entry_when_responding():
             "center": [0.0, 0.0, 0.0],
             "perception_radius_m": 15.0,
             "danger_radius_m": 4.0,
-            "target_speed_kmh": 15.0,
+            "reference_speed_kmh": 15.0,
             "expected_behavior": "yield_or_stop_for_priority_conflict",
             "allow_enter_danger_zone": True,
         }]
@@ -164,6 +219,110 @@ def test_yield_hazard_allows_danger_entry_when_responding():
     result = LongTailHazardResponseMetric().compute(frames, config)
     assert result["score"] > 0.5
     assert result["details"]["hazard_responses"][0]["danger_frames"] > 0
+
+
+def test_driving_efficiency_uses_sim_time_not_speed_average():
+    frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 0.0, 0.0], "speed_mps": 20.0}},
+        {"time": 10.0, "ego": {"location": [100.0, 0.0, 0.0], "speed_mps": 0.0}},
+    ]
+    config = {"reference_trajectory": [[0, 0], [100, 0]], "speed_limit_kmh": 36.0}
+    result = DrivingEfficiencyMetric().compute(frames, config, {"route_completion": {"score": 1.0}})
+    assert result["score"] == 1.0
+    assert result["details"]["elapsed_sim_seconds"] == 10.0
+
+
+def test_speed_appropriateness_separates_limit_and_hazard_reference():
+    frames = [
+        {"ego": {"location": [0.0, 0.0, 0.0], "speed_mps": 10.0}},
+        {"ego": {"location": [10.0, 0.0, 0.0], "speed_mps": 25.0}},
+        {"ego": {"location": [50.0, 0.0, 0.0], "speed_mps": 8.0}},
+    ]
+    config = {
+        "speed_limit_kmh": 72.0,
+        "hazards": [{"id": "h1", "center": [0.0, 0.0], "radius_m": 5.0, "reference_speed_kmh": 18.0}],
+    }
+    result = SpeedAppropriatenessMetric().compute(frames, config)
+    assert result["score"] < 1.0
+    assert result["details"]["hazard_frame_ratio"] > 0.0
+
+
+def test_proximity_risk_uses_lateral_and_ttc():
+    frames = [{
+        "ego": {
+            "location": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "velocity": [10.0, 0.0, 0.0],
+        },
+        "actors": [{
+            "id": 2,
+            "type_id": "vehicle.test",
+            "location": [10.0, 0.5, 0.0],
+            "velocity": [0.0, 0.0, 0.0],
+        }],
+        "proximity": {"nearest_environment_distance_m": 20.0},
+    }]
+    result = InteractionRiskMetric().compute(frames, {})
+    assert result["score"] < 1.0
+    assert result["details"]["min_time_to_collision_s"] is not None
+    assert result["details"]["min_lateral_distance_m"] <= 0.5
+
+
+def test_hazard_response_requires_control_or_speed_change_not_speed_compliance_only():
+    frames = [
+        {"time": 0.0, "ego": {"location": [3.0, 0.0, 0.0], "speed_mps": 2.0, "control": {"throttle": 0.2, "brake": 0.0, "steer": 0.0}}},
+        {"time": 0.1, "ego": {"location": [2.0, 0.0, 0.0], "speed_mps": 2.0, "control": {"throttle": 0.2, "brake": 0.0, "steer": 0.0}}},
+    ]
+    config = {"hazards": [{"center": [0.0, 0.0], "perception_radius_m": 5.0, "radius_m": 3.0, "reference_speed_kmh": 40.0}]}
+    result = LongTailHazardResponseMetric().compute(frames, config)
+    assert result["score"] == 0.0
+    assert result["details"]["hazard_responses"][0]["reason"] == "no_response"
+
+
+def test_control_stability_includes_throttle_and_brake():
+    frames = [
+        {"ego": {"control": {"steer": 0.0, "throttle": 0.0, "brake": 0.0}}},
+        {"ego": {"control": {"steer": 0.0, "throttle": 1.0, "brake": 0.0}}},
+        {"ego": {"control": {"steer": 0.0, "throttle": 1.0, "brake": 1.0}}},
+    ]
+    result = ControlStabilityMetric().compute(frames, {})
+    assert result["score"] < 1.0
+    assert result["details"]["max_throttle_delta"] == 1.0
+    assert result["details"]["max_brake_delta"] == 1.0
+
+
+def test_energy_efficiency_penalizes_hard_acceleration():
+    steady = [
+        {"time": 0.0, "ego": {"speed_mps": 10.0}},
+        {"time": 1.0, "ego": {"speed_mps": 10.0}},
+    ]
+    hard = [
+        {"time": 0.0, "ego": {"speed_mps": 0.0}},
+        {"time": 1.0, "ego": {"speed_mps": 20.0}},
+    ]
+    metric = EnergyEfficiencyMetric()
+    assert metric.compute(hard, {})["score"] < metric.compute(steady, {})["score"]
+
+
+def test_energy_efficiency_reports_regen_energy():
+    frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 0.0, 0.0], "speed_mps": 20.0}},
+        {"time": 1.0, "ego": {"location": [15.0, 0.0, 0.0], "speed_mps": 10.0}},
+    ]
+    result = EnergyEfficiencyMetric().compute(frames, {})
+    assert result["details"]["mode"] == "longitudinal_dynamics_with_regen"
+    assert result["details"]["regenerated_energy_kwh"] >= 0.0
+
+
+def test_comfort_uses_body_frame_components():
+    frames = [
+        {"time": 0.0, "ego": {"acceleration": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 1.0, "ego": {"acceleration": [0.0, 3.0, 0.0], "rotation": [0.0, 0.0, 30.0]}},
+    ]
+    result = __import__("leaderboard.metrics.comfort", fromlist=["ComfortMetric"]).ComfortMetric().compute(frames, {})
+    assert result["score"] < 1.0
+    assert result["details"]["mode"] == "body_frame_accel_jerk_yaw_rate"
+    assert result["details"]["max_lateral_accel_mps2"] > 0.0
 
 
 def test_actor_to_record_without_control():
@@ -287,7 +446,7 @@ def test_natural_end_finishes_before_timeout(tmp_path):
     runner.find_scene_ego = lambda scenario: ego
 
     class FakeLogger:
-        def __init__(self, output_dir, scenario, config):
+        def __init__(self, output_dir, scenario, config, carla_module=None):
             self.output_dir = Path(output_dir)
             self._frames = []
 
@@ -405,6 +564,49 @@ def test_collision_logger_records_location(tmp_path):
     try:
         assert logger._collisions[0]["location"] == [1.0, 2.0, 3.0]
         assert logger._collisions[0]["other_actor_id"] == 99
+    finally:
+        logger.close(carla_alive=False)
+
+
+def test_environment_raycast_is_downsampled_and_reused(tmp_path):
+    config = {"scenario_id": "RTB_RAY", "environment_raycast_interval_frames": 5}
+    logger = RuntimeFrameLogger(tmp_path, SimpleNamespace(scene_id="RTB_RAY"), config)
+
+    class Loc:
+        def __init__(self, x=0.0, y=0.0, z=0.0):
+            self.x, self.y, self.z = x, y, z
+
+        def __add__(self, other):
+            return Loc(self.x + other.x, self.y + other.y, self.z + other.z)
+
+        def __mul__(self, scalar):
+            return Loc(self.x * scalar, self.y * scalar, self.z * scalar)
+
+        def distance(self, other):
+            return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2) ** 0.5
+
+    class FakeCarla:
+        Location = Loc
+        Vector3D = Loc
+
+    class FakeWorld:
+        def __init__(self):
+            self.calls = 0
+
+        def cast_ray(self, origin, target):
+            self.calls += 1
+            return [SimpleNamespace(location=Loc(3.0, 0.0, 1.0), label="test")]
+
+    ego_actor = SimpleNamespace(
+        get_transform=lambda: SimpleNamespace(location=Loc(), rotation=SimpleNamespace(yaw=0.0)),
+    )
+    world = FakeWorld()
+    try:
+        first = logger.collect_environment_proximity(FakeCarla, world, ego_actor, frame_id=10)
+        second = logger.collect_environment_proximity(FakeCarla, world, ego_actor, frame_id=11)
+        assert first["raycast_reused"] is False
+        assert second["raycast_reused"] is True
+        assert world.calls == 7
     finally:
         logger.close(carla_alive=False)
 
@@ -557,5 +759,6 @@ def test_plot_run_writes_detailed_pngs(tmp_path, monkeypatch):
         "leaderboard_ego_timeseries.png",
         "leaderboard_metric_scores.png",
         "leaderboard_ability_breakdown.png",
+        "leaderboard_proximity_timeseries.png",
     ):
         assert (run_dir / name).exists()

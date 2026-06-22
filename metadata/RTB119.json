@@ -277,6 +277,7 @@
     ]
   ],
   "reference_speed_kmh": 70.0,
+  "speed_limit_kmh": 70.0,
   "allowed_lateral_error_m": 4.0,
   "hard_lateral_error_m": 12.0,
   "allowed_progress_error_m": 20.0,
@@ -286,29 +287,15 @@
   "allowed_heading_error_deg": 45.0,
   "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.clearance_intrusion",
-    "A.lighting_facility",
-    "A.pavement_condition",
-    "B.yielding_priority",
-    "C.glare",
-    "C.low_light",
-    "C.rain_wet"
+    "A",
+    "B",
+    "C"
   ],
-  "ability_tags": {
-    "A": [
-      "A.clearance_intrusion",
-      "A.lighting_facility",
-      "A.pavement_condition"
-    ],
-    "B": [
-      "B.yielding_priority"
-    ],
-    "C": [
-      "C.glare",
-      "C.low_light",
-      "C.rain_wet"
-    ]
-  },
+  "ability_tags": [
+    "A",
+    "B",
+    "C"
+  ],
   "ego_start": {
     "location": {
       "x": 5.516,
@@ -331,36 +318,10 @@
       "roll": 0.0
     }
   },
-  "speed_zones": [
-    {
-      "id": "rtb119_primary_speed_zone",
-      "center": [
-        5.278,
-        -180.779
-      ],
-      "radius": 35.0,
-      "target_speed_kmh": 40.0,
-      "reason": "yield_or_stop_for_priority_conflict"
-    }
-  ],
-  "hazard_zones": [
-    {
-      "id": "rtb119_primary_hazard_zone",
-      "category": "A",
-      "subtype": "clearance_intrusion",
-      "behavior_subtype": "yielding_priority",
-      "center": [
-        5.278,
-        -180.779
-      ],
-      "radius_m": 10.0,
-      "target_speed_kmh": 40.0
-    }
-  ],
   "hazards": [
     {
       "id": "rtb119_primary_hazard",
-      "type": "yielding_priority",
+      "type": "emergency_avoidance",
       "center": [
         5.278,
         -180.779
@@ -368,8 +329,9 @@
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
-      "allow_enter_danger_zone": true,
-      "expected_behavior": "yield_or_stop_for_priority_conflict"
+      "reference_speed_kmh": 40.0,
+      "allow_enter_danger_zone": false,
+      "expected_behavior": "slow_or_avoid"
     }
   ]
 }

@@ -150,6 +150,9 @@ leaderboard-run `
 ### Actor 记录和 stdout
 
 - `--actor-log-radius-m`: 记录 ego 周围多大半径内的动态/静态 actor，默认 `120` 米。
+- `--environment-raycast-interval-frames`: 静态环境距离 raycast 的采样间隔，默认 `5` 帧。非采样帧复用上次结果，降低 CARLA RPC 压力。
+- `--environment-raycast-distance-m`: raycast 最大距离，默认 `30` 米。
+- `--environment-raycast-angles-deg`: ego 相对角度列表，默认 `-90,-60,-30,0,30,60,90`。PowerShell 中如果第一个值是负数，建议写成 `--environment-raycast-angles-deg="-90,-60,-30,0,30,60,90"`。
 - `--capture-scenario-stdout`: 兼容参数。当前 runner 会把场景脚本 stdout/stderr 写入每个 run 目录的 `scenario_stdout.log`，便于崩溃后追踪。
 
 每个 run 目录主要输出：
@@ -290,7 +293,7 @@ leaderboard-plot `
 `leaderboard-plot` 参数：
 
 - `--run-dir`: 单个场景输出目录，必须包含 frame log、metrics 和 config。
-- `--output`: 可选，额外输出 overview 图。默认四张详细图直接写入 `--run-dir`。
+- `--output`: 可选，额外输出 overview 图。默认详细图直接写入 `--run-dir`。
 - `--dpi`: 图片 DPI，默认 `400`。
 
 默认输出：
@@ -300,6 +303,7 @@ leaderboard_trajectory.png
 leaderboard_ego_timeseries.png
 leaderboard_metric_scores.png
 leaderboard_ability_breakdown.png
+leaderboard_proximity_timeseries.png
 ```
 
 ## 8. RTB122 崩溃排查建议
@@ -349,6 +353,9 @@ leaderboard-run `
   --natural-end-distance-m 5 `
   --natural-end-min-ticks 5 `
   --actor-log-radius-m 120 `
+  --environment-raycast-interval-frames 5 `
+  --environment-raycast-distance-m 30 `
+  --environment-raycast-angles-deg="-90,-60,-30,0,30,60,90" `
   --record-video `
   --record-video-mode ego_6cam `
   --video-fps 10 `

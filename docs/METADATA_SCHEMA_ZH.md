@@ -14,11 +14,11 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 - `reference_trajectory_source`: 静态识别到的 ego 轨迹变量名；没有时为 `not_static_ego_reference_detected`。
 - `reference_trajectory_format`: `x_y` 或 `x_y_yaw`。
 - `reference_trajectory`: ego 合理参考轨迹，格式为 `[[x, y, yaw], ...]` 或 `[[x, y], ...]`。
-- `reference_speed_kmh`: 全局参考速度。
-- `speed_zones`: 局部速度语义。
-- `hazards` / `hazard_zones`: 长尾隐患响应和道路工程隐患适应指标使用。
-- `scenario_tags`: 能力标签，例如 `A.sight_distance`、`B.yielding_priority`、`C.rain_wet`。
-- `ability_tags`: A/B/C 标签分组缓存。
+- `reference_speed_kmh`: 从场景代码推断的参考巡航速度，兼容旧字段。
+- `speed_limit_kmh`: 普通区域速度上限。
+- `hazards`: 隐患点列表，每项建议包含 `id`、`center`、`radius_m`、`perception_radius_m`、`reference_speed_kmh`。
+- `scenario_tags`: 能力大类标签，只推荐 `A`、`B`、`C`。
+- `ability_tags`: A/B/C 标签列表。
 
 ## 已删除或不再推荐字段
 
@@ -26,11 +26,16 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 - `route_waypoints`: 删除，避免重复。
 - `centerline_route`: 删除。评估统一从 `reference_trajectory` 读取；旧 run config 仍兼容。
 - `route`: 新 metadata 不再写入；旧 run config 仍兼容。
+- `hazard_zones`: 删除。道路工程隐患适应指标已移除，隐患语义统一放入 `hazards`。
+- `speed_zones`: 不再推荐。速度适配只需要全局 `speed_limit_kmh` 和 hazard 的 `reference_speed_kmh`。
+- `A.xxx/B.xxx/C.xxx` 子类标签：不再用于能力评分。
 - 伪造的 `z=0.5`: 删除。原始三元轨迹通常是 `x,y,yaw`，不是 `x,y,z`。
 
 ## 轨迹约定
 
-`reference_trajectory` 是合理参考轨迹，不是专家最优轨迹。`drivable_area` 指标会用宽松阈值比较实际 ego 与该轨迹的空间、时间/进度和航向趋势偏差。
+`reference_trajectory` 是合理参考轨迹，不是专家最优轨迹。`trajectory_adherence` 指标会用宽松阈值比较实际 ego 与该轨迹的空间、时间/进度和航向趋势偏差。
+
+缺少 `reference_trajectory` 时，`trajectory_adherence` 返回 0，不再默认满分。`route_completion` 可以在有 `ego_start` 和 `ego_end` 时使用起终点兜底，但这只能说明 ego 接近了终点，不能说明它沿合理轨迹通过了场景。
 
 如果场景没有固定 ego 轨迹，例如 TrafficManager、随机车道保持或动态路线，metadata 可以暂时保留空 `reference_trajectory`，但必须在审计报告中标出，后续应人工补充 `ego_end` 或明确参考路线。
 

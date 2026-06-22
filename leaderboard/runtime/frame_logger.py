@@ -1,4 +1,5 @@
 import json
+import math
 from pathlib import Path
 
 from leaderboard.core.io import save_json
@@ -7,7 +8,7 @@ from .carla_utils import actor_to_record, control_to_dict
 
 
 class RuntimeFrameLogger:
-    def __init__(self, output_dir, scenario, config):
+    def __init__(self, output_dir, scenario, config, carla_module=None):
         self.output_dir = Path(output_dir)
         self.scenario = scenario
         self.config = config
@@ -20,6 +21,9 @@ class RuntimeFrameLogger:
         self._frames = []
         self._collisions = []
         self._collision_sensor = None
+        self.carla = carla_module
+        self._last_environment_proximity = {"raycast_available": False}
+        self._last_environment_raycast_frame = None
         save_json(self.config_path, config)
 
     def attach_collision_sensor(self, carla, world, ego_actor):
@@ -43,9 +47,90 @@ class RuntimeFrameLogger:
                 "other_actor_type": other.type_id if other else "unknown",
                 "role_name": other.attributes.get("role_name", "") if other else "",
                 "location": [float(location.x), float(location.y), float(location.z)] if location else None,
+                "normal_impulse": [
+                    float(event.normal_impulse.x),
+                    float(event.normal_impulse.y),
+                    float(event.normal_impulse.z),
+                ] if hasattr(event, "normal_impulse") else None,
             })
 
         self._collision_sensor.listen(on_collision)
+
+    def collect_environment_proximity(self, carla, world, ego_actor, frame_id=None):
+        if carla is None:
+            return {"raycast_available": False}
+        if not hasattr(world, "cast_ray"):
+            return {"raycast_available": False}
+        interval = max(1, int(self.config.get("environment_raycast_interval_frames", 5)))
+        if frame_id is not None and self._last_environment_raycast_frame is not None:
+            if (int(frame_id) - int(self._last_environment_raycast_frame)) < interval:
+                reused = dict(self._last_environment_proximity)
+                reused["raycast_reused"] = True
+                reused["raycast_interval_frames"] = interval
+                return reused
+        try:
+            tf = ego_actor.get_transform()
+            center = tf.location + carla.Location(z=1.0)
+            yaw = float(tf.rotation.yaw)
+            max_distance = float(self.config.get("environment_raycast_distance_m", 30.0))
+            min_hit_distance = float(self.config.get("environment_raycast_min_hit_distance_m", 0.25))
+            angles = self.config.get("environment_raycast_angles_deg", [-90, -60, -30, 0, 30, 60, 90])
+            extent_x = extent_y = 1.0
+            try:
+                extent_x = float(ego_actor.bounding_box.extent.x)
+                extent_y = float(ego_actor.bounding_box.extent.y)
+            except Exception:
+                pass
+            hits = []
+            for rel in angles:
+                heading = yaw + float(rel)
+                rel_rad = math.radians(float(rel))
+                self_clearance = abs(math.cos(rel_rad)) * extent_x + abs(math.sin(rel_rad)) * extent_y + 0.5
+                forward = carla.Vector3D(
+                    x=math.cos(math.radians(heading)),
+                    y=math.sin(math.radians(heading)),
+                    z=0.0,
+                )
+                origin = center + forward * self_clearance
+                target = origin + forward * max_distance
+                ray_hits = world.cast_ray(origin, target)
+                if not ray_hits:
+                    continue
+                hit = None
+                for candidate in ray_hits:
+                    loc = candidate.location
+                    if origin.distance(loc) >= min_hit_distance:
+                        hit = candidate
+                        break
+                if hit is None:
+                    continue
+                loc = hit.location
+                distance = origin.distance(loc)
+                hits.append({
+                    "relative_angle_deg": float(rel),
+                    "distance_m": float(distance),
+                    "location": [float(loc.x), float(loc.y), float(loc.z)],
+                    "label": str(getattr(hit, "label", "")),
+                })
+            nearest = min(hits, key=lambda item: item["distance_m"]) if hits else None
+            result = {
+                "raycast_available": True,
+                "raycast_reused": False,
+                "raycast_interval_frames": interval,
+                "raycast_max_distance_m": max_distance,
+                "raycast_min_hit_distance_m": min_hit_distance,
+                "environment_hits": hits,
+                "nearest_environment_distance_m": nearest["distance_m"] if nearest else None,
+                "nearest_environment_relative_angle_deg": nearest["relative_angle_deg"] if nearest else None,
+            }
+            self._last_environment_proximity = result
+            self._last_environment_raycast_frame = frame_id
+            return result
+        except Exception as exc:
+            result = {"raycast_available": False, "raycast_error": str(exc)}
+            self._last_environment_proximity = result
+            self._last_environment_raycast_frame = frame_id
+            return result
 
     def log_tick(self, world, ego_actor, ego_control=None, actor_radius_m=120.0):
         snapshot = world.get_snapshot()
@@ -72,6 +157,10 @@ class RuntimeFrameLogger:
             "actors": actors,
             "collisions": [c for c in self._collisions if c.get("frame") == frame_id],
         }
+        try:
+            record["proximity"] = self.collect_environment_proximity(self.carla, world, ego_actor, frame_id) if self.carla else {"raycast_available": False}
+        except Exception:
+            record["proximity"] = {"raycast_available": False}
         self._frames.append(record)
         self._file.write(json.dumps(record, ensure_ascii=False) + "\n")
         self._file.flush()

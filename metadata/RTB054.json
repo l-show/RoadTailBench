@@ -327,6 +327,7 @@
     ]
   ],
   "reference_speed_kmh": 40.0,
+  "speed_limit_kmh": 40.0,
   "allowed_lateral_error_m": 4.0,
   "hard_lateral_error_m": 12.0,
   "allowed_progress_error_m": 20.0,
@@ -336,25 +337,15 @@
   "allowed_heading_error_deg": 45.0,
   "hard_heading_error_deg": 120.0,
   "scenario_tags": [
-    "A.alignment_geometry",
-    "A.clearance_intrusion",
-    "B.overtaking_bypass",
-    "C.fog",
-    "C.low_light"
+    "A",
+    "B",
+    "C"
   ],
-  "ability_tags": {
-    "A": [
-      "A.alignment_geometry",
-      "A.clearance_intrusion"
-    ],
-    "B": [
-      "B.overtaking_bypass"
-    ],
-    "C": [
-      "C.fog",
-      "C.low_light"
-    ]
-  },
+  "ability_tags": [
+    "A",
+    "B",
+    "C"
+  ],
   "ego_start": {
     "location": {
       "x": 69.015,
@@ -377,36 +368,10 @@
       "roll": 0.0
     }
   },
-  "speed_zones": [
-    {
-      "id": "rtb054_primary_speed_zone",
-      "center": [
-        -5.735,
-        -4.007
-      ],
-      "radius": 35.0,
-      "target_speed_kmh": 40.0,
-      "reason": "bypass_or_change_lane_safely"
-    }
-  ],
-  "hazard_zones": [
-    {
-      "id": "rtb054_primary_hazard_zone",
-      "category": "A",
-      "subtype": "alignment_geometry",
-      "behavior_subtype": "overtaking_bypass",
-      "center": [
-        -5.735,
-        -4.007
-      ],
-      "radius_m": 10.0,
-      "target_speed_kmh": 40.0
-    }
-  ],
   "hazards": [
     {
       "id": "rtb054_primary_hazard",
-      "type": "overtaking_bypass",
+      "type": "emergency_avoidance",
       "center": [
         -5.735,
         -4.007
@@ -414,8 +379,9 @@
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
       "danger_radius_m": 4.0,
+      "reference_speed_kmh": 40.0,
       "allow_enter_danger_zone": false,
-      "expected_behavior": "bypass_or_change_lane_safely"
+      "expected_behavior": "slow_or_avoid"
     }
   ]
 }
