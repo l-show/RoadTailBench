@@ -278,7 +278,9 @@ leaderboard-eval `
 ```powershell
 leaderboard-plot `
   --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503 `
-  --dpi 400
+  --dpi 400 `
+  --style nc `
+  --smooth-window-s 0.5
 ```
 
 指定额外 overview 图：
@@ -295,6 +297,12 @@ leaderboard-plot `
 - `--run-dir`: 单个场景输出目录，必须包含 frame log、metrics 和 config。
 - `--output`: 可选，额外输出 overview 图。默认详细图直接写入 `--run-dir`。
 - `--dpi`: 图片 DPI，默认 `400`。
+- `--smooth-window-s`: 绘图滑动平滑窗口，默认 `0.5` 秒。只影响 PNG，不改变指标。
+- `--no-smooth`: 禁用绘图平滑。
+- `--style nc|ieee|default`: 图片风格，默认 `nc`，使用白底、低饱和配色和细线条。
+- `--overview-layout paper|compact`: overview 布局，默认 `paper`。
+
+默认会输出 5 张详细图：轨迹、ego 状态、核心指标、能力分和近距风险。`--output` 额外生成一张 overview 图，把轨迹、ego 状态、安全摘要和核心指标压缩在一张图里，适合报告快速浏览；它不是详细图的替代。
 
 默认输出：
 

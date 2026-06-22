@@ -1,5 +1,6 @@
 from . import CORE_METRICS
 from .ability_score import AbilityScoreMetric
+from .capability_score import BehaviorCapabilityScoreMetric, HazardCapabilityScoreMetric
 from .composite_score import CompositeScoreMetric
 
 
@@ -9,7 +10,12 @@ def evaluate_leaderboard(frames, config):
         metric = metric_cls()
         result = metric.compute(frames, config, results)
         results[result["name"]] = result
-    for metric in (CompositeScoreMetric(), AbilityScoreMetric()):
+    for metric in (
+        CompositeScoreMetric(),
+        BehaviorCapabilityScoreMetric(),
+        HazardCapabilityScoreMetric(),
+        AbilityScoreMetric(),
+    ):
         result = metric.compute(frames, config, results)
         results[result["name"]] = result
     return {

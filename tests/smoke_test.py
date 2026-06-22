@@ -185,7 +185,27 @@ def test_evaluator_uses_leaderboard_score_name():
     assert result["scenario_id"] == "RTB_TEST"
     assert "leaderboard_driving_score" in result["metrics"]
     assert "proximity_risk" in result["metrics"]
+    assert "behavior_capability_score" in result["metrics"]
+    assert "hazard_capability_score" in result["metrics"]
     assert "road_engineering_hazard_adaptation" not in result["metrics"]
+
+
+def test_capability_scores_use_binary_vector():
+    frames = [{"ego": {"location": [0.0, 0.0, 0.0]}}]
+    config = {
+        "scenario_id": "RTB_CAP",
+        "capability_vector": {
+            "behavior": {"overtaking": 1, "lane_change": 0},
+            "hazard": {"limited_sight_distance": 1},
+        },
+    }
+    result = evaluate_leaderboard(frames, config)["metrics"]
+    behavior = result["behavior_capability_score"]
+    hazard = result["hazard_capability_score"]
+    assert "overtaking" in behavior["details"]["selected_capabilities"]
+    assert behavior["details"]["per_capability_scores"]["lane_change"] is None
+    assert "limited_sight_distance" in hazard["details"]["selected_capabilities"]
+    assert result["ability_score"]["details"]["mode"] == "compatibility_aggregate_of_two_capability_scores"
 
 
 def test_collision_penalty_is_weighted_not_binary():
@@ -266,6 +286,26 @@ def test_proximity_risk_uses_lateral_and_ttc():
     assert result["score"] < 1.0
     assert result["details"]["min_time_to_collision_s"] is not None
     assert result["details"]["min_lateral_distance_m"] <= 0.5
+    assert "mean_dynamic_caution_distance_m" in result["details"]
+
+
+def test_proximity_risk_uses_lateral_conflict_time():
+    frames = [{
+        "ego": {
+            "location": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "velocity": [0.0, 2.0, 0.0],
+        },
+        "actors": [{
+            "id": 2,
+            "type_id": "vehicle.test",
+            "location": [1.0, 2.0, 0.0],
+            "velocity": [0.0, 0.0, 0.0],
+        }],
+    }]
+    result = InteractionRiskMetric().compute(frames, {})
+    assert result["details"]["min_time_to_lateral_conflict_s"] is not None
+    assert result["score"] < 1.0
 
 
 def test_hazard_response_requires_control_or_speed_change_not_speed_compliance_only():

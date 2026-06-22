@@ -1,0 +1,28 @@
+{
+  "schema_version": "roadtailbench.capability_taxonomy.v1",
+  "behavior": [
+    "lane_change",
+    "overtaking",
+    "bypass_obstacle",
+    "car_following",
+    "yielding",
+    "merge_or_cut_in",
+    "intersection_crossing",
+    "pedestrian_interaction",
+    "emergency_braking",
+    "low_speed_maneuver"
+  ],
+  "hazard": [
+    "traffic_sign_marking",
+    "road_geometry",
+    "limited_sight_distance",
+    "road_surface_low_friction",
+    "static_obstacle_or_intrusion",
+    "falling_or_moving_obstacle",
+    "construction_or_lane_blockage",
+    "priority_conflict",
+    "adverse_weather_visibility",
+    "adverse_lighting_glare",
+    "adverse_lighting_low_light"
+  ]
+}

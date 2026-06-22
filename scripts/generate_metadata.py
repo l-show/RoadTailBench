@@ -337,6 +337,104 @@ def simplify_ability_tags(tags):
     return groups or ["A", "B"]
 
 
+BEHAVIOR_CAPABILITY_KEYS = [
+    "lane_change",
+    "overtaking",
+    "bypass_obstacle",
+    "car_following",
+    "yielding",
+    "merge_or_cut_in",
+    "intersection_crossing",
+    "pedestrian_interaction",
+    "emergency_braking",
+    "low_speed_maneuver",
+]
+
+HAZARD_CAPABILITY_KEYS = [
+    "traffic_sign_marking",
+    "road_geometry",
+    "limited_sight_distance",
+    "road_surface_low_friction",
+    "static_obstacle_or_intrusion",
+    "falling_or_moving_obstacle",
+    "construction_or_lane_blockage",
+    "priority_conflict",
+    "adverse_weather_visibility",
+    "adverse_lighting_glare",
+    "adverse_lighting_low_light",
+]
+
+
+def zero_vector(keys):
+    return {key: 0 for key in keys}
+
+
+def build_capability_vector(tags, source, excel):
+    behavior = zero_vector(BEHAVIOR_CAPABILITY_KEYS)
+    hazard = zero_vector(HAZARD_CAPABILITY_KEYS)
+    text = "\n".join(str(v) for v in [
+        excel.get("source_hazards"),
+        excel.get("scenario_typical"),
+        excel.get("scene_type"),
+        excel.get("road"),
+        excel.get("environment"),
+        excel.get("variant_hazard"),
+        excel.get("description"),
+        source,
+    ] if v).lower()
+
+    if any(word in text for word in ("lane_change", "change_lane", "变道", "并线")):
+        behavior["lane_change"] = 1
+    if any(word in text for word in ("overtak", "超车", "跨越")):
+        behavior["overtaking"] = 1
+    if any(word in text for word in ("bypass", "绕行", "避让", "障碍", "obstacle", "construction")):
+        behavior["bypass_obstacle"] = 1
+    if any(word in text for word in ("follow", "跟车", "carla.command", "autopilot")):
+        behavior["car_following"] = 1
+    if any(word in text for word in ("yield", "让行", "优先", "会车")):
+        behavior["yielding"] = 1
+    if any(word in text for word in ("merge", "cut_in", "cut-in", "汇入", "合流", "匝道")):
+        behavior["merge_or_cut_in"] = 1
+    if any(word in text for word in ("junction", "intersection", "crossing", "路口", "交叉", "丁字")):
+        behavior["intersection_crossing"] = 1
+    if any(word in text for word in ("walker.pedestrian", "pedestrian", "行人")):
+        behavior["pedestrian_interaction"] = 1
+    if any(word in text for word in ("emergency", "brake", "急刹", "紧急", "突发")):
+        behavior["emergency_braking"] = 1
+    if any(word in text for word in ("parking", "low_speed", "低速", "倒车", "泊车")):
+        behavior["low_speed_maneuver"] = 1
+
+    for tag in tags:
+        if tag.endswith("traffic_sign_marking"):
+            hazard["traffic_sign_marking"] = 1
+        elif tag.endswith("alignment_geometry"):
+            hazard["road_geometry"] = 1
+        elif tag.endswith("sight_distance"):
+            hazard["limited_sight_distance"] = 1
+        elif tag.endswith("pavement_condition"):
+            hazard["road_surface_low_friction"] = 1
+        elif tag.endswith("clearance_intrusion"):
+            hazard["static_obstacle_or_intrusion"] = 1
+        elif tag.endswith("rain_wet") or tag.endswith("fog") or tag.endswith("wind_dust_visibility"):
+            hazard["adverse_weather_visibility"] = 1
+        elif tag.endswith("glare"):
+            hazard["adverse_lighting_glare"] = 1
+        elif tag.endswith("low_light"):
+            hazard["adverse_lighting_low_light"] = 1
+    if any(word in text for word in ("falling", "落石", "滚落", "掉落", "货物", "box")):
+        hazard["falling_or_moving_obstacle"] = 1
+    if any(word in text for word in ("construction", "施工", "占道", "lane_block")):
+        hazard["construction_or_lane_blockage"] = 1
+    if any(word in text for word in ("yield", "让行", "优先", "冲突", "priority")):
+        hazard["priority_conflict"] = 1
+
+    if not any(behavior.values()):
+        behavior["car_following"] = 1
+    if not any(hazard.values()):
+        hazard["limited_sight_distance"] = 1
+    return {"behavior": behavior, "hazard": hazard}
+
+
 def expected_behavior_for_b(tags):
     if "B.yielding_priority" in tags:
         return "yield_or_stop_for_priority_conflict"
@@ -426,6 +524,7 @@ def build_metadata(scene_path, excel, old):
         "hard_heading_error_deg": 120.0,
         "scenario_tags": simplify_ability_tags(tags),
         "ability_tags": simplify_ability_tags(tags),
+        "capability_vector": build_capability_vector(tags, source, excel),
     }
     if reference:
         metadata["ego_start"] = {

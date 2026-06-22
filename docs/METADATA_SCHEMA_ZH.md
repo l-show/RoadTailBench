@@ -17,8 +17,8 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 - `reference_speed_kmh`: 从场景代码推断的参考巡航速度，兼容旧字段。
 - `speed_limit_kmh`: 普通区域速度上限。
 - `hazards`: 隐患点列表，每项建议包含 `id`、`center`、`radius_m`、`perception_radius_m`、`reference_speed_kmh`。
-- `scenario_tags`: 能力大类标签，只推荐 `A`、`B`、`C`。
-- `ability_tags`: A/B/C 标签列表。
+- `capability_vector`: 固定候选表的 0/1 能力向量，分为 `behavior` 和 `hazard` 两类。
+- `scenario_tags` / `ability_tags`: 兼容旧字段，不再作为能力评分主依据。
 
 ## 已删除或不再推荐字段
 
@@ -29,6 +29,7 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 - `hazard_zones`: 删除。道路工程隐患适应指标已移除，隐患语义统一放入 `hazards`。
 - `speed_zones`: 不再推荐。速度适配只需要全局 `speed_limit_kmh` 和 hazard 的 `reference_speed_kmh`。
 - `A.xxx/B.xxx/C.xxx` 子类标签：不再用于能力评分。
+- 自由文本能力标签：不再推荐。新增能力必须先进入 `metadata/capability_taxonomy.json` 候选表。
 - 伪造的 `z=0.5`: 删除。原始三元轨迹通常是 `x,y,yaw`，不是 `x,y,z`。
 
 ## 轨迹约定
@@ -62,3 +63,4 @@ python scripts\generate_metadata.py
 - `reference_trajectory_points`
 - `reference_trajectory_source`
 - `needs_scene_edit_reason`
+- `blocking_metadata_issues`
