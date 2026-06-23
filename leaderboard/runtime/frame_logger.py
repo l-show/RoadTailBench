@@ -3,6 +3,7 @@ import math
 from pathlib import Path
 
 from leaderboard.core.io import save_json
+from leaderboard.core.metrics_csv import save_metrics_csv
 from leaderboard.metrics.evaluator import evaluate_leaderboard
 from .carla_utils import actor_to_record, control_to_dict
 
@@ -16,6 +17,7 @@ class RuntimeFrameLogger:
         self.frames_path = self.output_dir / "leaderboard_frame_log.jsonl"
         self.config_path = self.output_dir / "leaderboard_scenario_config.json"
         self.metrics_path = self.output_dir / "leaderboard_metrics.json"
+        self.metrics_csv_path = self.output_dir / "leaderboard_metrics.csv"
         self.summary_path = self.output_dir / "leaderboard_run_summary.json"
         self._file = self.frames_path.open("w", encoding="utf-8")
         self._frames = []
@@ -179,12 +181,15 @@ class RuntimeFrameLogger:
                         pass
         finally:
             self._file.close()
-        save_json(self.metrics_path, evaluate_leaderboard(self._frames, self.config))
+        metrics = evaluate_leaderboard(self._frames, self.config)
+        save_json(self.metrics_path, metrics)
+        save_metrics_csv(self.metrics_csv_path, metrics)
         if run_summary:
             save_json(self.summary_path, run_summary)
         return {
             "frames": str(self.frames_path),
             "config": str(self.config_path),
             "metrics": str(self.metrics_path),
+            "metrics_csv": str(self.metrics_csv_path),
             "summary": str(self.summary_path),
         }

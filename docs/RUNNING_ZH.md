@@ -152,6 +152,7 @@ leaderboard-run `
 - `--actor-log-radius-m`: 记录 ego 周围多大半径内的动态/静态 actor，默认 `120` 米。
 - `--environment-raycast-interval-frames`: 静态环境距离 raycast 的采样间隔，默认 `5` 帧。非采样帧复用上次结果，降低 CARLA RPC 压力。
 - `--environment-raycast-distance-m`: raycast 最大距离，默认 `30` 米。
+- `--environment-raycast-min-hit-distance-m`: raycast 最小有效命中距离，默认 `1.0` 米。小于该值的命中会被忽略，用于过滤自车、地面或贴身碰撞体伪命中。
 - `--environment-raycast-angles-deg`: ego 相对角度列表，默认 `-90,-60,-30,0,30,60,90`。PowerShell 中如果第一个值是负数，建议写成 `--environment-raycast-angles-deg="-90,-60,-30,0,30,60,90"`。
 - `--capture-scenario-stdout`: 兼容参数。当前 runner 会把场景脚本 stdout/stderr 写入每个 run 目录的 `scenario_stdout.log`，便于崩溃后追踪。
 
@@ -161,6 +162,7 @@ leaderboard-run `
 leaderboard_frame_log.jsonl
 leaderboard_scenario_config.json
 leaderboard_metrics.json
+leaderboard_metrics.csv
 leaderboard_run_summary.json
 scenario_stdout.log
 ```
@@ -264,7 +266,8 @@ leaderboard-video `
 leaderboard-eval `
   --frames G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\leaderboard_frame_log.jsonl `
   --config G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\leaderboard_scenario_config.json `
-  --output G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\metrics_recomputed.json
+  --output G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\metrics_recomputed.json `
+  --csv-output G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\metrics_recomputed.csv
 ```
 
 `leaderboard-eval` 参数：
@@ -272,6 +275,22 @@ leaderboard-eval `
 - `--frames`: frame log 路径。
 - `--config`: scenario config 路径。
 - `--output`: 输出 metrics JSON 路径。
+- `--csv-output`: 可选，输出扁平化 metrics CSV，列为 `scenario_id,route_id,metric_name,score,details_json`。
+
+已有 `leaderboard_metrics.json` 也可以单独转换：
+
+```powershell
+leaderboard-metrics-csv `
+  --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503
+```
+
+或指定文件：
+
+```powershell
+leaderboard-metrics-csv `
+  --metrics G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\leaderboard_metrics.json `
+  --output G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503\leaderboard_metrics.csv
+```
 
 ## 7. 画图
 

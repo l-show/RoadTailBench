@@ -15,6 +15,7 @@ dependencies = []
 [project.scripts]
 leaderboard-run = "leaderboard.cli.run:main"
 leaderboard-eval = "leaderboard.cli.eval:main"
+leaderboard-metrics-csv = "leaderboard.cli.metrics_csv:main"
 leaderboard-plot = "leaderboard.cli.plot_run:main"
 leaderboard-video = "leaderboard.cli.video:main"
 

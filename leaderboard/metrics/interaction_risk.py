@@ -1,3 +1,5 @@
+import math
+
 from .base import BaseMetric, MetricResult
 from ..core.extractors import ego, location_xy, speed_mps, velocity_xy, yaw_deg
 from ..core.geometry import clamp, distance2, yaw_to_forward
@@ -14,17 +16,19 @@ def decompose_relative(ego_record, actor_record):
     return longitudinal, lateral
 
 
-def closing_ttc(ego_record, actor_record, longitudinal_distance):
-    if longitudinal_distance <= 0.0:
-        return float("inf")
-    ex, ey = velocity_xy(ego_record)
-    av = actor_record.get("velocity", [0.0, 0.0, 0.0])
-    ax, ay = float(av[0]), float(av[1])
-    fx, fy = yaw_to_forward(yaw_deg(ego_record))
-    closing = (ex - ax) * fx + (ey - ay) * fy
-    if closing <= 0.1:
-        return float("inf")
-    return longitudinal_distance / closing
+def _score_time(value, danger, safe):
+    if value == float("inf"):
+        return 1.0
+    return clamp((value - danger) / max(safe - danger, 0.1))
+
+
+def _score_distance(value, danger, safe):
+    return clamp((value - danger) / max(safe - danger, 0.1))
+
+
+def _finite_min(values):
+    finite = [v for v in values if v is not None and v != float("inf")]
+    return min(finite) if finite else None
 
 
 class InteractionRiskMetric(BaseMetric):
@@ -33,128 +37,162 @@ class InteractionRiskMetric(BaseMetric):
     def compute(self, frames, config, context=None):
         if not frames:
             return MetricResult.make(self.name, 0.0, {"reason": "missing_frames"})
-        danger = float(config.get("proximity_danger_distance_m", config.get("interaction_danger_distance_m", 3.0)))
-        caution = float(config.get("proximity_caution_distance_m", config.get("interaction_caution_distance_m", 12.0)))
+
+        distance_danger = float(config.get("proximity_danger_distance_m", config.get("interaction_danger_distance_m", 3.0)))
+        distance_safe = float(config.get("proximity_caution_distance_m", config.get("interaction_caution_distance_m", 12.0)))
         time_headway_danger = float(config.get("proximity_time_headway_danger_s", 0.7))
-        time_headway_caution = float(config.get("proximity_time_headway_caution_s", 1.5))
+        time_headway_safe = float(config.get("proximity_time_headway_caution_s", 1.5))
+        long_time_danger = float(config.get("longitudinal_time_margin_danger_s", 0.7))
+        long_time_safe = float(config.get("longitudinal_time_margin_safe_s", 1.5))
+        lat_time_danger = float(config.get("lateral_time_margin_danger_s", 0.7))
+        lat_time_safe = float(config.get("lateral_time_margin_safe_s", 2.0))
+        lateral_distance_danger = float(config.get("lateral_clearance_danger_m", 1.0))
+        lateral_distance_safe = float(config.get("lateral_clearance_safe_m", 3.0))
         env_danger = float(config.get("environment_clearance_danger_m", 0.75))
-        env_caution = float(config.get("environment_clearance_caution_m", 2.5))
-        lateral_danger = float(config.get("lateral_danger_distance_m", 1.5))
-        lateral_caution = float(config.get("lateral_caution_distance_m", 4.0))
-        lateral_relevance_longitudinal = float(config.get("lateral_relevance_longitudinal_m", 8.0))
-        ttc_danger = float(config.get("ttc_danger_s", 2.0))
-        ttc_caution = float(config.get("ttc_caution_s", 5.0))
-        tlc_danger = float(config.get("tlc_danger_s", 1.0))
-        tlc_caution = float(config.get("tlc_caution_s", 3.0))
-        vals, min_d, min_ttc, min_tlc = [], float("inf"), float("inf"), float("inf")
-        min_longitudinal, min_lateral = float("inf"), float("inf")
+        env_safe = float(config.get("environment_clearance_safe_m", 2.5))
+        min_speed = float(config.get("safety_margin_min_speed_mps", 0.5))
+        env_min_hit = float(config.get("environment_raycast_min_hit_distance_m", 1.0))
+
+        frame_scores = []
+        min_distances, min_long_times, min_lat_times = [], [], []
+        min_long_distances, min_lat_distances = [], []
         danger_frames = 0
         caution_frames = 0
-        dynamic_dangers, dynamic_cautions = [], []
+        raycast_available = 0
+        raycast_hit = 0
+        censored = 0
+
         for frame in frames:
             e = ego(frame)
             pos = location_xy(e)
             ego_speed = speed_mps(e)
-            dynamic_danger = max(danger, ego_speed * time_headway_danger)
-            dynamic_caution = max(caution, ego_speed * time_headway_caution)
-            dynamic_dangers.append(dynamic_danger)
-            dynamic_cautions.append(dynamic_caution)
-            frame_score = 1.0
-            frame_danger = False
-            frame_caution = False
-            nearest_actor = None
+            evx, evy = velocity_xy(e)
+            fx, fy = yaw_to_forward(yaw_deg(e))
+            lx, ly = -fy, fx
+            ego_long_speed = abs(evx * fx + evy * fy)
+            ego_lat_speed = abs(evx * lx + evy * ly)
+
+            dynamic_danger = max(distance_danger, ego_speed * time_headway_danger)
+            dynamic_safe = max(distance_safe, ego_speed * time_headway_safe)
+
+            candidate_scores = []
+            frame_min_distance = None
+            frame_min_long_time = None
+            frame_min_lat_time = None
+            frame_min_long_distance = None
+            frame_min_lat_distance = None
+
             for actor in frame.get("actors", []):
                 d_actor = distance2(pos, tuple(actor.get("location", [0.0, 0.0])[:2]))
-                if nearest_actor is None or d_actor < nearest_actor[0]:
-                    nearest_actor = (d_actor, actor)
+                frame_min_distance = d_actor if frame_min_distance is None else min(frame_min_distance, d_actor)
                 longitudinal, lateral = decompose_relative(e, actor)
-                evx, evy = velocity_xy(e)
+                frame_min_long_distance = abs(longitudinal) if frame_min_long_distance is None else min(frame_min_long_distance, abs(longitudinal))
+                frame_min_lat_distance = abs(lateral) if frame_min_lat_distance is None else min(frame_min_lat_distance, abs(lateral))
+
                 av = actor.get("velocity", [0.0, 0.0, 0.0])
                 rel_vx, rel_vy = evx - float(av[0]), evy - float(av[1])
-                fx, fy = yaw_to_forward(yaw_deg(e))
-                lx, ly = -fy, fx
-                lateral_closing = abs(rel_vx * lx + rel_vy * ly)
-                min_longitudinal = min(min_longitudinal, abs(longitudinal))
-                min_lateral = min(min_lateral, abs(lateral))
-                distance_score = clamp((d_actor - dynamic_danger) / max(dynamic_caution - dynamic_danger, 0.1))
-                actor_score = distance_score
-                if d_actor <= dynamic_danger:
-                    frame_danger = True
-                if d_actor <= dynamic_caution:
-                    frame_caution = True
+                long_closing = abs(rel_vx * fx + rel_vy * fy)
+                lat_closing = abs(rel_vx * lx + rel_vy * ly)
 
-                if abs(longitudinal) <= lateral_relevance_longitudinal:
-                    lateral_score = clamp((abs(lateral) - lateral_danger) / max(lateral_caution - lateral_danger, 0.1))
-                    actor_score = min(actor_score, lateral_score)
-                    if lateral_closing > 0.1:
-                        tlc = max(0.0, abs(lateral) - lateral_danger) / lateral_closing
-                        min_tlc = min(min_tlc, tlc)
-                        tlc_score = clamp((tlc - tlc_danger) / max(tlc_caution - tlc_danger, 0.1))
-                        actor_score = min(actor_score, tlc_score)
-                        if tlc <= tlc_danger:
-                            frame_danger = True
-                        if tlc <= tlc_caution:
-                            frame_caution = True
-                    if abs(lateral) <= lateral_danger:
-                        frame_danger = True
-                    if abs(lateral) <= lateral_caution:
-                        frame_caution = True
+                distance_score = _score_distance(d_actor, dynamic_danger, dynamic_safe)
+                long_time = abs(longitudinal) / max(long_closing, ego_long_speed, min_speed)
+                lat_time = abs(lateral) / max(lat_closing, ego_lat_speed, min_speed)
+                long_score = _score_time(long_time, long_time_danger, long_time_safe)
+                lat_time_score = _score_time(lat_time, lat_time_danger, lat_time_safe)
+                lat_dist_score = _score_distance(abs(lateral), lateral_distance_danger, lateral_distance_safe)
 
-                if abs(lateral) <= lateral_caution:
-                    ttc = closing_ttc(e, actor, longitudinal)
-                    min_ttc = min(min_ttc, ttc)
-                    if ttc != float("inf"):
-                        ttc_score = clamp((ttc - ttc_danger) / max(ttc_caution - ttc_danger, 0.1))
-                        actor_score = min(actor_score, ttc_score)
-                        if ttc <= ttc_danger:
-                            frame_danger = True
-                        if ttc <= ttc_caution:
-                            frame_caution = True
-                frame_score = min(frame_score, actor_score)
+                frame_min_long_time = long_time if frame_min_long_time is None else min(frame_min_long_time, long_time)
+                frame_min_lat_time = lat_time if frame_min_lat_time is None else min(frame_min_lat_time, lat_time)
+                candidate_scores.append(min(distance_score, long_score, lat_time_score, lat_dist_score))
 
-            env_dist = frame.get("proximity", {}).get("nearest_environment_distance_m")
-            if env_dist is not None:
-                env_dist = float(env_dist)
-                env_score = clamp((env_dist - env_danger) / max(env_caution - env_danger, 0.1))
-                frame_score = min(frame_score, env_score)
-                if env_dist <= env_danger:
-                    frame_danger = True
-                if env_dist <= env_caution:
-                    frame_caution = True
-            d = nearest_actor[0] if nearest_actor else (float(env_dist) if env_dist is not None else caution)
-            min_d = min(min_d, d)
-            if env_dist is not None:
-                min_lateral = min(min_lateral, env_dist)
-            if frame_danger:
+            proximity = frame.get("proximity", {})
+            if proximity.get("raycast_available"):
+                raycast_available += 1
+            hits = proximity.get("environment_hits") or []
+            if hits:
+                raycast_hit += 1
+            elif proximity.get("raycast_available"):
+                censored += 1
+            for hit in hits:
+                distance = float(hit.get("distance_m", 0.0))
+                if distance < env_min_hit:
+                    continue
+                angle = float(hit.get("relative_angle_deg", 0.0))
+                angle_rad = math.radians(angle)
+                long_distance = abs(distance * math.cos(angle_rad))
+                lat_distance = abs(distance * math.sin(angle_rad))
+                frame_min_distance = distance if frame_min_distance is None else min(frame_min_distance, distance)
+
+                env_score = _score_distance(distance, env_danger, env_safe)
+                if abs(math.cos(angle_rad)) >= 0.5:
+                    frame_min_long_distance = long_distance if frame_min_long_distance is None else min(frame_min_long_distance, long_distance)
+                    long_time = long_distance / max(ego_long_speed, min_speed)
+                    frame_min_long_time = long_time if frame_min_long_time is None else min(frame_min_long_time, long_time)
+                    env_score = min(env_score, _score_time(long_time, long_time_danger, long_time_safe))
+                if abs(math.sin(angle_rad)) >= 0.5:
+                    frame_min_lat_distance = lat_distance if frame_min_lat_distance is None else min(frame_min_lat_distance, lat_distance)
+                    lat_time = lat_distance / max(ego_lat_speed, min_speed)
+                    frame_min_lat_time = lat_time if frame_min_lat_time is None else min(frame_min_lat_time, lat_time)
+                    env_score = min(
+                        env_score,
+                        _score_time(lat_time, lat_time_danger, lat_time_safe),
+                        _score_distance(lat_distance, lateral_distance_danger, lateral_distance_safe),
+                    )
+                candidate_scores.append(env_score)
+
+            if not candidate_scores:
+                max_range = proximity.get("raycast_max_distance_m")
+                if max_range is not None:
+                    frame_min_distance = float(max_range)
+                    censored += 1
+                frame_score = 1.0
+            else:
+                frame_score = min(candidate_scores)
+
+            if frame_min_distance is not None:
+                min_distances.append(frame_min_distance)
+            if frame_min_long_time is not None:
+                min_long_times.append(frame_min_long_time)
+            if frame_min_lat_time is not None:
+                min_lat_times.append(frame_min_lat_time)
+            if frame_min_long_distance is not None:
+                min_long_distances.append(frame_min_long_distance)
+            if frame_min_lat_distance is not None:
+                min_lat_distances.append(frame_min_lat_distance)
+            if frame_score <= 0.0:
                 danger_frames += 1
-            if frame_caution:
+            elif frame_score < 1.0:
                 caution_frames += 1
-            vals.append(frame_score)
-        base_score = sum(vals) / len(vals)
-        danger_penalty = danger_frames / len(frames)
-        score = clamp(base_score * (1.0 - 0.5 * danger_penalty))
+            frame_scores.append(frame_score)
+
+        base_score = sum(frame_scores) / len(frame_scores)
+        danger_ratio = danger_frames / len(frames)
+        score = clamp(base_score * (1.0 - 0.5 * danger_ratio))
         return MetricResult.make(self.name, score, {
-            "min_proximity_distance_m": min_d,
-            "min_longitudinal_distance_m": None if min_longitudinal == float("inf") else min_longitudinal,
-            "min_lateral_distance_m": None if min_lateral == float("inf") else min_lateral,
-            "min_time_to_collision_s": None if min_ttc == float("inf") else min_ttc,
-            "min_time_to_lateral_conflict_s": None if min_tlc == float("inf") else min_tlc,
-            "danger_frame_ratio": danger_frames / len(frames),
+            "mode": "longitudinal_lateral_safety_margin",
+            "min_proximity_distance_m": _finite_min(min_distances),
+            "min_longitudinal_distance_m": _finite_min(min_long_distances),
+            "min_lateral_distance_m": _finite_min(min_lat_distances),
+            "min_longitudinal_time_margin_s": _finite_min(min_long_times),
+            "min_lateral_time_margin_s": _finite_min(min_lat_times),
+            "danger_frame_ratio": danger_ratio,
             "caution_frame_ratio": caution_frames / len(frames),
-            "danger_distance_m": danger,
-            "caution_distance_m": caution,
-            "mean_dynamic_danger_distance_m": sum(dynamic_dangers) / len(dynamic_dangers),
-            "mean_dynamic_caution_distance_m": sum(dynamic_cautions) / len(dynamic_cautions),
+            "raycast_available_ratio": raycast_available / len(frames),
+            "raycast_hit_ratio": raycast_hit / len(frames),
+            "sensor_range_censored_ratio": censored / len(frames),
+            "distance_danger_m": distance_danger,
+            "distance_safe_m": distance_safe,
             "proximity_time_headway_danger_s": time_headway_danger,
-            "proximity_time_headway_caution_s": time_headway_caution,
+            "proximity_time_headway_safe_s": time_headway_safe,
+            "longitudinal_time_margin_danger_s": long_time_danger,
+            "longitudinal_time_margin_safe_s": long_time_safe,
+            "lateral_time_margin_danger_s": lat_time_danger,
+            "lateral_time_margin_safe_s": lat_time_safe,
+            "lateral_clearance_danger_m": lateral_distance_danger,
+            "lateral_clearance_safe_m": lateral_distance_safe,
             "environment_clearance_danger_m": env_danger,
-            "environment_clearance_caution_m": env_caution,
-            "lateral_danger_distance_m": lateral_danger,
-            "lateral_caution_distance_m": lateral_caution,
-            "lateral_relevance_longitudinal_m": lateral_relevance_longitudinal,
-            "ttc_danger_s": ttc_danger,
-            "ttc_caution_s": ttc_caution,
-            "tlc_danger_s": tlc_danger,
-            "tlc_caution_s": tlc_caution,
-            "ttc_note": "TTC is evaluated for forward longitudinal closing actor risk; TLC-like lateral conflict time is evaluated when lateral motion closes the gap.",
+            "environment_clearance_safe_m": env_safe,
+            "environment_raycast_min_hit_distance_m": env_min_hit,
+            "safety_margin_min_speed_mps": min_speed,
+            "note": "Uses longitudinal and lateral safety time margins over actor and environment candidates.",
         })

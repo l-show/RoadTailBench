@@ -50,6 +50,7 @@ def test_runner_cli_args():
         "--scenario-timeout", "120",
         "--environment-raycast-interval-frames", "4",
         "--environment-raycast-distance-m", "25",
+        "--environment-raycast-min-hit-distance-m", "1.2",
         "--environment-raycast-angles-deg=-90,0,90",
         "--dry-run",
     ])
@@ -67,6 +68,7 @@ def test_runner_cli_args():
     assert args.scenario_timeout == 120
     assert args.environment_raycast_interval_frames == 4
     assert args.environment_raycast_distance_m == 25.0
+    assert args.environment_raycast_min_hit_distance_m == 1.2
     assert args.environment_raycast_angles_deg == "-90,0,90"
 
 
@@ -86,6 +88,7 @@ def test_runner_cli_defaults():
     assert args.disable_natural_end is False
     assert args.environment_raycast_interval_frames == 5
     assert args.environment_raycast_distance_m == 30.0
+    assert args.environment_raycast_min_hit_distance_m == 1.0
 
 
 def test_metadata_json():
@@ -219,7 +222,7 @@ def test_collision_penalty_is_weighted_not_binary():
     assert result["details"]["weighted_collision_count"] == 0.25
 
 
-def test_yield_hazard_allows_danger_entry_when_responding():
+def test_hazard_response_ignores_danger_zone_fields_when_responding():
     frames = [
         {"time": 0.0, "ego": {"location": [10.0, 0.0, 0.0], "speed_mps": 12.0, "control": {"brake": 0.0}}},
         {"time": 0.5, "ego": {"location": [2.0, 0.0, 0.0], "speed_mps": 3.0, "control": {"brake": 1.0}}},
@@ -230,15 +233,15 @@ def test_yield_hazard_allows_danger_entry_when_responding():
             "id": "yield_test",
             "center": [0.0, 0.0, 0.0],
             "perception_radius_m": 15.0,
-            "danger_radius_m": 4.0,
             "reference_speed_kmh": 15.0,
             "expected_behavior": "yield_or_stop_for_priority_conflict",
-            "allow_enter_danger_zone": True,
         }]
     }
     result = LongTailHazardResponseMetric().compute(frames, config)
     assert result["score"] > 0.5
-    assert result["details"]["hazard_responses"][0]["danger_frames"] > 0
+    response = result["details"]["hazard_responses"][0]
+    assert "danger_frames" not in response
+    assert response["reason"] == "responded"
 
 
 def test_driving_efficiency_uses_sim_time_not_speed_average():
@@ -267,7 +270,7 @@ def test_speed_appropriateness_separates_limit_and_hazard_reference():
     assert result["details"]["hazard_frame_ratio"] > 0.0
 
 
-def test_proximity_risk_uses_lateral_and_ttc():
+def test_proximity_risk_uses_longitudinal_lateral_safety_margins():
     frames = [{
         "ego": {
             "location": [0.0, 0.0, 0.0],
@@ -284,12 +287,13 @@ def test_proximity_risk_uses_lateral_and_ttc():
     }]
     result = InteractionRiskMetric().compute(frames, {})
     assert result["score"] < 1.0
-    assert result["details"]["min_time_to_collision_s"] is not None
+    assert result["details"]["mode"] == "longitudinal_lateral_safety_margin"
+    assert result["details"]["min_longitudinal_time_margin_s"] is not None
     assert result["details"]["min_lateral_distance_m"] <= 0.5
-    assert "mean_dynamic_caution_distance_m" in result["details"]
+    assert "longitudinal_time_margin_safe_s" in result["details"]
 
 
-def test_proximity_risk_uses_lateral_conflict_time():
+def test_proximity_risk_uses_lateral_time_margin():
     frames = [{
         "ego": {
             "location": [0.0, 0.0, 0.0],
@@ -304,8 +308,50 @@ def test_proximity_risk_uses_lateral_conflict_time():
         }],
     }]
     result = InteractionRiskMetric().compute(frames, {})
-    assert result["details"]["min_time_to_lateral_conflict_s"] is not None
+    assert result["details"]["min_lateral_time_margin_s"] is not None
     assert result["score"] < 1.0
+
+
+def test_proximity_risk_uses_environment_hits_as_candidates():
+    frames = [{
+        "ego": {
+            "location": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "velocity": [4.0, 0.0, 0.0],
+        },
+        "actors": [],
+        "proximity": {
+            "raycast_available": True,
+            "raycast_max_distance_m": 30.0,
+            "environment_hits": [{"relative_angle_deg": 0.0, "distance_m": 1.0}],
+            "nearest_environment_distance_m": 1.0,
+        },
+    }]
+    result = InteractionRiskMetric().compute(frames, {})
+    assert result["score"] < 1.0
+    assert result["details"]["raycast_hit_ratio"] == 1.0
+    assert result["details"]["min_longitudinal_time_margin_s"] is not None
+
+
+def test_proximity_risk_ignores_too_close_environment_hits():
+    frames = [{
+        "ego": {
+            "location": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0],
+            "velocity": [4.0, 0.0, 0.0],
+        },
+        "actors": [],
+        "proximity": {
+            "raycast_available": True,
+            "raycast_max_distance_m": 30.0,
+            "environment_hits": [{"relative_angle_deg": 0.0, "distance_m": 0.3}],
+            "nearest_environment_distance_m": 0.3,
+        },
+    }]
+    result = InteractionRiskMetric().compute(frames, {})
+    assert result["score"] == 1.0
+    assert result["details"]["min_proximity_distance_m"] == 30.0
+    assert result["details"]["sensor_range_censored_ratio"] == 1.0
 
 
 def test_hazard_response_requires_control_or_speed_change_not_speed_compliance_only():

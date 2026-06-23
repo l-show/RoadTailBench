@@ -17,13 +17,11 @@ class LongTailHazardResponseMetric(BaseMetric):
         for hazard in hazards:
             center = tuple(hazard.get("center", [0.0, 0.0])[:2])
             perception = float(hazard.get("perception_radius_m", hazard.get("radius_m", 10.0) + 15.0))
-            danger = float(hazard.get("danger_radius_m", hazard.get("radius_m", 5.0)))
             enter_time, response_time, min_distance, min_speed = None, None, float("inf"), float("inf")
             collision_violation, prev_speed = False, None
             entry_speed = None
             response_reason = None
             response_streak = 0
-            danger_frames = 0
             for frame in frames:
                 t = float(frame.get("time", frame.get("frame", 0) * 0.05))
                 e = ego(frame)
@@ -34,8 +32,6 @@ class LongTailHazardResponseMetric(BaseMetric):
                 if enter_time is None and d <= perception:
                     enter_time = t
                     entry_speed = cur_speed
-                if enter_time is not None and d <= danger:
-                    danger_frames += 1
                 if frame.get("collisions"):
                     collision_violation = True
                 if enter_time is not None and response_time is None:
@@ -69,9 +65,6 @@ class LongTailHazardResponseMetric(BaseMetric):
             if collision_violation:
                 score *= 0.25
                 reason = "collision"
-            elif reason != "no_response" and danger_frames and not hazard.get("allow_enter_danger_zone", False):
-                score *= 0.7
-                reason = "entered_danger_zone"
             results.append({
                 "id": hazard.get("id"),
                 "type": hazard.get("type"),
@@ -82,7 +75,6 @@ class LongTailHazardResponseMetric(BaseMetric):
                 "min_speed_kmh": min_speed * 3.6 if min_speed < float("inf") else None,
                 "entry_speed_kmh": entry_speed * 3.6 if entry_speed is not None else None,
                 "speed_drop_kmh": (entry_speed - min_speed) * 3.6 if entry_speed is not None and min_speed < float("inf") else None,
-                "danger_frames": danger_frames,
                 "reason": reason,
                 "response_reason": response_reason,
                 "score": score,

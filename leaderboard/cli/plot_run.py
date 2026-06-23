@@ -261,26 +261,37 @@ def plot_proximity_timeseries(frames, metrics, output, plt, dpi, smooth_window_s
     min_dist = []
     lateral = []
     longitudinal = []
-    ttc = []
-    tlc = []
+    long_margin = []
+    lat_margin = []
     dynamic_danger = []
     dynamic_caution = []
     for frame in frames:
         p = frame.get("proximity", {})
         ego = frame.get("ego", {})
         speed = float(ego.get("speed_mps", 0.0))
-        danger = max(float(prox.get("danger_distance_m", 3.0)), speed * float(prox.get("proximity_time_headway_danger_s", 0.7)))
-        caution = max(float(prox.get("caution_distance_m", 12.0)), speed * float(prox.get("proximity_time_headway_caution_s", 1.5)))
+        danger = max(float(prox.get("distance_danger_m", prox.get("danger_distance_m", 3.0))), speed * float(prox.get("proximity_time_headway_danger_s", 0.7)))
+        caution = max(float(prox.get("distance_safe_m", prox.get("caution_distance_m", 12.0))), speed * float(prox.get("proximity_time_headway_safe_s", prox.get("proximity_time_headway_caution_s", 1.5))))
         dynamic_danger.append(danger)
         dynamic_caution.append(caution)
         env_max = p.get("raycast_max_distance_m", 30.0)
-        min_dist.append(p.get("nearest_environment_distance_m", env_max))
-        lateral.append(float(prox.get("environment_clearance_caution_m", 2.5)))
+        env_min_hit = float(prox.get("environment_raycast_min_hit_distance_m", p.get("raycast_min_hit_distance_m", 1.0)))
+        env_hits = [h for h in (p.get("environment_hits") or []) if float(h.get("distance_m", env_max)) >= env_min_hit]
+        nearest_env = min((float(h.get("distance_m", env_max)) for h in env_hits), default=env_max)
+        min_dist.append(nearest_env)
+        lateral.append(float(prox.get("environment_clearance_safe_m", 2.5)))
         longitudinal.append(caution)
-        ttc.append(float(prox.get("ttc_caution_s", 5.0)))
-        tlc.append(float(prox.get("tlc_caution_s", 3.0)))
+        long_margin.append(float(prox.get("longitudinal_time_margin_safe_s", 1.5)))
+        lat_margin.append(float(prox.get("lateral_time_margin_safe_s", 2.0)))
         actors = frame.get("actors", [])
         if not ego or not actors:
+            if env_hits:
+                nearest_hit = min(env_hits, key=lambda item: float(item.get("distance_m", env_max)))
+                angle = math.radians(float(nearest_hit.get("relative_angle_deg", 0.0)))
+                distance = float(nearest_hit.get("distance_m", env_max))
+                if abs(math.cos(angle)) >= 0.5:
+                    longitudinal[-1] = abs(distance * math.cos(angle))
+                if abs(math.sin(angle)) >= 0.5:
+                    lateral[-1] = abs(distance * math.sin(angle))
             continue
         ex, ey = ego.get("location", [0.0, 0.0])[:2]
         yaw = math.radians(float(ego.get("rotation", [0.0, 0.0, 0.0])[2]))
@@ -301,32 +312,48 @@ def plot_proximity_timeseries(frames, metrics, output, plt, dpi, smooth_window_s
             lateral[-1] = abs(lat_d)
             ev = ego.get("velocity", [0.0, 0.0])
             av = actor.get("velocity", [0.0, 0.0])
-            closing = (float(ev[0]) - float(av[0])) * fx + (float(ev[1]) - float(av[1])) * fy
-            if long_d > 0 and closing > 0.1:
-                ttc[-1] = long_d / closing
+            long_speed = abs(float(ev[0]) * fx + float(ev[1]) * fy)
+            lat_speed = abs(float(ev[0]) * lx + float(ev[1]) * ly)
+            closing = abs((float(ev[0]) - float(av[0])) * fx + (float(ev[1]) - float(av[1])) * fy)
+            long_margin[-1] = abs(long_d) / max(closing, long_speed, float(prox.get("safety_margin_min_speed_mps", 0.5)))
             lateral_closing = abs((float(ev[0]) - float(av[0])) * lx + (float(ev[1]) - float(av[1])) * ly)
-            if lateral_closing > 0.1:
-                tlc[-1] = max(0.0, abs(lat_d) - float(prox.get("lateral_danger_distance_m", 1.5))) / lateral_closing
+            lat_margin[-1] = abs(lat_d) / max(lateral_closing, lat_speed, float(prox.get("safety_margin_min_speed_mps", 0.5)))
             if min_dist[-1] is None or nearest[0] < float(min_dist[-1]):
                 min_dist[-1] = nearest[0]
+        if env_hits:
+            nearest_hit = min(env_hits, key=lambda item: float(item.get("distance_m", env_max)))
+            angle = math.radians(float(nearest_hit.get("relative_angle_deg", 0.0)))
+            distance = float(nearest_hit.get("distance_m", env_max))
+            env_long = abs(distance * math.cos(angle))
+            env_lat = abs(distance * math.sin(angle))
+            ev = ego.get("velocity", [0.0, 0.0])
+            long_speed = abs(float(ev[0]) * fx + float(ev[1]) * fy)
+            lat_speed = abs(float(ev[0]) * lx + float(ev[1]) * ly)
+            if abs(math.cos(angle)) >= 0.5:
+                longitudinal[-1] = min(longitudinal[-1], env_long)
+                long_margin[-1] = min(long_margin[-1], env_long / max(long_speed, float(prox.get("safety_margin_min_speed_mps", 0.5))))
+            if abs(math.sin(angle)) >= 0.5:
+                lateral[-1] = min(lateral[-1], env_lat)
+                lat_margin[-1] = min(lat_margin[-1], env_lat / max(lat_speed, float(prox.get("safety_margin_min_speed_mps", 0.5))))
 
     def clean(vals):
         return [float(v) if v is not None else float("nan") for v in vals]
 
+    time_cap = 8.0
     fig, (ax0, ax1) = plt.subplots(2, 1, figsize=(11, 7), sharex=True, constrained_layout=True)
     long_plot = smooth_series(clean(longitudinal), times, smooth_window_s)
     min_plot = smooth_series(clean(min_dist), times, smooth_window_s)
-    ttc_plot = smooth_series(clean(ttc), times, smooth_window_s)
+    long_margin_plot = [min(v, time_cap) if not math.isnan(v) else v for v in smooth_series(clean(long_margin), times, smooth_window_s)]
     lat_plot = smooth_series(clean(lateral), times, smooth_window_s)
-    tlc_plot = smooth_series(clean(tlc), times, smooth_window_s)
+    lat_margin_plot = [min(v, time_cap) if not math.isnan(v) else v for v in smooth_series(clean(lat_margin), times, smooth_window_s)]
     ax0.plot(times, long_plot, color="#4C78A8", linewidth=1.1, label="longitudinal distance")
     ax0.plot(times, min_plot, color="#54A24B", linewidth=1.0, alpha=0.85, label="min proximity")
     ax0.plot(times, dynamic_danger, color="#D62728", linestyle="--", linewidth=0.8, label="dynamic danger")
     ax0.plot(times, dynamic_caution, color="#F2A541", linestyle=":", linewidth=0.8, label="dynamic caution")
     ax0b = ax0.twinx()
-    ax0b.plot(times, ttc_plot, color="#E45756", linewidth=1.0, label="TTC")
+    ax0b.plot(times, long_margin_plot, color="#E45756", linewidth=1.0, label="long. time margin")
     ax0.set_ylabel("distance (m)")
-    ax0b.set_ylabel("TTC (s)")
+    ax0b.set_ylabel("time margin (s, capped at 8)")
     ax0.grid(True, alpha=0.25)
     lines, labels = ax0.get_legend_handles_labels()
     lines_b, labels_b = ax0b.get_legend_handles_labels()
@@ -334,14 +361,14 @@ def plot_proximity_timeseries(frames, metrics, output, plt, dpi, smooth_window_s
 
     ax1.plot(times, lat_plot, color="#B279A2", linewidth=1.1, label="lateral/clearance distance")
     ax1b = ax1.twinx()
-    ax1b.plot(times, tlc_plot, color="#72B7B2", linewidth=1.0, label="TLC-like")
-    if prox.get("lateral_danger_distance_m") is not None:
-        ax1.axhline(float(prox["lateral_danger_distance_m"]), color="#D55E00", linestyle="--", linewidth=0.9, label="lateral danger")
-    if prox.get("lateral_caution_distance_m") is not None:
-        ax1.axhline(float(prox["lateral_caution_distance_m"]), color="#E69F00", linestyle=":", linewidth=0.9, label="lateral caution")
+    ax1b.plot(times, lat_margin_plot, color="#72B7B2", linewidth=1.0, label="lat. time margin")
+    if prox.get("lateral_clearance_danger_m") is not None:
+        ax1.axhline(float(prox["lateral_clearance_danger_m"]), color="#D55E00", linestyle="--", linewidth=0.9, label="lateral danger")
+    if prox.get("lateral_clearance_safe_m") is not None:
+        ax1.axhline(float(prox["lateral_clearance_safe_m"]), color="#E69F00", linestyle=":", linewidth=0.9, label="lateral safe")
     ax1.set_xlabel("time (s)")
     ax1.set_ylabel("lateral distance (m)")
-    ax1b.set_ylabel("TLC-like (s)")
+    ax1b.set_ylabel("time margin (s, capped at 8)")
     ax1.grid(True, alpha=0.25)
     lines, labels = ax1.get_legend_handles_labels()
     lines_b, labels_b = ax1b.get_legend_handles_labels()

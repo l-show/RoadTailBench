@@ -469,9 +469,7 @@
       ],
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
-      "danger_radius_m": 4.0,
       "reference_speed_kmh": 40.0,
-      "allow_enter_danger_zone": false,
       "expected_behavior": "slow_or_avoid"
     }
   ]

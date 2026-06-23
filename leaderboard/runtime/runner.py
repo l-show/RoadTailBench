@@ -426,6 +426,7 @@ class CodeScenarioRunner:
             "natural_end_min_ticks": int(getattr(self.args, "natural_end_min_ticks", 5)),
             "environment_raycast_interval_frames": int(getattr(self.args, "environment_raycast_interval_frames", 5)),
             "environment_raycast_distance_m": float(getattr(self.args, "environment_raycast_distance_m", 30.0)),
+            "environment_raycast_min_hit_distance_m": float(getattr(self.args, "environment_raycast_min_hit_distance_m", 1.0)),
         }
         angles = getattr(self.args, "environment_raycast_angles_deg", "-90,-60,-30,0,30,60,90")
         if isinstance(angles, str):

@@ -46,6 +46,7 @@ def build_argparser():
     parser.add_argument("--actor-log-radius-m", default=120.0, type=float)
     parser.add_argument("--environment-raycast-interval-frames", default=5, type=int, help="Sample environment proximity rays every N logged frames.")
     parser.add_argument("--environment-raycast-distance-m", default=30.0, type=float, help="Maximum raycast distance for static environment proximity.")
+    parser.add_argument("--environment-raycast-min-hit-distance-m", default=1.0, type=float, help="Ignore environment ray hits closer than this distance to suppress self/ground contact artifacts.")
     parser.add_argument("--environment-raycast-angles-deg", default="-90,-60,-30,0,30,60,90", help="Comma-separated ego-relative ray angles for environment proximity.")
     parser.add_argument("--capture-scenario-stdout", action="store_true")
     parser.add_argument("--abort-on-carla-crash", dest="abort_on_carla_crash", action="store_true", default=True, help="Stop the batch immediately when CARLA is unreachable.")

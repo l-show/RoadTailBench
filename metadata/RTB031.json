@@ -537,9 +537,7 @@
       ],
       "radius_m": 10.0,
       "perception_radius_m": 40.0,
-      "danger_radius_m": 4.0,
       "reference_speed_kmh": 40.0,
-      "allow_enter_danger_zone": true,
       "expected_behavior": "yield_or_stop_for_priority_conflict"
     }
   ]
