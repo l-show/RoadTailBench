@@ -75,7 +75,7 @@ class RuntimeFrameLogger:
             center = tf.location + carla.Location(z=1.0)
             yaw = float(tf.rotation.yaw)
             max_distance = float(self.config.get("environment_raycast_distance_m", 30.0))
-            min_hit_distance = float(self.config.get("environment_raycast_min_hit_distance_m", 0.25))
+            min_hit_distance = float(self.config.get("environment_raycast_min_hit_distance_m", 1.0))
             angles = self.config.get("environment_raycast_angles_deg", [-90, -60, -30, 0, 30, 60, 90])
             extent_x = extent_y = 1.0
             try:
@@ -152,6 +152,13 @@ class RuntimeFrameLogger:
         ego_record = actor_to_record(ego_actor)
         if ego_control is not None:
             ego_record["control"] = control_to_dict(ego_control)
+        try:
+            waypoint = world.get_map().get_waypoint(ego_loc)
+            ego_record["lane_width_m"] = float(getattr(waypoint, "lane_width", 0.0))
+            ego_record["lane_id"] = int(getattr(waypoint, "lane_id", 0))
+            ego_record["road_id"] = int(getattr(waypoint, "road_id", 0))
+        except Exception:
+            pass
         record = {
             "frame": frame_id,
             "time": float(snapshot.timestamp.elapsed_seconds),

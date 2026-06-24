@@ -270,7 +270,7 @@ def test_speed_appropriateness_separates_limit_and_hazard_reference():
     assert result["details"]["hazard_frame_ratio"] > 0.0
 
 
-def test_proximity_risk_uses_longitudinal_lateral_safety_margins():
+def test_proximity_risk_uses_three_component_scores():
     frames = [{
         "ego": {
             "location": [0.0, 0.0, 0.0],
@@ -287,13 +287,13 @@ def test_proximity_risk_uses_longitudinal_lateral_safety_margins():
     }]
     result = InteractionRiskMetric().compute(frames, {})
     assert result["score"] < 1.0
-    assert result["details"]["mode"] == "longitudinal_lateral_safety_margin"
-    assert result["details"]["min_longitudinal_time_margin_s"] is not None
+    assert result["details"]["mode"] == "three_component_safety_margin"
+    assert result["details"]["min_longitudinal_ttc_s"] is not None
     assert result["details"]["min_lateral_distance_m"] <= 0.5
-    assert "longitudinal_time_margin_safe_s" in result["details"]
+    assert "component_scores" in result["details"]
 
 
-def test_proximity_risk_uses_lateral_time_margin():
+def test_proximity_risk_uses_lateral_tlc_margin():
     frames = [{
         "ego": {
             "location": [0.0, 0.0, 0.0],
@@ -308,7 +308,7 @@ def test_proximity_risk_uses_lateral_time_margin():
         }],
     }]
     result = InteractionRiskMetric().compute(frames, {})
-    assert result["details"]["min_lateral_time_margin_s"] is not None
+    assert result["details"]["min_lateral_tlc_s"] is not None
     assert result["score"] < 1.0
 
 
@@ -330,7 +330,7 @@ def test_proximity_risk_uses_environment_hits_as_candidates():
     result = InteractionRiskMetric().compute(frames, {})
     assert result["score"] < 1.0
     assert result["details"]["raycast_hit_ratio"] == 1.0
-    assert result["details"]["min_longitudinal_time_margin_s"] is not None
+    assert result["details"]["min_environment_distance_m"] == 1.0
 
 
 def test_proximity_risk_ignores_too_close_environment_hits():
@@ -350,7 +350,7 @@ def test_proximity_risk_ignores_too_close_environment_hits():
     }]
     result = InteractionRiskMetric().compute(frames, {})
     assert result["score"] == 1.0
-    assert result["details"]["min_proximity_distance_m"] == 30.0
+    assert result["details"]["min_environment_distance_m"] is None
     assert result["details"]["sensor_range_censored_ratio"] == 1.0
 
 

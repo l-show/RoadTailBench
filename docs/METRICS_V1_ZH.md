@@ -1,67 +1,82 @@
-# RoadTailBench 指标说明 v5
+# RoadTailBench 指标说明 v6
 
-本文档对应当前 `leaderboard-eval` 的离线指标实现。输入为 `leaderboard_frame_log.jsonl` 和 `leaderboard_scenario_config.json`，每个指标输出 `[0, 1]` 分数；综合驾驶分 `leaderboard_driving_score` 输出 0-100 分。
+本文档对应当前 `leaderboard-eval` 的离线指标实现。输入为 `leaderboard_frame_log.jsonl` 和 `leaderboard_scenario_config.json`，每个核心指标输出 `[0, 1]` 分数，综合驾驶分 `leaderboard_driving_score` 输出 0-100 分。
 
 ## 核心指标
 
-- `route_completion`：优先把 ego 位置投影到 `reference_trajectory` 计算最大路线进度；如果 ego 到达 `ego_end`/`ego_goal` 容差范围，则直接计为完成。缺少参考轨迹但有起终点时使用起终点距离缩短比例兜底；轨迹和终点都缺失时返回 0。
-- `collision_penalty`：通过 CARLA `sensor.other.collision` 记录碰撞，按对象类型加权扣分。默认权重为 walker=1.0、vehicle=0.75、static=0.35、prop=0.25、other=0.5。
-- `driving_efficiency`：使用仿真时间 `frame.time` 评价完成路线耗时，不使用 wall-clock。期望时间由路线长度和 `speed_limit_kmh` / `reference_speed_kmh` 得到。
-- `speed_appropriateness`：普通区域按 `speed_limit_kmh` 扣超速；进入 `hazards[].radius_m` 内时按 `hazards[].reference_speed_kmh` 扣过快。总分为逐帧均值。
-- `trajectory_adherence`：评价 ego 相对合理参考轨迹的横向偏差、进度/时间偏差和航向偏差。缺少 `reference_trajectory` 时返回 0。
-- `proximity_risk`：近距安全裕度指标。统一融合动态 actor 和环境 raycast 命中，不再使用传统 TTC/TLC 名义，而是计算纵向安全时距、横向安全时距、横向净距和最近距离裕度。
-- `comfort`：在 ego 车体坐标系下计算纵/横向加速度、纵/横向 jerk、yaw rate 的 RMS 与峰值。
-- `control_stability`：评价 steer、throttle、brake 相邻帧变化是否平滑。
-- `energy_efficiency`：默认 ego 为轿车，用纵向动力学估算净能耗和 kWh/100 km。
-- `long_tail_hazard_response`：进入 hazard 感知半径后，评价减速、制动、转向或油门释放响应。已废弃危险区进入惩罚；`hazards[].radius_m` 只表示隐患影响范围，不表示禁止进入区。
+- `route_completion`：路线完成率。优先使用 `reference_trajectory` 投影计算最大路线进度；如果 metadata 同时提供 `ego_start` 和 `ego_end`/`ego_goal`，会用起终点距离缩短比例作为兜底，并取两者较大值。这样参考轨迹不完整或实际轨迹不严格贴合参考线时，不会直接把完成率压成 0。若参考轨迹和终点都缺失，则返回 0。
+- `collision_penalty`：碰撞惩罚。通过 CARLA `sensor.other.collision` 记录碰撞，按对象类型加权扣分。默认权重为 walker=1.0、vehicle=0.75、static=0.35、prop=0.25、other=0.5。
+- `driving_efficiency`：驾驶效率。使用仿真时间 `frame.time` 评价完成路线耗时，不使用 wall-clock。期望时间由路线长度和 `speed_limit_kmh` / `reference_speed_kmh` 得到。
+- `speed_appropriateness`：速度适配度。普通区域按 `speed_limit_kmh` 扣超速；进入 `hazards[].radius_m` 内时按 `hazards[].reference_speed_kmh` 扣过快。
+- `trajectory_adherence`：轨迹贴合度。评价 ego 相对合理参考轨迹的横向偏差、进度/时间偏差和航向偏差。缺少 `reference_trajectory` 时返回 0。
+- `proximity_risk`：近距安全裕度。由三个清晰子项加权组成：actor 纵向安全、actor 横向安全、环境 raycast 全向距离安全。
+- `comfort`：舒适性。计算车体坐标系下纵/横向加速度、纵/横向 jerk、yaw rate 的 RMS 与峰值。
+- `control_stability`：控制稳定性。评价 steer、throttle、brake 相邻帧变化是否平滑。
+- `energy_efficiency`：能耗效率。默认 ego 为轿车，用纵向动力学估算净能耗和 kWh/100 km。
+- `long_tail_hazard_response`：长尾隐患响应。进入 hazard 感知半径后，评价减速、制动、转向或松油门响应。危险区进入惩罚已废弃；`hazards[].radius_m` 只表示隐患影响范围。
 
 ## 近距安全裕度
 
-`proximity_risk` 对每帧收集候选对象：
-
-- 动态 actor：车辆、行人、静态 actor 等 frame log 中记录的对象。
-- 环境命中：`environment_hits` 中的 raycast 命中，包括相对角度、距离和命中位置。
-
-动态距离阈值随 ego 速度变化：
+`proximity_risk` 不再把 actor 和 raycast 混成一个复杂 min 表达式，而是三项加权：
 
 ```text
-d_danger(v) = max(3 m, v * 0.7 s)
-d_safe(v)   = max(12 m, v * 1.5 s)
-q_dist      = clamp((d_min - d_danger) / (d_safe - d_danger))
+score_proximity =
+  w_long * score_actor_longitudinal
++ w_lat  * score_actor_lateral
++ w_env  * score_environment_clearance
 ```
 
-纵向安全时距：
+默认权重：
 
 ```text
-T_long = |d_long| / max(v_closing_long, |v_ego_long|, v_min)
-q_long = clamp((T_long - T_long,danger) / (T_long,safe - T_long,danger))
+w_long = 0.40
+w_lat  = 0.35
+w_env  = 0.25
 ```
 
-横向安全时距与横向净距：
+### Actor 纵向安全
+
+纵向部分只看动态 actor。对 ego 坐标系前方 actor 计算 TTC：
 
 ```text
-T_lat      = |d_lat| / max(v_closing_lat, |v_ego_lat|, v_min)
-q_lat_time = clamp((T_lat - T_lat,danger) / (T_lat,safe - T_lat,danger))
-q_lat_dist = clamp((|d_lat| - d_lat,danger) / (d_lat,safe - d_lat,danger))
+TTC = d_long / closing_speed_long, if d_long > 0 and closing_speed_long > 0
 ```
 
-每帧取可用子项的最小值：
+同时保留纵向距离裕度：
 
 ```text
-q_k = min(q_dist, q_long, q_lat_time, q_lat_dist, q_env)
-score = clamp(mean(q_k) * (1 - 0.5 * danger_frame_ratio))
+d_safe_long = max(actor_longitudinal_distance_danger_m, v_ego * actor_longitudinal_headway_safe_s)
+q_dist_long = clamp((|d_long| - d_danger_long) / (d_safe_long - d_danger_long))
+q_ttc = clamp((TTC - TTC_danger) / (TTC_safe - TTC_danger))
+score_actor_longitudinal = min(q_ttc, q_dist_long)
 ```
 
-默认参数：
+默认：`TTC_danger=1.0 s`，`TTC_safe=3.0 s`，`d_danger_long=3.0 m`，安全车头时距 `1.5 s`。
 
-- 纵向安全时距 danger/safe：0.7 s / 1.5 s。
-- 横向安全时距 danger/safe：0.7 s / 2.0 s。
-- 横向净距 danger/safe：1.0 m / 3.0 m。
-- 环境 clearance danger/safe：0.75 m / 2.5 m。
-- 环境 raycast 最小有效命中距离：1.0 m；小于该值的命中会被视为自车、地面或贴身碰撞体伪命中并忽略。
-- 小速度保护 `safety_margin_min_speed_mps`：0.5 m/s。
+### Actor 横向安全
 
-绘图中安全时距会截断到 8 s 显示，避免空旷场景导致 y 轴过大；JSON details 保留原始最小值。
+横向部分只看动态 actor。优先使用 frame log 中 ego waypoint 的 `lane_width_m`，由 CARLA OpenDRIVE waypoint 提供；若不可用，默认车道宽度为 `3.5 m`。横向 TLC 使用横向净距与横向闭合速度：
+
+```text
+lateral_clearance = max(0, |d_lat| - d_lat_danger)
+TLC = lateral_clearance / closing_speed_lat
+q_tlc = clamp((TLC - TLC_danger) / (TLC_safe - TLC_danger))
+q_lat_dist = clamp((|d_lat| - d_lat_danger) / (0.5 * lane_width - d_lat_danger))
+score_actor_lateral = min(q_tlc, q_lat_dist)
+```
+
+默认：`TLC_danger=1.0 s`，`TLC_safe=3.0 s`，`d_lat_danger=1.0 m`，默认车道宽度 `3.5 m`。
+
+### 环境全向距离安全
+
+环境部分只看 `environment_hits` 的 raycast 命中距离，不转换成时距：
+
+```text
+d_env = min(valid raycast hit distances)
+score_environment_clearance = clamp((d_env - d_env_danger) / (d_env_safe - d_env_danger))
+```
+
+默认：`d_env_danger=0.75 m`，`d_env_safe=3.0 m`。小于 `environment_raycast_min_hit_distance_m=1.0 m` 的命中会被忽略，用于过滤自车、地面或贴身碰撞体伪命中。没有有效 raycast 命中时，该环境子项记为安全 1.0，并在 details 中通过 `sensor_range_censored_ratio` 记录。
 
 ## 长尾隐患响应
 
@@ -93,11 +108,9 @@ cumulative speed drop from hazard entry >= 1.5 m/s
 q_h = exp(-(t_response - t_enter) / response_tau_s)
 ```
 
-默认 `response_tau_s=2.0`。若无响应则为 0；若发生碰撞则乘以 0.25。危险区字段和进入危险区乘子已废弃，不再参与计算。
+默认 `response_tau_s=2.0`。若无响应则为 0；若发生碰撞则乘以 0.25。
 
-## 能力评分
-
-能力候选表位于 `metadata/capability_taxonomy.json`。metadata 中只应在 `capability_vector.behavior` 和 `capability_vector.hazard` 写 0/1；未选能力输出 `null` 且不参与均值。
+## 能力评分和综合分
 
 `behavior_capability_score`：
 
@@ -119,20 +132,18 @@ q_h = exp(-(t_response - t_enter) / response_tau_s)
 + 0.10 trajectory_adherence
 ```
 
-`ability_score` 仅作兼容聚合：行为和隐患都存在时取两者均值；只有一类存在时取该类；都没有时为 0。
-
-## 综合驾驶分
+综合驾驶分：
 
 ```text
 task_gate   = 0.70 * route_completion + 0.30 * trajectory_adherence
 safety_gate = 0.65 * collision_penalty + 0.35 * proximity_risk
 ```
 
-之后乘以效率、速度、舒适性、稳定性、能耗和隐患响应修正项。路线未完成或安全表现差时，总分会被明显压低。
+之后乘以效率、速度、舒适性、稳定性、能耗和隐患响应修正项。
 
 ## 输出文件
 
-每个 run 目录会保存：
+每个 run 目录保存：
 
 ```text
 leaderboard_frame_log.jsonl
@@ -142,4 +153,4 @@ leaderboard_metrics.csv
 leaderboard_run_summary.json
 ```
 
-`leaderboard_metrics.csv` 是 `leaderboard_metrics.json` 的扁平化版本，列为 `scenario_id, route_id, metric_name, score, details_json`，便于 Excel、Origin 或 Python/pandas 汇总。
+`leaderboard_metrics.csv` 是 `leaderboard_metrics.json` 的扁平化版本，列为 `scenario_id, route_id, metric_name, score, details_json`。

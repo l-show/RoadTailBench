@@ -296,7 +296,7 @@ leaderboard-metrics-csv `
 
 ```powershell
 leaderboard-plot `
-  --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260618_150503 `
+  --run-dir G:\Codex\RoadTailBench\outputs\RTB122_20260624_090326 `
   --dpi 400 `
   --style nc `
   --smooth-window-s 0.5

@@ -44,11 +44,19 @@ class RouteCompletionMetric(BaseMetric):
             final_s = max(final_s, s)
             if goal:
                 min_goal_distance = min(min_goal_distance, distance2(location_xy(ego(frame)), goal))
-        score = clamp(final_s / max(total_s, 0.1))
+        projection_score = clamp(final_s / max(total_s, 0.1))
+        start_goal_score = None
+        if goal:
+            start = _metadata_point(config, "ego_start") or _metadata_point(config, "ego_spawn") or route[0]
+            initial_distance = max(distance2(start, goal), 0.1)
+            start_goal_score = 1.0 if min_goal_distance <= threshold else clamp((initial_distance - min_goal_distance) / initial_distance)
+        score = max(projection_score, start_goal_score if start_goal_score is not None else 0.0)
         if goal and min_goal_distance <= threshold:
             score = 1.0
         return MetricResult.make(self.name, score, {
             "mode": "reference_trajectory_projection",
+            "projection_score": projection_score,
+            "start_goal_fallback_score": start_goal_score,
             "progress_m": final_s,
             "route_length_m": total_s,
             "min_goal_distance_m": None if min_goal_distance == float("inf") else min_goal_distance,
