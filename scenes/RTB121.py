@@ -212,6 +212,7 @@ def main():
         # ================= 生成 Actor =================
         # 1. Ego (Chevrolet Impala)
         bp_ego = bp_lib.find('vehicle.chevrolet.impala')
+        bp_ego.set_attribute('role_name', 'ego')
         ego_loc = carla.Location(x=EGO_TRAJECTORY[0][0], y=EGO_TRAJECTORY[0][1], z=0.5)
         ego_loc.z = carla_map.get_waypoint(ego_loc).transform.location.z + 0.5
         ego = world.try_spawn_actor(bp_ego, carla.Transform(ego_loc, carla.Rotation(yaw=EGO_TRAJECTORY[0][2])))

@@ -281,6 +281,13 @@ class CodeScenarioRunner:
                 role_values.extend(value)
             elif isinstance(value, str):
                 role_values.extend(value.split(","))
+        ego_meta = metadata.get("ego") or {}
+        if isinstance(ego_meta, dict):
+            value = ego_meta.get("role_names") or ego_meta.get("role_name")
+            if isinstance(value, list):
+                role_values.extend(value)
+            elif isinstance(value, str):
+                role_values.extend(value.split(","))
         role_values.extend(self.args.ego_role_name.split(","))
         role_names = []
         for value in role_values:
@@ -361,7 +368,7 @@ class CodeScenarioRunner:
             raise RuntimeError(f"{scenario.scene_id}: missing ego_start for agent_ego")
         bp_id = metadata.get("ego_blueprint") or metadata.get("ego_type_id") or self.args.ego_blueprint
         bp = self.world.get_blueprint_library().find(bp_id)
-        bp.set_attribute("role_name", "hero")
+        bp.set_attribute("role_name", "ego")
         transform = dict_to_transform(self.carla, ego_meta)
         ego = self.world.try_spawn_actor(bp, transform)
         if not ego:

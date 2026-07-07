@@ -226,6 +226,7 @@ def main():
             print("[成功] 生成 警车。")
 
         bp_v6 = bp_lib.find('vehicle.lincoln.mkz_2020')
+        bp_v6.set_attribute('role_name', 'ego')
         v6_tf = carla.Transform(carla.Location(x=TRAJ_V6[0][0], y=TRAJ_V6[0][1], z=0.2),
                                 carla.Rotation(yaw=TRAJ_V6[0][2]))
         v6_ego = world.try_spawn_actor(bp_v6, v6_tf)

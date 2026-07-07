@@ -361,7 +361,8 @@ def main():
         RTB.set_vehicle_initial_speed(bus, target_speed_kmh=60.0)
 
         # 车辆2：Ego小轿车 Audi TT
-        ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt', dense_ego[0][0], dense_ego[0][1], z_offset=0.5)
+        ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt', dense_ego[0][0], dense_ego[0][1], z_offset=0.5,
+                                role_name='ego')
         actor_list.append(ego)
         RTB.set_vehicle_initial_speed(ego, target_speed_kmh=60.0)
         # 灯光：开启行车灯、近光灯

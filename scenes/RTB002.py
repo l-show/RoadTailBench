@@ -132,6 +132,7 @@ def main():
 
         # 生成 黄色雪铁龙 EGO (由 TM 接管控制)
         bp_ego = bp_lib.find('vehicle.citroen.c3')
+        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'):
             bp_ego.set_attribute('color', '255,255,0')  # 设定黄色
         trans_c3 = carla.Transform(carla.Location(x=-32.672, y=39.250, z=1.0), carla.Rotation(yaw=-90.0))

@@ -207,6 +207,7 @@ def main():
 
             # --- 车辆 4: Ego (TM控制, 初始速度 60km/h) ---
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2020')
+        bp_ego.set_attribute('role_name', 'ego')
         loc_ego = carla.Location(x=110.700, y=-1.919, z=1.5)
         yaw_ego = carla_map.get_waypoint(loc_ego).transform.rotation.yaw
         ego = world.try_spawn_actor(bp_ego, carla.Transform(loc_ego, carla.Rotation(yaw=yaw_ego)))

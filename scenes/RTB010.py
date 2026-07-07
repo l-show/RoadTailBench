@@ -234,6 +234,7 @@ def main():
         # 车辆 Ego (原v4): 林肯 MKZ 2020 (寻迹避障变道)
         # ==========================================
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2020')
+        bp_ego.set_attribute('role_name', 'ego')
         loc_ego_start = carla.Location(x=-53.962, y=2.019, z=0.5)
         loc_ego_mid = carla.Location(x=1.312, y=1.801, z=0.5)
         loc_ego_end = carla.Location(x=0.429, y=70.616, z=0.5)

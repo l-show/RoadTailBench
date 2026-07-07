@@ -202,6 +202,7 @@ def main():
 
         # ================= Actor 2：Ego车 (BMW Grandtourer, 蓝色) =================
         bp_ego = bp_lib.find('vehicle.bmw.grandtourer')
+        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'):
             bp_ego.set_attribute('color', '111,111,255')
         ego_sx, ego_sy, ego_syaw = EGO_TRAJ[0]

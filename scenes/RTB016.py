@@ -146,9 +146,11 @@ EGO_TRAJECTORY = [
 # ==========================================
 # 3. 辅助函数：安全生成车辆
 # ==========================================
-def spawn_vehicle(world, bp_name, loc_x, loc_y, yaw, color=None):
+def spawn_vehicle(world, bp_name, loc_x, loc_y, yaw, color=None, role_name="background"):
     bp_lib = world.get_blueprint_library()
     bp = bp_lib.find(bp_name)
+    if role_name and bp.has_attribute('role_name'):
+        bp.set_attribute('role_name', role_name)
     if color and bp.has_attribute('color'):
         bp.set_attribute('color', color)
 
@@ -234,7 +236,7 @@ def main():
 
         # ================= 车5：Ego - Audi TT (橙色, 循迹) =================
         ego = spawn_vehicle(world, 'vehicle.audi.tt', EGO_TRAJECTORY[0][0], EGO_TRAJECTORY[0][1], EGO_TRAJECTORY[0][2],
-                            color='255,165,0')
+                            color='255,165,0', role_name='ego')
         if ego: actor_list.append(ego)
         ego_traj_idx = 0
 

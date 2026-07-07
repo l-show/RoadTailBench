@@ -121,8 +121,38 @@ def test_reference_trajectory_deviation_is_loose_for_reasonable_path():
     }
     result = TrajectoryAdherenceMetric().compute(frames, config)
     assert result["score"] > 0.95
-    assert result["details"]["mode"] == "spatiotemporal_reference_deviation"
+    assert result["details"]["mode"] == "spatial_reference_deviation"
     assert result["details"]["max_lateral_deviation_m"] <= 1.0
+
+
+def test_spatial_trajectory_adherence_does_not_penalize_timing():
+    slow_frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 10.0, "ego": {"location": [20.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+    ]
+    fast_frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 0.5, "ego": {"location": [20.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+    ]
+    config = {"reference_speed_kmh": 10.0, "reference_trajectory": [[0, 0, 0], [20, 0, 0]]}
+    metric = TrajectoryAdherenceMetric()
+    assert metric.compute(slow_frames, config)["score"] == metric.compute(fast_frames, config)["score"] == 1.0
+
+
+def test_spatiotemporal_trajectory_adherence_remains_opt_in():
+    frames = [
+        {"time": 0.0, "ego": {"location": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+        {"time": 0.5, "ego": {"location": [20.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0]}},
+    ]
+    config = {
+        "trajectory_adherence_mode": "spatiotemporal",
+        "reference_speed_kmh": 10.0,
+        "reference_trajectory": [[0, 0, 0], [20, 0, 0]],
+    }
+    result = TrajectoryAdherenceMetric().compute(frames, config)
+    assert result["score"] < 1.0
+    assert result["details"]["mode"] == "spatiotemporal_reference_deviation"
+    assert result["details"]["max_progress_error_m"] > 0.0
 
 
 def test_reference_trajectory_deviation_penalizes_large_offset():
@@ -758,6 +788,141 @@ def test_scene_process_forces_utf8_output(tmp_path):
     assert captured["env"]["PYTHONUTF8"] == "1"
     assert captured["encoding"] == "utf-8"
     assert captured["errors"] == "replace"
+
+
+def test_find_scene_ego_prefers_role_name_over_type_and_start():
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(ego_role_name="ego,hero", ego_type_id="")
+    runner._last_rpc = ""
+
+    class Loc:
+        def __init__(self, x, y, z=0.0):
+            self.x, self.y, self.z = x, y, z
+
+        def distance(self, other):
+            return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2) ** 0.5
+
+    class FakeCarla:
+        Location = Loc
+
+    class ActorList(list):
+        def filter(self, pattern):
+            return self
+
+    role_actor = SimpleNamespace(
+        id=1,
+        type_id="vehicle.other",
+        attributes={"role_name": "ego"},
+        get_location=lambda: Loc(100.0, 0.0),
+    )
+    nearby_same_type = SimpleNamespace(
+        id=2,
+        type_id="vehicle.test",
+        attributes={"role_name": "npc"},
+        get_location=lambda: Loc(0.5, 0.0),
+    )
+    runner.carla = FakeCarla
+    runner.world = SimpleNamespace(get_actors=lambda: ActorList([nearby_same_type, role_actor]))
+    scenario = SimpleNamespace(metadata={
+        "ego_role_names": ["ego"],
+        "ego_type_id": "vehicle.test",
+        "ego_start": {"location": {"x": 0.0, "y": 0.0}},
+    })
+
+    assert runner.find_scene_ego(scenario) is role_actor
+
+
+def test_find_scene_ego_reads_nested_metadata_role_names():
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(ego_role_name="", ego_type_id="")
+    runner._last_rpc = ""
+
+    class ActorList(list):
+        def filter(self, pattern):
+            return self
+
+    nested_role_actor = SimpleNamespace(
+        id=1,
+        type_id="vehicle.test",
+        attributes={"role_name": "ego"},
+        get_location=lambda: None,
+    )
+    runner.world = SimpleNamespace(get_actors=lambda: ActorList([nested_role_actor]))
+    scenario = SimpleNamespace(metadata={"ego": {"role_names": ["ego"]}})
+
+    assert runner.find_scene_ego(scenario) is nested_role_actor
+
+
+def test_find_scene_ego_uses_start_when_type_has_multiple_matches():
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(ego_role_name="", ego_type_id="")
+    runner._last_rpc = ""
+
+    class Loc:
+        def __init__(self, x, y, z=0.0):
+            self.x, self.y, self.z = x, y, z
+
+        def distance(self, other):
+            return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2) ** 0.5
+
+    class FakeCarla:
+        Location = Loc
+
+    class ActorList(list):
+        def filter(self, pattern):
+            return self
+
+    near = SimpleNamespace(id=1, type_id="vehicle.test", attributes={}, get_location=lambda: Loc(1.0, 0.0))
+    far = SimpleNamespace(id=2, type_id="vehicle.test", attributes={}, get_location=lambda: Loc(30.0, 0.0))
+    runner.carla = FakeCarla
+    runner.world = SimpleNamespace(get_actors=lambda: ActorList([far, near]))
+    scenario = SimpleNamespace(metadata={
+        "ego_type_id": "vehicle.test",
+        "ego_start": {"location": {"x": 0.0, "y": 0.0}},
+        "ego_start_match_radius_m": 8.0,
+    })
+
+    assert runner.find_scene_ego(scenario) is near
+
+
+def test_spawn_agent_ego_uses_ego_role_name():
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(ego_blueprint="vehicle.default")
+
+    class FakeBlueprint:
+        def __init__(self):
+            self.attributes = {}
+
+        def set_attribute(self, key, value):
+            self.attributes[key] = value
+
+    bp = FakeBlueprint()
+    captured = {}
+    runner.world = SimpleNamespace(
+        get_blueprint_library=lambda: SimpleNamespace(find=lambda bp_id: bp),
+        try_spawn_actor=lambda blueprint, transform: captured.setdefault("blueprint", blueprint) or SimpleNamespace(id=1),
+    )
+
+    class FakeCarla:
+        class Transform:
+            def __init__(self, location, rotation):
+                self.location = location
+                self.rotation = rotation
+
+        class Location:
+            def __init__(self, x=0.0, y=0.0, z=0.0):
+                self.x, self.y, self.z = x, y, z
+
+        class Rotation:
+            def __init__(self, pitch=0.0, yaw=0.0, roll=0.0):
+                self.pitch, self.yaw, self.roll = pitch, yaw, roll
+
+    runner.carla = FakeCarla
+    scenario = SimpleNamespace(metadata={"ego_start": {"location": {"x": 1.0, "y": 2.0}}, "ego_blueprint": "vehicle.test"})
+
+    runner.spawn_agent_ego(scenario)
+
+    assert captured["blueprint"].attributes["role_name"] == "ego"
 
 
 def test_scenario_marks_carla_crashed_before_start(tmp_path):

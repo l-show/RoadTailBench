@@ -295,6 +295,7 @@ def main():
 
         # ================= Actor 3：TM 控制的 Ego (Cybertruck) =================
         bp_ego = bp_lib.find('vehicle.tesla.cybertruck')
+        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'): bp_ego.set_attribute('color', '255,255,255')  # 白色
         ego_loc = carla.Location(x=1.638, y=-59.965, z=0.5)
         ego_wp = carla_map.get_waypoint(ego_loc)

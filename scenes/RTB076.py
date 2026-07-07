@@ -237,6 +237,7 @@ def main():
 
         # ================= 3. Ego Lincoln MKZ (TM 左转大弯) =================
         bp_lincoln = bp_lib.find('vehicle.lincoln.mkz_2017')
+        bp_lincoln.set_attribute('role_name', 'ego')
         bp_lincoln.set_attribute('color', '192,192,192')
         loc_lincoln = carla.Location(x=-55.383, y=9.395, z=1.5)
         trans_lincoln = carla.Transform(loc_lincoln, carla_map.get_waypoint(loc_lincoln).transform.rotation)

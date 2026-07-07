@@ -207,6 +207,7 @@ def main():
 
         # ================= Actor 2：Ego车 (Audi TT) =================
         bp_ego = bp_lib.find('vehicle.audi.tt')
+        bp_ego.set_attribute('role_name', 'ego')
         ego_start_x, ego_start_y, ego_start_yaw = EGO_TRAJECTORY[0]
         ego_loc = carla.Location(x=ego_start_x, y=ego_start_y, z=0.5)
         ego_loc.z = carla_map.get_waypoint(ego_loc).transform.location.z + 0.5
