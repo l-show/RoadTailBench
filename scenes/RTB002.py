@@ -132,19 +132,18 @@ def main():
 
         # 生成 黄色雪铁龙 EGO (由 TM 接管控制)
         bp_ego = bp_lib.find('vehicle.citroen.c3')
-        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'):
             bp_ego.set_attribute('color', '255,255,0')  # 设定黄色
-        trans_c3 = carla.Transform(carla.Location(x=-32.672, y=39.250, z=1.0), carla.Rotation(yaw=-90.0))
-        c3_ego = world.try_spawn_actor(bp_ego, trans_c3)
+        trans_c3 = carla.Transform(carla.Location(x=-33.301, y=-13.216, z=0.809), carla.Rotation(yaw=-88.482))
+        ego = world.try_spawn_actor(bp_ego, trans_c3)
 
         # Traffic Manager 接管 C3
-        if c3_ego:
-            actor_list.append(c3_ego)
+        if ego:
+            actor_list.append(ego)
             tm = client.get_trafficmanager(8000)
             tm.set_synchronous_mode(True)
-            c3_ego.set_autopilot(True, tm.get_port())
-            tm.vehicle_percentage_speed_difference(c3_ego, -20.0)  # TM控制超速
+            ego.set_autopilot(True, tm.get_port())
+            tm.vehicle_percentage_speed_difference(ego, -20.0)  # TM控制超速
             print("[实体生成] 黄色雪铁龙 C3 生成成功 (由TrafficManager接管)")
 
         print("[实体生成] 轨迹车辆生成完毕，正在稳定物理环境...")

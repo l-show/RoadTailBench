@@ -126,9 +126,7 @@ def main():
         tm.set_synchronous_mode(True)
 
         # 2. 生成 Ego 车辆
-        bp_ego = bp_lib.find('vehicle.tesla.model3')
-        bp_ego.set_attribute('role_name', 'ego')
-        vehicle_ego = world.try_spawn_actor(bp_ego, RAW_ego_TRANSFORMS[0])
+        vehicle_ego = world.try_spawn_actor(bp_lib.find('vehicle.tesla.model3'), RAW_ego_TRANSFORMS[0])
         if vehicle_ego:
             actor_list.append(vehicle_ego)
             lon_ctrl = PIDLongitudinalController()

@@ -213,7 +213,6 @@ def main():
 
         # ================= Actor 1：Ego (lincoln.mkz_2020) =================
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2020')
-        bp_ego.set_attribute('role_name', 'ego')
         bp_ego.set_attribute('color', '255,0,0')
         e_x, e_y, e_yaw = EGO_TRAJ[0]
         e_loc = carla.Location(x=e_x, y=e_y, z=0.5)

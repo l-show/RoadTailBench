@@ -257,7 +257,6 @@ def main():
 
         # ----- 3. Ego 测试车 (Citroen C3, 黄色) -----
         bp_ego = bp_lib.find('vehicle.citroen.c3')
-        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'): bp_ego.set_attribute('color', '255,255,0')
 
         # 将测试车吸附到路面上生成

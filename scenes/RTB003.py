@@ -136,8 +136,7 @@ def main():
 
         # Ego 朝向 Y轴负方向 (yaw=-90.0)
         ego = RTB.spawn_vehicle(world, 'vehicle.citroen.c3',
-                                x=-26.962, y=43.165, yaw=-90.0, color='255,255,0', z_offset=1.5,
-                                role_name='ego')
+                                x=-26.962, y=43.165, yaw=-90.0, color='255,255,0', z_offset=1.5)
         actor_list.append(ego)
 
         # ==========================================

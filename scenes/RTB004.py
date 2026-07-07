@@ -20,7 +20,7 @@ def clean_path_points(raw_points):
     return cleaned_points
 
 
-# 主控车辆 (Nissan/Tesla) 轨迹数据
+# 蓝车 (Nissan/Tesla) 轨迹数据
 RAW_VEHICLE_PATH_POINTS = [
     (-23.595, 52.2, -89.396), (-23.595, 47.2, -89.096), (-23.595, 41, -94.096),
     (-23.595, 37, -94.096), (-23.595, 35, -94.166), (-23.595, 34.2, -94.339),
@@ -138,6 +138,34 @@ def clamp(v, a, b):
     return max(a, min(b, v))
 
 
+# 【新增】出界判定及销毁函数
+def check_and_handle_out_of_bounds(actor, carla_map, threshold=6.0):
+    """
+    检查车辆是否垂直投影脱离了道路，如果超过距离阈值(如6米)则直接销毁该 actor。
+    """
+    if actor is None or not actor.is_alive:
+        return True
+
+    loc = actor.get_location()
+    wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
+
+    # 获取不到投影路点直接销毁
+    if wp_nearest is None:
+        print(f"[{actor.type_id} {actor.attributes.get('role_name', 'None')}] 无法投影到道路，判定出界被销毁！")
+        actor.destroy()
+        return True
+
+    distance = wp_nearest.transform.location.distance(loc)
+    # 大于允许的出轨阈值时销毁
+    if distance > threshold:
+        print(
+            f"[{actor.type_id} {actor.attributes.get('role_name', 'None')}] 偏离道路中心 {distance:.2f} 米，判定出界被销毁！")
+        actor.destroy()
+        return True
+
+    return False
+
+
 # ==========================================
 # 主程序
 # ==========================================
@@ -150,8 +178,8 @@ def main():
     # 严格保持天气参数
     weather = carla.WeatherParameters(
         cloudiness=15.0, precipitation=100.0, precipitation_deposits=100.0,
-        wind_intensity=10.0, sun_azimuth_angle=85.0, sun_altitude_angle=0.0,
-        fog_density=24.0, fog_distance=5.0, fog_falloff=0.0, wetness=60.0,
+        wind_intensity=10.0, sun_azimuth_angle=85.0, sun_altitude_angle=-90.0,
+        fog_density=15.0, fog_distance=5.0, fog_falloff=0.0, wetness=60.0,
         scattering_intensity=8.0, mie_scattering_scale=0.03, rayleigh_scattering_scale=0.10,
         dust_storm=0.0
     )
@@ -176,7 +204,7 @@ def main():
         tm.set_hybrid_physics_mode(True)
 
         # ---------------------------------------------------------
-        # 1. 生成 主控车辆 (tesla.model3)
+        # 1. 生成 蓝车 (tesla.model3)
         # ---------------------------------------------------------
         bp_vehicle = bp_lib.find('vehicle.tesla.model3')
         bp_vehicle.set_attribute('color', '0,0,255')
@@ -187,7 +215,7 @@ def main():
         if vehicle:
             actor_list.append(vehicle)
             vehicle.set_simulate_physics(True)
-            print("tesla.model3 生成成功 (主控车辆)")
+            print("tesla.model3 生成成功 (跟随蓝车)")
 
         lon_controller = PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.0, dt=settings.fixed_delta_seconds)
         lat_controller = PIDLateralController2(K_P=1.95, K_I=0.05, K_D=0.2, dt=settings.fixed_delta_seconds)
@@ -219,16 +247,17 @@ def main():
                 tm.update_vehicle_lights(agent_vehicle, False)
             except Exception:
                 pass
-            print("Agent 车辆 (自动保持车道) 生成成功")
+            print("Agent 车辆 (自动保持车道红车) 生成成功")
 
         # ---------------------------------------------------------
-        # 3. [新增] 生成橙色 Audi TT，基于自动锚点吸附
+        # 3. [优化点] 生成橙色 Audi TT，设定为主控 Ego
         # ---------------------------------------------------------
         bp_orange_audi = bp_lib.find('vehicle.audi.tt')
         bp_orange_audi.set_attribute('color', '255,128,0')  # 橙色
+        bp_orange_audi.set_attribute('role_name', 'ego')  # 【关键修改】设置actor名为ego
 
         # 目标位置，z轴设为0让API自动去贴近地面寻找
-        orange_audi_loc = carla.Location(x=-23.344, y=30.983, z=0.0)
+        orange_audi_loc = carla.Location(x=-23.344, y=30.983, z=20.0)
         # 自动获取道路锚点 (project_to_road=True 会把坐标映射到合法的道路中心或车道上)
         orange_audi_wp = carla_map.get_waypoint(orange_audi_loc, project_to_road=True, lane_type=carla.LaneType.Driving)
 
@@ -239,12 +268,11 @@ def main():
         if orange_audi:
             actor_list.append(orange_audi)
             orange_audi.set_simulate_physics(True)
-            print(f"新增橙色 Audi TT 生成成功，吸附位置: {orange_audi_transform.location}")
+            print(f"EGO 橙色 Audi TT 生成成功，吸附位置: {orange_audi_transform.location}")
 
-            # 为橙色 Audi 初始化独立的PID控制器
+            # 为 Ego 橙色 Audi 初始化独立的PID控制器
             orange_lon_controller = PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.0,
                                                               dt=settings.fixed_delta_seconds)
-            # 横向控制复用原来的参数，以跟随道路的waypoint
             orange_lat_controller = PIDLateralController2(K_P=1.95, K_I=0.05, K_D=0.2, dt=settings.fixed_delta_seconds)
 
         # ---------------------------------------------------------
@@ -270,12 +298,12 @@ def main():
 
         # 物理稳定后，强制一次性打开远光灯+位置灯
         base_light_state = carla.VehicleLightState.Position | carla.VehicleLightState.HighBeam
-        if vehicle:
+        if vehicle and vehicle.is_alive:
             vehicle.set_light_state(carla.VehicleLightState(base_light_state))
-        if agent_vehicle:
+        if agent_vehicle and agent_vehicle.is_alive:
             agent_vehicle.set_light_state(carla.VehicleLightState(base_light_state))
-        if orange_audi:
-            orange_audi.set_light_state(carla.VehicleLightState(base_light_state))  # 新增车开灯
+        if orange_audi and orange_audi.is_alive:
+            orange_audi.set_light_state(carla.VehicleLightState(base_light_state))
 
         print("\n=> 物理系统稳定，已下发车灯常亮指令！场景运行中...")
 
@@ -299,82 +327,97 @@ def main():
             world.tick()
 
             # ==============================
-            # 1. 主控车 (tesla.model3) PID 控制逻辑
+            # 1. 蓝车 (tesla.model3) PID 控制逻辑
             # ==============================
-            if vehicle:
-                tf = vehicle.get_transform()
-                vel = vehicle.get_velocity()
-                current_vehicle_speed = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
-
-                if tf.location.y <= decelerate_y_threshold and current_target_vehicle_speed > decelerate_vehicle_speed:
-                    speed_decrease = deceleration_rate * settings.fixed_delta_seconds
-                    current_target_vehicle_speed = max(decelerate_vehicle_speed,
-                                                       current_target_vehicle_speed - speed_decrease)
-                elif tf.location.y > decelerate_y_threshold and current_target_vehicle_speed < initial_vehicle_speed:
-                    speed_increase = deceleration_rate * settings.fixed_delta_seconds
-                    current_target_vehicle_speed = min(initial_vehicle_speed,
-                                                       current_target_vehicle_speed + speed_increase)
-
-                target_wp = get_target_waypoint(tf.location, VEHICLE_PATH_POINTS, lookahead_dist=5.0)
-                throttle_output = lon_controller.run_step(current_target_vehicle_speed, current_vehicle_speed)
-                steer_output = lat_controller.run_step(target_wp, tf)
-
-                control = carla.VehicleControl()
-                control.steer = steer_output
-                if throttle_output >= 0.0:
-                    control.throttle = throttle_output
-                    control.brake = 0.0
+            if vehicle and vehicle.is_alive:
+                # 【新增出界判定】
+                if check_and_handle_out_of_bounds(vehicle, carla_map):
+                    vehicle = None  # 防止报错，标记已销毁
                 else:
-                    control.throttle = 0.0
-                    control.brake = abs(throttle_output)
+                    tf = vehicle.get_transform()
+                    vel = vehicle.get_velocity()
+                    current_vehicle_speed = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
 
-                vehicle.apply_control(control)
+                    if tf.location.y <= decelerate_y_threshold and current_target_vehicle_speed > decelerate_vehicle_speed:
+                        speed_decrease = deceleration_rate * settings.fixed_delta_seconds
+                        current_target_vehicle_speed = max(decelerate_vehicle_speed,
+                                                           current_target_vehicle_speed - speed_decrease)
+                    elif tf.location.y > decelerate_y_threshold and current_target_vehicle_speed < initial_vehicle_speed:
+                        speed_increase = deceleration_rate * settings.fixed_delta_seconds
+                        current_target_vehicle_speed = min(initial_vehicle_speed,
+                                                           current_target_vehicle_speed + speed_increase)
+
+                    target_wp = get_target_waypoint(tf.location, VEHICLE_PATH_POINTS, lookahead_dist=5.0)
+                    throttle_output = lon_controller.run_step(current_target_vehicle_speed, current_vehicle_speed)
+                    steer_output = lat_controller.run_step(target_wp, tf)
+
+                    control = carla.VehicleControl()
+                    control.steer = steer_output
+                    if throttle_output >= 0.0:
+                        control.throttle = throttle_output
+                        control.brake = 0.0
+                    else:
+                        control.throttle = 0.0
+                        control.brake = abs(throttle_output)
+
+                    vehicle.apply_control(control)
 
             # ==============================
-            # 2. [新增] 橙色 Audi TT 控制逻辑
+            # 2. TM 自动驾驶车辆 (红色 Audi)出界判定
             # ==============================
-            if orange_audi:
-                o_tf = orange_audi.get_transform()
-                o_vel = orange_audi.get_velocity()
-                o_current_speed = 3.6 * math.sqrt(o_vel.x ** 2 + o_vel.y ** 2 + o_vel.z ** 2)
+            if agent_vehicle and agent_vehicle.is_alive:
+                if check_and_handle_out_of_bounds(agent_vehicle, carla_map):
+                    agent_vehicle = None
 
-                # 速度策略：初始70km/h，在y=-5减速到40km/h，y=-30恢复到90km/h
-                if o_tf.location.y > -5.0:
-                    o_target_speed = 70.0
-                elif -30.0 < o_tf.location.y <= -5.0:
-                    o_target_speed = 40.0
-                else:  # y <= -30.0
-                    o_target_speed = 90.0
-
-                # 横向控制：动态获取车道中心前方锚点以实现车道保持
-                o_current_wp = carla_map.get_waypoint(o_tf.location)
-                o_next_wps = o_current_wp.next(4.0)  # 获取前方4米处的路点
-                if o_next_wps:
-                    o_target_wp_loc = o_next_wps[0].transform.location
-                    # 将路点转换为格式 (x, y, z) 传入控制器
-                    o_target_wp = (o_target_wp_loc.x, o_target_wp_loc.y, o_target_wp_loc.z)
-                    o_steer_output = orange_lat_controller.run_step(o_target_wp, o_tf)
+            # ==============================
+            # 3. Ego 橙色 Audi TT 控制逻辑
+            # ==============================
+            if orange_audi and orange_audi.is_alive:
+                # 【新增出界判定】
+                if check_and_handle_out_of_bounds(orange_audi, carla_map):
+                    orange_audi = None
                 else:
-                    o_steer_output = 0.0
+                    o_tf = orange_audi.get_transform()
+                    o_vel = orange_audi.get_velocity()
+                    o_current_speed = 3.6 * math.sqrt(o_vel.x ** 2 + o_vel.y ** 2 + o_vel.z ** 2)
 
-                # 纵向PID控制计算
-                o_throttle_output = orange_lon_controller.run_step(o_target_speed, o_current_speed)
+                    # 速度策略：初始70km/h，在y=-5减速到40km/h，y=-30恢复到90km/h
+                    if o_tf.location.y > -5.0:
+                        o_target_speed = 70.0
+                    elif -30.0 < o_tf.location.y <= -5.0:
+                        o_target_speed = 40.0
+                    else:  # y <= -30.0
+                        o_target_speed = 90.0
 
-                o_control = carla.VehicleControl()
-                o_control.steer = o_steer_output
-                if o_throttle_output >= 0.0:
-                    o_control.throttle = o_throttle_output
-                    o_control.brake = 0.0
-                else:
-                    o_control.throttle = 0.0
-                    o_control.brake = abs(o_throttle_output)
+                    # 横向控制：动态获取车道中心前方锚点以实现车道保持
+                    o_current_wp = carla_map.get_waypoint(o_tf.location)
+                    o_next_wps = o_current_wp.next(4.0)  # 获取前方4米处的路点
+                    if o_next_wps:
+                        o_target_wp_loc = o_next_wps[0].transform.location
+                        # 将路点转换为格式 (x, y, z) 传入控制器
+                        o_target_wp = (o_target_wp_loc.x, o_target_wp_loc.y, o_target_wp_loc.z)
+                        o_steer_output = orange_lat_controller.run_step(o_target_wp, o_tf)
+                    else:
+                        o_steer_output = 0.0
 
-                orange_audi.apply_control(o_control)
+                    # 纵向PID控制计算
+                    o_throttle_output = orange_lon_controller.run_step(o_target_speed, o_current_speed)
+
+                    o_control = carla.VehicleControl()
+                    o_control.steer = o_steer_output
+                    if o_throttle_output >= 0.0:
+                        o_control.throttle = o_throttle_output
+                        o_control.brake = 0.0
+                    else:
+                        o_control.throttle = 0.0
+                        o_control.brake = abs(o_throttle_output)
+
+                    orange_audi.apply_control(o_control)
 
             # ==============================
-            # 3. 行人随机漫游控制逻辑
+            # 4. 行人随机漫游控制逻辑
             # ==============================
-            if walker:
+            if walker and walker.is_alive:
                 ped_loc = walker.get_location()
                 dx = current_ped_target.x - ped_loc.x
                 dy = current_ped_target.y - ped_loc.y
@@ -434,8 +477,11 @@ def main():
         tm = client.get_trafficmanager(8000)
         tm.set_synchronous_mode(False)
 
+        # 【优化】判断 actor 是否存活再释放，防止释放已经被出界函数销毁的实体报错
         if actor_list:
-            client.apply_batch([carla.command.DestroyActor(a) for a in actor_list])
+            actors_to_destroy = [a for a in actor_list if a is not None and a.is_alive]
+            client.apply_batch([carla.command.DestroyActor(a) for a in actors_to_destroy])
+
         print("清理完成，Carla 已恢复正常。")
 
 

@@ -169,7 +169,6 @@ def main():
 
         # 【生成 Actor 1: Ego (Impala) 】
         bp_ego = bp_lib.find('vehicle.chevrolet.impala')
-        bp_ego.set_attribute('role_name', 'ego')
         ex, ey, eyaw = EGO_TRAJ[0]
         ego_loc = carla.Location(x=ex, y=ey, z=0.5)
         ego_loc.z = carla_map.get_waypoint(ego_loc).transform.location.z + 0.5

@@ -178,7 +178,6 @@ def main():
 
         # ================= Actor 1：Ego车 (Lincoln MKZ, 红色) =================
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2020')
-        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'):
             bp_ego.set_attribute('color', '255,0,0')  # 红色
         ego_start_x, ego_start_y, ego_start_yaw = EGO_TRAJECTORY[0]

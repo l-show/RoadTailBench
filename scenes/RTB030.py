@@ -325,7 +325,6 @@ def main():
 
         # ================= Actor 1：Ego车 (Lincoln MKZ 2017) =================
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2017')
-        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'): bp_ego.set_attribute('color', '255,0,0')
         ego_start_x, ego_start_y, ego_start_yaw = EGO_TRAJECTORY[0]
         ego_loc = carla.Location(x=ego_start_x, y=ego_start_y, z=1.0)  # 稍微抬高避免穿模

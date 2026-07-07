@@ -353,7 +353,6 @@ def main():
 
         # --- 3. 生成 Ego 车辆 (修复了复制粘贴导致覆盖 A2 的 bug) ---
         bp_ego = bp_lib.find('vehicle.tesla.model3')
-        bp_ego.set_attribute('role_name', 'ego')
         trans_ego = RAW_ego_TRANSFORMS[0]
         vehicle_ego = world.try_spawn_actor(bp_ego, trans_ego)
         if vehicle_ego:

@@ -310,7 +310,6 @@ def main():
             v1.set_light_state(carla.VehicleLightState(STORM_LIGHTS))
 
         bp_ego = bp_lib.find('vehicle.mercedes.coupe_2020')
-        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'): bp_ego.set_attribute('color', '0,50,0')
         ego_init_loc = carla.Location(x=EGO_TRAJECTORY_DATA[0][0], y=EGO_TRAJECTORY_DATA[0][1], z=0.5)
         ego_init_loc.z = carla_map.get_waypoint(ego_init_loc).transform.location.z + 0.5

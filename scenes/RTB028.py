@@ -196,7 +196,6 @@ def main():
         # 【4】Actor 2：Ego车 (Citroen C3)
         # ==========================
         bp_ego = bp_lib.find('vehicle.citroen.c3')
-        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'):
             bp_ego.set_attribute('color', '255,255,0')  # 黄色
 

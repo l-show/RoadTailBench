@@ -268,7 +268,6 @@ def main():
         print("\n--- 开始生成参与者 ---")
         # 1. Ego (Audi TT)
         bp_ego = bp_lib.find('vehicle.audi.tt')
-        bp_ego.set_attribute('role_name', 'ego')
         e_x, e_y, e_yaw = EGO_TRAJ[0]
         ego_loc = carla.Location(x=e_x, y=e_y,
                                  z=carla_map.get_waypoint(carla.Location(e_x, e_y, 0)).transform.location.z + 0.5)

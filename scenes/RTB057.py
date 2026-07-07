@@ -157,8 +157,7 @@ def main():
         if v3: actor_list.append(v3)
 
         # 4. 生成ego 【修复：改为使用其自己的轨迹点和偏航角生成】
-        ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt', traj_ego[0][0], traj_ego[0][1], yaw=-87.232, z_offset=2,
-                                role_name='ego')
+        ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt', traj_ego[0][0], traj_ego[0][1], yaw=-87.232, z_offset=2)
         if ego: actor_list.append(ego)
 
         # 5. 原生生成行人
