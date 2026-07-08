@@ -75,6 +75,156 @@ def get_proper_spawn_transform(world, x, y):
     return trans
 
 
+def draw_spawn_debug(world, name, x, y, color=carla.Color(255, 255, 0), life_time=0.0):
+    raw_loc = carla.Location(x=x, y=y, z=1.0)
+    world.debug.draw_point(raw_loc, size=0.18, color=color, life_time=life_time)
+    world.debug.draw_string(raw_loc + carla.Location(z=1.0), name, draw_shadow=True, color=color, life_time=life_time)
+
+    wp = world.get_map().get_waypoint(
+        carla.Location(x=x, y=y, z=0.0),
+        project_to_road=True,
+        lane_type=carla.LaneType.Driving,
+    )
+    if wp:
+        projected = wp.transform.location + carla.Location(z=0.8)
+        world.debug.draw_point(projected, size=0.16, color=carla.Color(0, 255, 255), life_time=life_time)
+        world.debug.draw_line(raw_loc, projected, thickness=0.05, color=color, life_time=life_time)
+        world.debug.draw_string(
+            projected + carla.Location(z=0.8),
+            f"{name}_projected",
+            draw_shadow=True,
+            color=carla.Color(0, 255, 255),
+            life_time=life_time,
+        )
+    return wp
+
+
+def build_lane_debug_path(carla_map, start_loc, length_m=260.0, step_m=2.0):
+    path = []
+    wp = carla_map.get_waypoint(start_loc, project_to_road=True, lane_type=carla.LaneType.Driving)
+    for _ in range(int(length_m / step_m)):
+        loc = wp.transform.location
+        path.append(carla.Location(x=loc.x, y=loc.y, z=loc.z + 0.6))
+        next_wps = wp.next(step_m)
+        if not next_wps:
+            break
+        wp = next_wps[0]
+    return path
+
+
+def draw_path_debug(world, path, color=carla.Color(150, 150, 150), life_time=0.0):
+    if not path:
+        return
+    for loc in path:
+        world.debug.draw_point(loc, size=0.05, color=color, life_time=life_time)
+    for p1, p2 in zip(path, path[1:]):
+        world.debug.draw_line(p1, p2, thickness=0.04, color=color, life_time=life_time)
+
+
+def try_spawn_with_debug(world, bp_lib, blueprint_id, base_transform, name, color=None):
+    bp = bp_lib.find(blueprint_id)
+    if color and bp.has_attribute('color'):
+        bp.set_attribute('color', color)
+
+    candidates = [base_transform]
+    base_wp = world.get_map().get_waypoint(
+        base_transform.location,
+        project_to_road=True,
+        lane_type=carla.LaneType.Driving,
+    )
+    if base_wp:
+        for dist in (2.0, 4.0, 6.0, 8.0, 10.0, 12.0):
+            for wp in base_wp.next(dist) + base_wp.previous(dist):
+                trans = wp.transform
+                trans.location.z += 0.5
+                candidates.append(trans)
+
+    for i, trans in enumerate(candidates):
+        actor = world.try_spawn_actor(bp, trans)
+        if actor:
+            if i:
+                print(f"{name} 生成成功: 原始点被占用，改用候选点 {i} ({trans.location.x:.3f}, {trans.location.y:.3f})")
+            return actor
+        world.debug.draw_point(trans.location + carla.Location(z=1.0), size=0.12, color=carla.Color(255, 0, 0), life_time=0.0)
+
+    print(f"{name} 生成失败: 已尝试 {len(candidates)} 个候选点，blueprint={blueprint_id}")
+    return None
+
+
+RAW_EGO_TRAJ = [
+    (134.088, 45.904, 178.673), (134.088, 45.904, 178.673), (134.088, 45.904, 178.673),
+    (134.088, 45.904, 178.673), (134.088, 45.904, 178.533), (134.088, 45.904, 178.463),
+    (128.439, 46.048, 178.533), (118.293, 46.256, 179.734), (108.296, 46.202, -179.006),
+    (98.306, 46.035, -179.216), (88.142, 45.929, -179.496), (78.146, 45.841, -179.496),
+    (68.149, 45.750, -179.426), (57.984, 45.648, -179.426), (49.048, 45.559, -179.426),
+    (41.383, 45.482, -179.426), (33.884, 45.407, -179.426), (27.468, 45.343, -179.426),
+    (21.115, 45.265, -179.076), (14.762, 45.157, -179.006), (8.513, 45.048, -179.006),
+    (2.161, 44.938, -179.006), (-4.088, 44.830, -179.006), (-10.544, 44.819, 178.169),
+    (-16.886, 45.193, 176.201), (-23.126, 45.558, 178.619), (-29.373, 45.492, -177.994),
+    (-35.718, 45.197, -176.489), (-40.394, 44.895, -176.279), (-40.394, 44.895, -176.279),
+    (-40.394, 44.895, -176.279), (-40.394, 44.895, -176.279), (-40.394, 44.895, -176.279),
+    (-40.394, 44.895, -176.279), (-40.394, 44.895, -176.279), (-40.394, 44.895, -176.279),
+    (-40.394, 44.895, -176.279), (-40.914, 44.863, -176.489), (-47.157, 44.598, -178.482),
+    (-53.405, 44.516, -179.469), (-59.760, 44.463, -179.539), (-66.114, 44.412, -179.539),
+    (-72.572, 44.339, -179.259), (-79.030, 44.245, -179.119), (-85.278, 44.114, -178.489),
+    (-91.733, 43.944, -178.489), (-97.980, 43.779, -178.489), (-104.229, 43.684, -179.620),
+    (-110.687, 43.642, -179.620), (-117.145, 43.647, 178.826), (-123.365, 44.191, 169.221),
+    (-129.640, 45.709, 161.730), (-135.297, 48.349, 149.595), (-140.432, 52.079, 137.069),
+    (-144.537, 56.780, 126.750), (-147.691, 62.270, 112.152), (-147.847, 62.656, 111.934),
+    (-147.847, 62.656, 111.934), (-147.847, 62.656, 111.934), (-147.847, 62.656, 111.934)
+]
+
+EGO_PATH_POINTS = []
+if RAW_EGO_TRAJ:
+    EGO_PATH_POINTS.append((RAW_EGO_TRAJ[0][0], RAW_EGO_TRAJ[0][1], 0.5, RAW_EGO_TRAJ[0][2]))
+    for i in range(1, len(RAW_EGO_TRAJ)):
+        if RAW_EGO_TRAJ[i] != RAW_EGO_TRAJ[i - 1]:
+            EGO_PATH_POINTS.append((RAW_EGO_TRAJ[i][0], RAW_EGO_TRAJ[i][1], 0.5, RAW_EGO_TRAJ[i][2]))
+
+
+def get_target_waypoint(vehicle_loc, path_points, lookahead_dist=6.0):
+    min_dist = float('inf')
+    closest_index = 0
+    for i, p in enumerate(path_points):
+        dist = math.sqrt((p[0] - vehicle_loc.x) ** 2 + (p[1] - vehicle_loc.y) ** 2)
+        if dist < min_dist:
+            min_dist, closest_index = dist, i
+
+    target_index, current_dist = closest_index, 0.0
+    for i in range(closest_index, len(path_points) - 1):
+        p1, p2 = path_points[i], path_points[i + 1]
+        d = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+        current_dist += d
+        target_index = i + 1
+        if current_dist > lookahead_dist:
+            break
+    return path_points[target_index]
+
+
+def is_near_path_end(actor, path_points, threshold=3.0):
+    if actor is None or not actor.is_alive or not path_points:
+        return False
+    loc = actor.get_location()
+    end = path_points[-1]
+    return math.hypot(loc.x - end[0], loc.y - end[1]) <= threshold
+
+
+def destroy_actor(actor, reason):
+    if actor and actor.is_alive:
+        print(f"{actor.type_id} 销毁: {reason}")
+        actor.destroy()
+    return None
+
+
+def destroy_all_actors(actor_list, reason):
+    print(reason)
+    for actor in actor_list[:]:
+        if actor and actor.is_alive:
+            actor.destroy()
+        if actor in actor_list:
+            actor_list.remove(actor)
+
+
 def get_safe_backward_transform(start_wp, target_distance):
     """安全地向后搜寻生成点，防止超出路线起点导致的 IndexError"""
     curr_wp = start_wp
@@ -193,49 +343,53 @@ def main():
 
         print("正在生成车辆...")
 
+        # 先画出所有原始生成点与投影到道路后的点，便于排查车辆未生成原因。
+        draw_spawn_debug(world, "v1_firetruck", -48.306, 55.167, carla.Color(255, 0, 0))
+        draw_spawn_debug(world, "v2_carlacola", -47.762, 51.454, carla.Color(255, 128, 0))
+        draw_spawn_debug(world, "v4_mercedes", 6.205, -9.597, carla.Color(0, 128, 255))
+        draw_spawn_debug(world, "jeep_ego", EGO_PATH_POINTS[0][0], EGO_PATH_POINTS[0][1], carla.Color(255, 255, 0))
+
         # 1. 消防车 (大卡车)
-        bp_v1 = bp_lib.find('vehicle.carlamotors.firetruck')
-        trans_v1 = get_proper_spawn_transform(world, x=12.554, y=-102.382)
-        v1 = world.try_spawn_actor(bp_v1, trans_v1)
+        trans_v1 = get_proper_spawn_transform(world, x=-48.306, y=55.167)
+        v1 = try_spawn_with_debug(world, bp_lib, 'vehicle.carlamotors.firetruck', trans_v1, "1. Firetruck")
         if v1: actor_list.append(v1); print("1. Firetruck 生成成功")
 
         # 2. 货车 (可乐卡车)
-        bp_v2 = bp_lib.find('vehicle.carlamotors.carlacola')
-        trans_v2 = get_proper_spawn_transform(world, x=16.602, y=-101.076)
-        v2 = world.try_spawn_actor(bp_v2, trans_v2)
+        trans_v2 = get_proper_spawn_transform(world, x=-47.762, y=51.454)
+        v2 = try_spawn_with_debug(world, bp_lib, 'vehicle.carlamotors.carlacola', trans_v2, "2. Carlacola")
         if v2: actor_list.append(v2); print("2. Carlacola 生成成功")
 
         # 3. 超车轿车 (Audi TT) - 采用安全算法生成在 V2 后面约 35 米处
-        bp_v3 = bp_lib.find('vehicle.audi.tt')
         wp_v2 = carla_map.get_waypoint(trans_v2.location)
         trans_v3 = get_safe_backward_transform(wp_v2, target_distance=35.0)
-        v3 = world.try_spawn_actor(bp_v3, trans_v3)
+        draw_spawn_debug(world, "v3_audi", trans_v3.location.x, trans_v3.location.y, carla.Color(0, 255, 0))
+        v3 = try_spawn_with_debug(world, bp_lib, 'vehicle.audi.tt', trans_v3, "3. Audi TT")
         if v3: actor_list.append(v3); print("3. Audi TT (超车车) 生成成功")
 
         # 4. 匝道汇入轿跑 (Mercedes)
-        bp_v4 = bp_lib.find('vehicle.mercedes.coupe_2020')
-        trans_v4 = get_proper_spawn_transform(world, x=86.783, y=-10.298)
-        v4 = world.try_spawn_actor(bp_v4, trans_v4)
+        trans_v4 = get_proper_spawn_transform(world, x=6.205, y=-9.597)
+        v4 = try_spawn_with_debug(world, bp_lib, 'vehicle.mercedes.coupe_2020', trans_v4, "4. Mercedes Coupe")
         if v4: actor_list.append(v4); print("4. Mercedes Coupe 生成成功")
 
         # 5. 车辆5: vehicle.jeep.wrangler_rubicon (新增：橙色)
+        trans_jeep = get_transform(EGO_PATH_POINTS[0][0], EGO_PATH_POINTS[0][1], 0.5, yaw=EGO_PATH_POINTS[0][3])
         bp_jeep = bp_lib.find('vehicle.jeep.wrangler_rubicon')
         if bp_jeep.has_attribute('color'):
-            bp_jeep.set_attribute('color', '255,100,0')  # CARLA 标准橙色
-        trans_jeep = get_proper_spawn_transform(world, x=34.843, y=72.746)
+            bp_jeep.set_attribute('color', '255,100,0')
+        bp_jeep.set_attribute('role_name', 'ego')
         jeep = world.try_spawn_actor(bp_jeep, trans_jeep)
         if jeep:
             actor_list.append(jeep)
-            print("5. jeep 生成成功 (橙色，PID自动搜寻前方锚点循迹，初始100km/h)")
+            print("5. jeep EGO 生成成功 (橙色，PID轨迹点循迹，初始60km/h)")
 
 
         print("初始化物理系统...")
         for _ in range(20): world.tick()
 
-        # --- 为 vehicle.jeep.wrangler_rubicon 赋予物理初速度 100km/h  ---
+        # --- 为 vehicle.jeep.wrangler_rubicon EGO 赋予物理初速度 60km/h  ---
         if jeep and jeep.is_alive:
             forward_vec = jeep.get_transform().get_forward_vector()
-            initial_speed_mps = 100.0 / 3.6
+            initial_speed_mps = 60.0 / 3.6
             jeep.set_target_velocity(carla.Vector3D(
                 forward_vec.x * initial_speed_mps,
                 forward_vec.y * initial_speed_mps,
@@ -255,8 +409,33 @@ def main():
                 else:
                     break
 
+        # 画出所有已生成车辆的参考轨迹，方便确认路径方向与生成点。
+        if v1 and v1.is_alive:
+            draw_path_debug(world, build_lane_debug_path(carla_map, v1.get_location(), length_m=260.0), carla.Color(255, 0, 0))
+        if v2 and v2.is_alive:
+            draw_path_debug(world, build_lane_debug_path(carla_map, v2.get_location(), length_m=260.0), carla.Color(255, 128, 0))
+        if v3_reference_path:
+            draw_path_debug(
+                world,
+                [wp.transform.location + carla.Location(z=0.6) for wp in v3_reference_path[:260]],
+                carla.Color(0, 255, 0),
+            )
+        if v4 and v4.is_alive:
+            draw_path_debug(world, build_lane_debug_path(carla_map, v4.get_location(), length_m=260.0), carla.Color(0, 128, 255))
+        draw_path_debug(
+            world,
+            [carla.Location(x=p[0], y=p[1], z=p[2] + 0.6) for p in EGO_PATH_POINTS],
+            carla.Color(255, 255, 0),
+        )
+        print("[调试绘制] 所有生成点、投影点和已生成车辆参考轨迹已绘制。")
+
         print("\n场景正式运行，全车开启行车灯...")
         tick_count = 0
+        jeep_target_speed = 60.0
+        jeep_slowdown_triggered = False
+        jeep_resume_time = None
+        v4_target_speed_actual = 0.0
+        v4_accel_rate = 12.0  # km/h per second
 
         while True:
             start_time = time.time()
@@ -357,16 +536,32 @@ def main():
                 else:
                     set_vehicle_lights(v4)  # 关转向灯，保留基础行车灯
 
+                v4_target_speed_actual = min(70.0, v4_target_speed_actual + v4_accel_rate * 0.02)
                 target_wp = get_lane_keeping_waypoint(carla_map, v4.get_location(), lookahead_dist=6.0)
-                apply_pid_control(v4, pids['v4']['lon'], pids['v4']['lat'], 70.0, target_wp)
+                apply_pid_control(v4, pids['v4']['lon'], pids['v4']['lat'], v4_target_speed_actual, target_wp)
 
             # ==========================
             # 控制 5: jeep TT (恒定自动搜索前方锚点循迹)
             # ==========================
             if jeep and jeep.is_alive:
-                # 动态提取前方 6 米的道路中心锚点进行车道保持
-                target_wp = get_lane_keeping_waypoint(carla_map, jeep.get_location(), lookahead_dist=6.0)
-                apply_pid_control(jeep, pids['jeep']['lon'], pids['jeep']['lat'], 73.0, target_wp)
+                jeep_loc = jeep.get_location()
+                if is_near_path_end(jeep, EGO_PATH_POINTS):
+                    destroy_all_actors(actor_list, "[Jeep EGO] 到达轨迹终点，销毁全部 actors。")
+                    jeep = None
+                    continue
+
+                if not jeep_slowdown_triggered and jeep_loc.x <= -35.0:
+                    jeep_target_speed = 30.0
+                    jeep_slowdown_triggered = True
+                    jeep_resume_time = sim_time + 4.0
+                    print("[Jeep EGO] 到达 x=-35 减速点，目标速度降为 30km/h")
+                elif jeep_slowdown_triggered and jeep_resume_time is not None and sim_time >= jeep_resume_time:
+                    jeep_target_speed = 60.0
+                    jeep_resume_time = None
+                    print("[Jeep EGO] 减速 4s 结束，目标速度恢复为 60km/h")
+
+                target_wp = get_target_waypoint(jeep_loc, EGO_PATH_POINTS, lookahead_dist=6.0)
+                apply_pid_control(jeep, pids['jeep']['lon'], pids['jeep']['lat'], jeep_target_speed, target_wp)
 
             # --- 帧率同步 ---
             compute_time = time.time() - start_time
@@ -383,7 +578,8 @@ def main():
         world.apply_settings(settings)
 
         if actor_list:
-            client.apply_batch([carla.command.DestroyActor(a) for a in actor_list])
+            actors_to_destroy = [a for a in actor_list if a is not None and a.is_alive]
+            client.apply_batch([carla.command.DestroyActor(a) for a in actors_to_destroy])
         print("清理完成。")
 
 

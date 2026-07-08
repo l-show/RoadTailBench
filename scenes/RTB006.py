@@ -69,6 +69,41 @@ if RAW_DATA:
         if RAW_DATA[i] != RAW_DATA[i - 1]:
             PATH_POINTS.append((RAW_DATA[i][0], RAW_DATA[i][1], 0.5, RAW_DATA[i][2]))
 
+RAW_EGO_DATA = [
+    (4.853, 148.451, -91.737), (4.853, 148.451, -91.737), (4.853, 148.451, -91.737),
+    (4.853, 148.451, -91.737), (4.853, 148.451, -91.737), (4.838, 147.745, -90.808),
+    (4.813, 145.252, -90.555), (4.767, 142.754, -91.765), (4.691, 140.255, -91.512),
+    (4.644, 137.714, -90.751), (4.610, 135.173, -91.005), (4.550, 132.673, -91.512),
+    (4.484, 130.174, -91.512), (4.415, 127.571, -91.512), (4.315, 123.760, -91.512),
+    (4.209, 120.011, -91.892), (4.085, 116.263, -91.892), (3.961, 112.516, -92.019),
+    (3.826, 108.706, -92.272), (3.658, 104.897, -92.779), (3.473, 101.089, -92.779),
+    (3.291, 97.281, -92.652), (3.124, 93.535, -92.399), (2.994, 89.788, -91.511),
+    (2.895, 86.039, -91.511), (2.794, 82.228, -91.511), (2.693, 78.416, -91.511),
+    (2.595, 74.666, -91.511), (2.491, 70.852, -91.638), (2.376, 67.104, -92.018),
+    (2.256, 63.293, -91.258), (2.189, 59.544, -91.004), (2.107, 55.732, -91.384),
+    (2.016, 51.983, -91.384), (1.919, 48.103, -91.638), (1.807, 44.292, -92.018),
+    (1.673, 40.482, -92.018), (1.531, 36.735, -92.398), (1.379, 32.926, -92.018),
+    (1.260, 29.115, -91.638), (1.152, 25.365, -91.638), (1.046, 21.617, -91.384),
+    (0.954, 17.805, -91.384), (0.862, 13.992, -91.384), (0.770, 10.180, -91.384),
+    (0.670, 6.306, -91.511), (0.568, 2.432, -91.511), (0.469, -1.316, -91.511),
+    (0.383, -5.065, -91.131), (0.308, -8.877, -91.131), (0.269, -12.626, -90.243),
+    (0.253, -16.376, -90.243), (0.212, -20.189, -91.003), (0.105, -23.937, -92.326),
+    (-0.025, -27.810, -91.565), (-0.129, -31.621, -91.565), (-0.231, -35.369, -91.565),
+    (-0.339, -39.180, -91.945), (-0.468, -42.990, -91.945), (-0.576, -46.801, -91.045),
+    (-0.642, -50.550, -91.451), (-0.752, -54.361, -91.945), (-0.881, -58.108, -92.072),
+    (-1.019, -61.917, -92.072), (-1.157, -65.724, -92.072), (-1.298, -69.470, -92.452),
+    (-1.473, -73.280, -92.452), (-1.612, -77.027, -92.071), (-1.720, -80.838, -91.382),
+    (-1.792, -83.462, -91.636), (-1.792, -83.462, -91.636), (-1.792, -83.462, -91.636),
+    (-1.792, -83.462, -91.636), (-1.792, -83.462, -91.636), (-1.792, -83.462, -91.636)
+]
+
+EGO_PATH_POINTS = []
+if RAW_EGO_DATA:
+    EGO_PATH_POINTS.append((RAW_EGO_DATA[0][0], RAW_EGO_DATA[0][1], 0.5, RAW_EGO_DATA[0][2]))
+    for i in range(1, len(RAW_EGO_DATA)):
+        if RAW_EGO_DATA[i] != RAW_EGO_DATA[i - 1]:
+            EGO_PATH_POINTS.append((RAW_EGO_DATA[i][0], RAW_EGO_DATA[i][1], 0.5, RAW_EGO_DATA[i][2]))
+
 
 # ==========================================
 # PID 控制器类 (自己接管，摆脱限速)
@@ -182,6 +217,36 @@ def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed, target_wp):
     vehicle.apply_control(control)
 
 
+def destroy_actor(actor, reason):
+    if actor and actor.is_alive:
+        print(f"{actor.type_id} 销毁: {reason}")
+        actor.destroy()
+    return None
+
+
+def check_and_destroy_out_of_bounds(actor, carla_map, threshold=6.0):
+    if actor is None or not actor.is_alive:
+        return None
+
+    loc = actor.get_location()
+    nearest_wp = carla_map.get_waypoint(loc, project_to_road=True, lane_type=carla.LaneType.Driving)
+    if nearest_wp is None:
+        return destroy_actor(actor, "无法投影到道路")
+
+    distance = nearest_wp.transform.location.distance(loc)
+    if distance > threshold:
+        return destroy_actor(actor, f"偏离道路中心 {distance:.2f} m")
+    return actor
+
+
+def has_reached_path_end(actor, path_points, threshold=3.0):
+    if actor is None or not actor.is_alive or not path_points:
+        return False
+    loc = actor.get_location()
+    end = path_points[-1]
+    return math.hypot(loc.x - end[0], loc.y - end[1]) <= threshold
+
+
 # ==========================================
 # 主程序
 # ==========================================
@@ -248,11 +313,18 @@ def main():
             bp_audi = bp_lib.find('vehicle.audi.tt')
             if bp_audi.has_attribute('color'):
                 bp_audi.set_attribute('color', '255,100,0')  # CARLA 标准橙色
-            trans_audi = get_proper_spawn_transform(world, x=4.763, y=142)
+            bp_audi.set_attribute('role_name', 'ego')
+            initial_ego_point = EGO_PATH_POINTS[0]
+            trans_audi = get_transform(
+                x=initial_ego_point[0],
+                y=initial_ego_point[1],
+                z=0.5,
+                yaw=initial_ego_point[3],
+            )
             audi = world.try_spawn_actor(bp_audi, trans_audi)
             if audi:
                 actor_list.append(audi)
-                print("4. Audi TT 生成成功 (橙色，PID自动搜寻前方锚点循迹，初始70km/h)")
+                print("4. Audi TT 生成成功 (橙色EGO，PID轨迹点循迹，初始70km/h)")
 
             print("\n等待 1 秒物理系统稳定...")
             for _ in range(20): world.tick()
@@ -287,6 +359,8 @@ def main():
                 # 控制 1: Prius (40 -> 70)
                 # ==========================
                 if prius and prius.is_alive:
+                    prius = check_and_destroy_out_of_bounds(prius, carla_map)
+                if prius and prius.is_alive:
                     prius_loc = prius.get_location()
                     prius_desired_speed = 40.0
 
@@ -307,12 +381,16 @@ def main():
                 # 控制 2: Impala (恒定 30)
                 # ==========================
                 if impala and impala.is_alive:
+                    impala = check_and_destroy_out_of_bounds(impala, carla_map)
+                if impala and impala.is_alive:
                     target_wp = get_lane_keeping_waypoint(carla_map, impala.get_location())
                     apply_pid_control(impala, pids['impala']['lon'], pids['impala']['lat'], 30.0, target_wp)
 
                 # ==========================
                 # 控制 3: Ambulance (150 -> 20 -> 停)
                 # ==========================
+                if ambulance and ambulance.is_alive:
+                    ambulance = check_and_destroy_out_of_bounds(ambulance, carla_map)
                 if ambulance and ambulance.is_alive:
                     tf = ambulance.get_transform()
                     dist_to_end = math.sqrt(
@@ -341,8 +419,12 @@ def main():
                 # 控制 4: Audi TT (恒定 50km/h，自动搜索前方锚点循迹)
                 # ==========================
                 if audi and audi.is_alive:
-                    # 动态提取前方 6 米的道路中心锚点进行车道保持
-                    target_wp = get_lane_keeping_waypoint(carla_map, audi.get_location(), lookahead_dist=6.0)
+                    audi = check_and_destroy_out_of_bounds(audi, carla_map)
+                if audi and audi.is_alive:
+                    if has_reached_path_end(audi, EGO_PATH_POINTS):
+                        audi = destroy_actor(audi, "EGO 到达轨迹终点")
+                        continue
+                    target_wp = get_target_waypoint(audi.get_location(), EGO_PATH_POINTS, lookahead_dist=6.0)
                     apply_pid_control(audi, pids['audi']['lon'], pids['audi']['lat'], 50.0, target_wp)
 
                 # --- 帧率同步补偿 ---
@@ -363,7 +445,8 @@ def main():
         world.apply_settings(settings)
 
         if actor_list:
-            client.apply_batch([carla.command.DestroyActor(a) for a in actor_list])
+            actors_to_destroy = [a for a in actor_list if a is not None and a.is_alive]
+            client.apply_batch([carla.command.DestroyActor(a) for a in actors_to_destroy])
         print("清理完成。")
 
 
