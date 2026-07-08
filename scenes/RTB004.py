@@ -48,6 +48,33 @@ RAW_VEHICLE_PATH_POINTS = [
 ]
 VEHICLE_PATH_POINTS = clean_path_points(RAW_VEHICLE_PATH_POINTS)
 
+RAW_EGO_PATH_POINTS = [
+    (-23.859, 25.471, -89.768), (-23.859, 25.471, -89.768), (-23.859, 25.471, -89.768),
+    (-23.859, 25.471, -89.768), (-23.859, 25.471, -89.768), (-23.859, 25.471, -89.768),
+    (-23.859, 25.471, -89.768), (-23.859, 25.471, -89.768), (-23.859, 25.471, -89.349),
+    (-23.834, 23.300, -89.349), (-23.816, 19.474, -90.589), (-23.874, 15.684, -91.009),
+    (-23.941, 11.886, -91.009), (-23.992, 8.161, -90.449), (-23.967, 4.322, -88.211),
+    (-23.813, 0.503, -86.656), (-23.436, -3.287, -80.761), (-22.606, -7.046, -76.016),
+    (-21.655, -10.674, -74.516), (-20.550, -14.367, -72.595), (-19.337, -17.950, -69.817),
+    (-17.869, -21.519, -63.790), (-16.174, -24.915, -62.945), (-14.460, -28.270, -62.945),
+    (-12.673, -31.720, -62.035), (-10.838, -35.004, -60.633), (-8.936, -38.339, -59.588),
+    (-6.973, -41.626, -57.828), (-4.872, -44.767, -54.640), (-2.640, -47.819, -52.008),
+    (-0.156, -50.778, -47.568), (2.484, -53.492, -44.421), (5.251, -56.080, -42.301),
+    (8.125, -58.563, -39.226), (11.128, -60.886, -35.951), (14.338, -63.018, -31.211),
+    (17.686, -64.944, -28.450), (21.073, -66.615, -24.897), (24.528, -68.219, -24.897),
+    (28.039, -69.774, -23.545), (31.346, -71.215, -23.545), (35.062, -72.751, -21.263),
+    (38.607, -74.101, -19.894), (42.219, -75.265, -16.469), (45.862, -76.233, -13.047),
+    (49.626, -76.902, -8.568), (53.414, -77.526, -12.470), (56.978, -78.680, -25.558),
+    (60.193, -80.813, -38.604), (63.040, -83.312, -45.389), (65.461, -86.160, -53.056),
+    (67.608, -89.254, -56.173), (69.522, -92.493, -61.806), (71.288, -95.880, -63.314),
+    (72.857, -99.285, -67.636), (74.217, -102.846, -70.870), (75.401, -106.470, -72.884),
+    (76.425, -110.143, -75.231), (77.339, -113.843, -77.397), (78.124, -117.509, -77.674),
+    (78.937, -121.233, -77.674), (79.787, -124.950, -77.079), (80.717, -128.649, -74.885),
+    (81.698, -132.332, -75.630), (82.267, -134.573, -75.758), (82.267, -134.573, -75.758),
+    (82.267, -134.573, -75.758), (82.267, -134.573, -75.758), (82.267, -134.573, -75.758)
+]
+EGO_PATH_POINTS = clean_path_points(RAW_EGO_PATH_POINTS)
+
 # 行人随机漫游坐标点
 PEDESTRIAN_LOCATIONS = [
     carla.Location(x=-19.568, y=-27.066, z=1.0),
@@ -257,11 +284,13 @@ def main():
         bp_orange_audi.set_attribute('role_name', 'ego')  # 【关键修改】设置actor名为ego
 
         # 目标位置，z轴设为0让API自动去贴近地面寻找
-        orange_audi_loc = carla.Location(x=-23.344, y=30.983, z=20.0)
+        initial_ego_point = EGO_PATH_POINTS[0]
+        orange_audi_loc = carla.Location(x=initial_ego_point[0], y=initial_ego_point[1], z=20.0)
         # 自动获取道路锚点 (project_to_road=True 会把坐标映射到合法的道路中心或车道上)
         orange_audi_wp = carla_map.get_waypoint(orange_audi_loc, project_to_road=True, lane_type=carla.LaneType.Driving)
 
         orange_audi_transform = orange_audi_wp.transform
+        orange_audi_transform.rotation.yaw = initial_ego_point[2]
         orange_audi_transform.location.z += 0.5  # 略微抬高避免碰撞地面
 
         orange_audi = world.try_spawn_actor(bp_orange_audi, orange_audi_transform)
@@ -308,7 +337,7 @@ def main():
         print("\n=> 物理系统稳定，已下发车灯常亮指令！场景运行中...")
 
         # --- 车辆参数 ---
-        initial_vehicle_speed = 85.0
+        initial_vehicle_speed = 65.0
         decelerate_vehicle_speed = 40.0
         decelerate_y_threshold = -1.0
         current_target_vehicle_speed = initial_vehicle_speed
@@ -389,16 +418,8 @@ def main():
                     else:  # y <= -30.0
                         o_target_speed = 90.0
 
-                    # 横向控制：动态获取车道中心前方锚点以实现车道保持
-                    o_current_wp = carla_map.get_waypoint(o_tf.location)
-                    o_next_wps = o_current_wp.next(4.0)  # 获取前方4米处的路点
-                    if o_next_wps:
-                        o_target_wp_loc = o_next_wps[0].transform.location
-                        # 将路点转换为格式 (x, y, z) 传入控制器
-                        o_target_wp = (o_target_wp_loc.x, o_target_wp_loc.y, o_target_wp_loc.z)
-                        o_steer_output = orange_lat_controller.run_step(o_target_wp, o_tf)
-                    else:
-                        o_steer_output = 0.0
+                    o_target_wp = get_target_waypoint(o_tf.location, EGO_PATH_POINTS, lookahead_dist=4.0)
+                    o_steer_output = orange_lat_controller.run_step(o_target_wp, o_tf)
 
                     # 纵向PID控制计算
                     o_throttle_output = orange_lon_controller.run_step(o_target_speed, o_current_speed)

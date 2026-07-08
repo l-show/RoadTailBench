@@ -22,14 +22,14 @@ class AbilityScoreMetric(BaseMetric):
         return MetricResult.make(self.name, score, {
             "mode": "compatibility_aggregate_of_two_capability_scores",
             "success": success,
-            "deprecated": "A/B/C ability_tags are deprecated; use capability_vector behavior/hazard 0/1 fields.",
+            "deprecated": "A/B/C ability_tags are deprecated; use capability_vector ego_action/hazard_type names+values arrays.",
             "group_scores": {
-                "behavior": behavior if behavior_selected else None,
-                "hazard": hazard if hazard_selected else None,
+                "ego_action": behavior if behavior_selected else None,
+                "hazard_type": hazard if hazard_selected else None,
             },
             "selected_capabilities": {
-                "behavior": behavior_selected,
-                "hazard": hazard_selected,
+                "ego_action": behavior_selected,
+                "hazard_type": hazard_selected,
             },
             "inputs": {
                 "behavior_capability_score": behavior,

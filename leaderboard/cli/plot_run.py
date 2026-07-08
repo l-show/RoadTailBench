@@ -374,7 +374,7 @@ def plot_ability_breakdown(metrics, output, plt, dpi):
     hazard_responses = metric_map.get("long_tail_hazard_response", {}).get("details", {}).get("hazard_responses", [])
 
     fig, axes = plt.subplots(2, 1, figsize=(11, 7), constrained_layout=True)
-    group_labels = ["behavior", "hazard", "aggregate"]
+    group_labels = ["ego_action", "hazard_type", "aggregate"]
     group_values = [
         behavior.get("score"),
         hazard.get("score"),

@@ -73,6 +73,19 @@ RAW_TRUCK_PATH_POINTS = [
     (-40.441, -148.711, -96.508), (-40.734, -151.277, -96.508), (-40.823, -152.064, -96.508)
 ]
 
+RAW_EGO_PATH_POINTS = [
+    (-32.867, -6.441, -92.192), (-32.867, -6.441, -92.192), (-32.867, -6.441, -92.192),
+    (-32.867, -6.441, -92.192), (-32.867, -6.441, -92.192), (-32.867, -6.441, -92.192),
+    (-32.988, -9.601, -92.192), (-33.439, -19.924, -92.611), (-33.798, -29.917, -91.631),
+    (-33.95, -40.086, -90.575), (-34.053, -50.086, -90.855), (-34.266, -60.25, -91.275),
+    (-34.489, -70.248, -91.275), (-34.711, -80.246, -91.275), (-34.908, -90.411, -91.065),
+    (-35.1, -100.743, -91.065), (-35.289, -110.907, -91.065), (-35.478, -121.072, -91.065),
+    (-35.654, -131.077, -90.995), (-35.82, -141.408, -90.855), (-35.992, -151.573, -90.995),
+    (-36.166, -161.572, -90.995), (-36.218, -164.572, -90.995), (-36.218, -164.572, -90.995),
+    (-36.218, -164.572, -90.995), (-36.218, -164.572, -90.995), (-36.218, -164.572, -90.995),
+    (-36.218, -164.572, -90.995)
+]
+
 
 def main():
     actor_list = []
@@ -107,10 +120,12 @@ def main():
         # 直接使用库函数对原始列表数据进行去重和0.5m插值抽稀
         traj_suv = RTB.clean_trajectory(RAW_SUV_PATH_POINTS, min_dist=0.5)
         traj_truck = RTB.clean_trajectory(RAW_TRUCK_PATH_POINTS, min_dist=0.5)
+        traj_ego = RTB.clean_trajectory(RAW_EGO_PATH_POINTS, min_dist=0.5)
 
         # 🚀【新增功能】画出所有车辆的预设灰色轨迹线，方便调试观察
         RTB.draw_preset_trajectory(world, traj_suv, color=carla.Color(150, 150, 150))
         RTB.draw_preset_trajectory(world, traj_truck, color=carla.Color(150, 150, 150))
+        RTB.draw_preset_trajectory(world, traj_ego, color=carla.Color(255, 255, 0))
 
         # ==========================================
         # 3. 车辆、行人、模型实体安全生成
@@ -131,20 +146,14 @@ def main():
         actor_list.append(firetruck)
 
         # 生成 黄色雪铁龙 EGO (由 TM 接管控制)
-        bp_ego = bp_lib.find('vehicle.citroen.c3')
-        if bp_ego.has_attribute('color'):
-            bp_ego.set_attribute('color', '255,255,0')  # 设定黄色
-        trans_c3 = carla.Transform(carla.Location(x=-33.301, y=-13.216, z=0.809), carla.Rotation(yaw=-88.482))
-        ego = world.try_spawn_actor(bp_ego, trans_c3)
+        ego = RTB.spawn_vehicle(world, 'vehicle.citroen.c3',
+                                x=traj_ego[0][0], y=traj_ego[0][1], yaw=traj_ego[0][2],
+                                color='255,255,0', role_name='ego')
 
-        # Traffic Manager 接管 C3
+        # PID 接管 C3
         if ego:
             actor_list.append(ego)
-            tm = client.get_trafficmanager(8000)
-            tm.set_synchronous_mode(True)
-            ego.set_autopilot(True, tm.get_port())
-            tm.vehicle_percentage_speed_difference(ego, -20.0)  # TM控制超速
-            print("[实体生成] 黄色雪铁龙 C3 生成成功 (由TrafficManager接管)")
+            print("[实体生成] 黄色雪铁龙 C3 生成成功 (由PID轨迹控制)")
 
         print("[实体生成] 轨迹车辆生成完毕，正在稳定物理环境...")
         for _ in range(20):
@@ -159,29 +168,37 @@ def main():
         pid_lon_trk = RTB.PIDLongitudinalController(preset='truck')
         pid_lat_trk = RTB.PIDLateralController(preset='truck')
 
-        idx_suv, idx_trk = 0, 0  # 轨迹索引缓存
+        pid_lon_ego = RTB.PIDLongitudinalController(preset='default_car')
+        pid_lat_ego = RTB.PIDLateralController(preset='default_car')
+
+        idx_suv, idx_trk, idx_ego = 0, 0, 0  # 轨迹索引缓存
 
         # ==========================================
         # 5. 车辆灯光管理器
         # ==========================================
         lights_suv = RTB.VehicleLightManager(suv)
         lights_trk = RTB.VehicleLightManager(firetruck)
+        lights_ego = RTB.VehicleLightManager(ego)
 
         # ==========================================
         # 6. 剧本状态机编排
         # ==========================================
         # SUV 状态机：初始 101km/h，在 Y <= -5.0 时，触发降速到 70km/h
-        sm_suv = RTB.MultiStageBehaviorMachine(initial_speed=101.0)
+        sm_suv = RTB.MultiStageBehaviorMachine(initial_speed=90)
         sm_suv.add_stage('y_less', target_speed=70.0, trigger_val=-5.0, accel=15.0)
 
         # Firetruck 状态机：全程保持 110km/h
         sm_trk = RTB.MultiStageBehaviorMachine(initial_speed=110.0)
 
+        # EGO 状态机：由 PID 跟踪指定轨迹
+        sm_ego = RTB.MultiStageBehaviorMachine(initial_speed=60.0)
+
         # ==========================================
         # 7. 预热与初始状态注入
         # ==========================================
-        RTB.set_vehicle_initial_speed(suv, target_speed_kmh=101.0)
+        RTB.set_vehicle_initial_speed(suv, target_speed_kmh=90)
         RTB.set_vehicle_initial_speed(firetruck, target_speed_kmh=110.0)
+        RTB.set_vehicle_initial_speed(ego, target_speed_kmh=60.0)
 
         # ==========================================
         # 8. 仿真主循环（帧率同步与环境清理守护）
@@ -216,6 +233,15 @@ def main():
                 RTB.apply_pid_control(firetruck, pid_lon_trk, pid_lat_trk, spd_trk, wp_trk)
                 lights_trk.auto_update_from_control()
 
+            # EGO 控制
+            if not RTB.check_vehicle_out_of_bounds(ego, carla_map, auto_destroy=True):
+                spd_ego = sm_ego.tick(ego.get_location(), sim_time, dt)
+                wp_ego, idx_ego = RTB.get_target_waypoint(ego.get_location(), traj_ego, idx_ego,
+                                                          speed_kmh=spd_ego)
+                RTB.draw_lookahead_point(world, ego.get_location(), wp_ego)
+                RTB.apply_pid_control(ego, pid_lon_ego, pid_lat_ego, spd_ego, wp_ego)
+                lights_ego.auto_update_from_control()
+
             # ---------------- 硬件时钟补齐 (强制 1X 真实时间流逝) ----------------
             compute_time = time.time() - start_time
             if compute_time < dt:
@@ -228,8 +254,6 @@ def main():
     finally:
         # 恢复异步模式并一键清理场景实体
         RTB.disable_synchronous_mode(world)
-        if 'tm' in locals():
-            tm.set_synchronous_mode(False)  # 解除 TM 的同步模式锁定
         RTB.cleanup_actors(client, actor_list)
         print("[场景结束] 资源已安全回收。")
 

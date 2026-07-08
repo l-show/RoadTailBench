@@ -337,31 +337,27 @@ def simplify_ability_tags(tags):
     return groups or ["A", "B"]
 
 
-BEHAVIOR_CAPABILITY_KEYS = [
-    "lane_change",
-    "overtaking",
-    "bypass_obstacle",
-    "car_following",
-    "yielding",
-    "merge_or_cut_in",
-    "intersection_crossing",
-    "pedestrian_interaction",
-    "emergency_braking",
-    "low_speed_maneuver",
+EGO_ACTION_KEYS = [
+    "Overtaking",
+    "Following",
+    "Yielding",
+    "Merging",
+    "Crossing",
+    "Braking",
+    "Keeping",
 ]
 
-HAZARD_CAPABILITY_KEYS = [
-    "traffic_sign_marking",
-    "road_geometry",
+HAZARD_TYPE_KEYS = [
+    "traffic_signs_markings",
+    "separation_protection",
+    "speed_control_facilities",
+    "lighting_facilities",
+    "road_intersection",
+    "road_surface_condition",
+    "road_alignment",
     "limited_sight_distance",
-    "road_surface_low_friction",
-    "static_obstacle_or_intrusion",
-    "falling_or_moving_obstacle",
-    "construction_or_lane_blockage",
-    "priority_conflict",
-    "adverse_weather_visibility",
-    "adverse_lighting_glare",
-    "adverse_lighting_low_light",
+    "clearance_intrusion",
+    "adverse_weather",
 ]
 
 
@@ -369,9 +365,16 @@ def zero_vector(keys):
     return {key: 0 for key in keys}
 
 
+def binary_array(keys, vector):
+    return {
+        "names": keys,
+        "values": [int(bool(vector.get(key, 0))) for key in keys],
+    }
+
+
 def build_capability_vector(tags, source, excel):
-    behavior = zero_vector(BEHAVIOR_CAPABILITY_KEYS)
-    hazard = zero_vector(HAZARD_CAPABILITY_KEYS)
+    ego_action = zero_vector(EGO_ACTION_KEYS)
+    hazard_type = zero_vector(HAZARD_TYPE_KEYS)
     text = "\n".join(str(v) for v in [
         excel.get("source_hazards"),
         excel.get("scenario_typical"),
@@ -383,56 +386,67 @@ def build_capability_vector(tags, source, excel):
         source,
     ] if v).lower()
 
-    if any(word in text for word in ("lane_change", "change_lane", "变道", "并线")):
-        behavior["lane_change"] = 1
     if any(word in text for word in ("overtak", "超车", "跨越")):
-        behavior["overtaking"] = 1
+        ego_action["Overtaking"] = 1
     if any(word in text for word in ("bypass", "绕行", "避让", "障碍", "obstacle", "construction")):
-        behavior["bypass_obstacle"] = 1
+        ego_action["Overtaking"] = 1
     if any(word in text for word in ("follow", "跟车", "carla.command", "autopilot")):
-        behavior["car_following"] = 1
+        ego_action["Following"] = 1
     if any(word in text for word in ("yield", "让行", "优先", "会车")):
-        behavior["yielding"] = 1
+        ego_action["Yielding"] = 1
     if any(word in text for word in ("merge", "cut_in", "cut-in", "汇入", "合流", "匝道")):
-        behavior["merge_or_cut_in"] = 1
+        ego_action["Merging"] = 1
+    if any(word in text for word in ("lane_change", "change_lane", "变道", "并线")):
+        ego_action["Merging"] = 1
     if any(word in text for word in ("junction", "intersection", "crossing", "路口", "交叉", "丁字")):
-        behavior["intersection_crossing"] = 1
+        ego_action["Crossing"] = 1
     if any(word in text for word in ("walker.pedestrian", "pedestrian", "行人")):
-        behavior["pedestrian_interaction"] = 1
+        ego_action["Yielding"] = 1
     if any(word in text for word in ("emergency", "brake", "急刹", "紧急", "突发")):
-        behavior["emergency_braking"] = 1
-    if any(word in text for word in ("parking", "low_speed", "低速", "倒车", "泊车")):
-        behavior["low_speed_maneuver"] = 1
+        ego_action["Braking"] = 1
+    if any(word in text for word in ("lane keeping", "keep lane", "cruise", "巡航", "车道保持", "路径跟随", "稳定行驶")):
+        ego_action["Keeping"] = 1
 
     for tag in tags:
         if tag.endswith("traffic_sign_marking"):
-            hazard["traffic_sign_marking"] = 1
+            hazard_type["traffic_signs_markings"] = 1
         elif tag.endswith("alignment_geometry"):
-            hazard["road_geometry"] = 1
+            hazard_type["road_alignment"] = 1
         elif tag.endswith("sight_distance"):
-            hazard["limited_sight_distance"] = 1
+            hazard_type["limited_sight_distance"] = 1
         elif tag.endswith("pavement_condition"):
-            hazard["road_surface_low_friction"] = 1
+            hazard_type["road_surface_condition"] = 1
         elif tag.endswith("clearance_intrusion"):
-            hazard["static_obstacle_or_intrusion"] = 1
+            hazard_type["clearance_intrusion"] = 1
         elif tag.endswith("rain_wet") or tag.endswith("fog") or tag.endswith("wind_dust_visibility"):
-            hazard["adverse_weather_visibility"] = 1
+            hazard_type["adverse_weather"] = 1
         elif tag.endswith("glare"):
-            hazard["adverse_lighting_glare"] = 1
+            hazard_type["adverse_weather"] = 1
         elif tag.endswith("low_light"):
-            hazard["adverse_lighting_low_light"] = 1
+            hazard_type["lighting_facilities"] = 1
     if any(word in text for word in ("falling", "落石", "滚落", "掉落", "货物", "box")):
-        hazard["falling_or_moving_obstacle"] = 1
+        hazard_type["clearance_intrusion"] = 1
     if any(word in text for word in ("construction", "施工", "占道", "lane_block")):
-        hazard["construction_or_lane_blockage"] = 1
+        hazard_type["clearance_intrusion"] = 1
     if any(word in text for word in ("yield", "让行", "优先", "冲突", "priority")):
-        hazard["priority_conflict"] = 1
+        hazard_type["road_intersection"] = 1
+    if any(word in text for word in ("护栏", "隔离", "防护", "barrier", "guardrail")):
+        hazard_type["separation_protection"] = 1
+    if any(word in text for word in ("限速", "减速带", "测速", "speed limit", "speed_control")):
+        hazard_type["speed_control_facilities"] = 1
+    if any(word in text for word in ("照明", "路灯", "low_light", "streetlight", "lighting")):
+        hazard_type["lighting_facilities"] = 1
+    if any(word in text for word in ("坑洼", "积水", "湿滑", "冰雪", "低摩擦", "pavement", "wet", "snow")):
+        hazard_type["road_surface_condition"] = 1
 
-    if not any(behavior.values()):
-        behavior["car_following"] = 1
-    if not any(hazard.values()):
-        hazard["limited_sight_distance"] = 1
-    return {"behavior": behavior, "hazard": hazard}
+    if not any(ego_action.values()):
+        ego_action["Keeping"] = 1
+    if not any(hazard_type.values()):
+        hazard_type["limited_sight_distance"] = 1
+    return {
+        "ego_action": binary_array(EGO_ACTION_KEYS, ego_action),
+        "hazard_type": binary_array(HAZARD_TYPE_KEYS, hazard_type),
+    }
 
 
 def expected_behavior_for_b(tags):
@@ -519,14 +533,6 @@ def build_metadata(scene_path, excel, old):
         "trajectory_adherence_mode": "spatial",
         "reference_speed_kmh": reference_speed,
         "speed_limit_kmh": reference_speed,
-        "allowed_lateral_error_m": 4.0,
-        "hard_lateral_error_m": 12.0,
-        "allowed_progress_error_m": 20.0,
-        "hard_progress_error_m": 60.0,
-        "allowed_time_error_s": 3.0,
-        "hard_time_error_s": 8.0,
-        "allowed_heading_error_deg": 45.0,
-        "hard_heading_error_deg": 120.0,
         "scenario_tags": simplify_ability_tags(tags),
         "ability_tags": simplify_ability_tags(tags),
         "capability_vector": build_capability_vector(tags, source, excel),
@@ -547,10 +553,7 @@ def build_metadata(scene_path, excel, old):
             "type": primary_b,
             "center": center,
             "radius_m": 10.0,
-            "perception_radius_m": 40.0,
-            "danger_radius_m": 4.0,
             "reference_speed_kmh": min(40.0, reference_speed),
-            "allow_enter_danger_zone": expected.startswith("yield"),
             "expected_behavior": expected,
         }]
     else:

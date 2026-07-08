@@ -9,7 +9,7 @@ if LIBRARY_PATH not in sys.path:
     sys.path.append(LIBRARY_PATH)
 
 # 全局导入标准化函数库 (根据你提供的库内容，版本为V10)
-import RoadTailBenchInitV10 as RTB
+import RoadTailBenchInitV9 as RTB
 
 # ==========================================
 # 原始轨迹数据硬编码
@@ -77,6 +77,43 @@ RAW_TRUCK_PATH_POINTS = [
     (-33.483, -159.725, -107.675), (-33.483, -159.725, -107.675)
 ]
 
+RAW_SUV_PATH_POINTS = [
+    (-27.317, 52.186, -92.098), (-27.317, 52.186, -92.098), (-27.317, 52.186, -92.098),
+    (-27.317, 52.186, -92.098), (-27.317, 52.186, -92.098), (-27.319, 52.120, -92.098),
+    (-27.413, 49.560, -92.098), (-27.496, 47.022, -91.468), (-27.549, 44.517, -90.838),
+    (-27.573, 41.952, -90.418), (-27.604, 37.705, -90.418), (-27.563, 32.637, -89.331),
+    (-27.503, 27.520, -89.331), (-27.437, 21.597, -89.691), (-27.417, 15.210, -89.984),
+    (-27.489, 8.809, -90.926), (-27.591, 2.504, -90.926), (-27.692, -3.725, -90.926),
+    (-27.793, -10.123, -90.856), (-27.888, -16.453, -90.856), (-27.985, -22.941, -90.856),
+    (-28.077, -29.105, -90.856), (-28.165, -35.557, -90.646), (-28.204, -41.822, -90.226),
+    (-28.229, -48.242, -90.226), (-28.254, -54.586, -90.226), (-28.280, -61.006, -90.226),
+    (-28.305, -67.367, -90.226), (-28.354, -73.764, -91.421), (-28.602, -80.084, -92.414),
+    (-28.824, -86.387, -91.686), (-28.908, -92.784, -89.860), (-28.871, -99.083, -89.650),
+    (-28.805, -105.530, -89.094), (-28.707, -111.743, -89.094), (-28.608, -118.012, -89.094),
+    (-28.517, -124.410, -89.764), (-28.504, -130.786, -90.042), (-28.534, -137.162, -90.567),
+    (-28.597, -143.485, -90.567), (-28.654, -149.274, -90.567), (-28.654, -149.274, -90.567),
+    (-28.654, -149.274, -90.567), (-28.654, -149.274, -90.567), (-28.654, -149.274, -90.567),
+    (-28.654, -149.274, -90.567)
+]
+
+RAW_EGO_PATH_POINTS = [
+    (-27.081, 34.240, -90.743), (-27.081, 34.240, -90.743), (-27.081, 34.240, -90.743),
+    (-27.081, 34.240, -90.743), (-27.081, 34.240, -90.743), (-27.081, 34.240, -90.743),
+    (-27.081, 34.240, -90.743), (-27.081, 34.240, -90.743), (-27.081, 34.240, -90.743),
+    (-27.081, 34.240, -90.883), (-27.095, 33.838, -92.083), (-27.233, 30.043, -92.013),
+    (-27.327, 26.277, -91.160), (-27.406, 22.401, -91.160), (-27.491, 18.199, -91.160),
+    (-27.616, 12.020, -91.160), (-27.733, 5.581, -90.740), (-27.807, -0.790, -90.250),
+    (-27.819, -7.106, -90.110), (-27.832, -13.483, -90.110), (-27.844, -19.820, -90.110),
+    (-27.856, -26.261, -90.110), (-27.930, -33.926, -91.563), (-28.093, -41.535, -90.890),
+    (-28.152, -49.144, -90.216), (-28.181, -56.828, -90.216), (-28.210, -64.439, -90.216),
+    (-28.249, -71.938, -90.631), (-28.377, -79.658, -90.971), (-28.505, -87.192, -90.971),
+    (-28.580, -94.777, -90.014), (-28.597, -102.360, -90.775), (-28.683, -109.963, -90.374),
+    (-28.693, -117.631, -89.967), (-28.689, -125.367, -89.967), (-28.729, -132.893, -90.770),
+    (-28.833, -140.641, -90.770), (-28.924, -148.238, -90.396), (-28.964, -155.743, -90.270),
+    (-28.987, -160.737, -90.270), (-28.987, -160.737, -90.270), (-28.987, -160.737, -90.270),
+    (-28.987, -160.737, -90.270), (-28.987, -160.737, -90.270), (-28.987, -160.737, -90.270)
+]
+
 
 def main():
     actor_list = []
@@ -105,8 +142,6 @@ def main():
         print("[场景配置] 天气系统已设置")
 
         # 挂载 TM (保留 Ego 车的 TM 配置需求环境)
-        tm = RTB.setup_traffic_manager(client, port=8000, sync_mode=True, hybrid_radius=100.0)
-
         # ==========================================
         # 2. 轨迹数据硬编码与清洗
         # ==========================================
@@ -117,9 +152,13 @@ def main():
         traj_truck = RTB.clean_trajectory(RAW_TRUCK_PATH_POINTS, min_dist=0.01)
         traj_truck = RTB.interpolate_trajectory(traj_truck, interval=0.5)
 
+        traj_ego = RTB.clean_trajectory(RAW_EGO_PATH_POINTS, min_dist=0.01)
+        traj_ego = RTB.interpolate_trajectory(traj_ego, interval=0.5)
+
         # 🚀 静态轨迹锚点地表吸附可视化
         RTB.draw_preset_trajectory(world, traj_suv, color=carla.Color(150, 150, 150))
         RTB.draw_preset_trajectory(world, traj_truck, color=carla.Color(150, 150, 150))
+        RTB.draw_preset_trajectory(world, traj_ego, color=carla.Color(255, 255, 0))
         print("[场景配置] 轨迹数据稠密化清洗与可视化完毕")
 
         # ==========================================
@@ -136,7 +175,8 @@ def main():
 
         # Ego 朝向 Y轴负方向 (yaw=-90.0)
         ego = RTB.spawn_vehicle(world, 'vehicle.citroen.c3',
-                                x=-26.962, y=43.165, yaw=-90.0, color='255,255,0', z_offset=1.5)
+                                x=traj_ego[0][0], y=traj_ego[0][1], yaw=traj_ego[0][2],
+                                color='255,255,0', role_name='ego', z_offset=1.5)
         actor_list.append(ego)
 
         # ==========================================
@@ -153,6 +193,7 @@ def main():
 
         pid_lon_ego = RTB.PIDLongitudinalController(K_P=1.5, K_I=0.05, K_D=0.1)
         pid_lat_ego = RTB.PIDLateralController(K_P=1.95, K_I=0.05, K_D=0.2)
+        idx_ego = 0
 
         # ==========================================
         # 5. 车辆灯光管理器
@@ -164,8 +205,8 @@ def main():
         # 6. 剧本状态机编排
         # ==========================================
         # SUV剧本：起步 101km/h，到达 y<=15 时减速至 80km/h
-        sm_suv = RTB.MultiStageBehaviorMachine(initial_speed=101.0)
-        sm_suv.add_stage(trigger_type='y_less', trigger_val=15.0, target_speed=80.0, accel=15.0)
+        sm_suv = RTB.MultiStageBehaviorMachine(initial_speed=85.0)
+        sm_suv.add_stage(trigger_type='y_less', trigger_val=15.0, target_speed=70.0, accel=15.0)
 
         # Truck剧本：保持 98km/h 匀速
         sm_truck = RTB.MultiStageBehaviorMachine(initial_speed=80.0)
@@ -183,9 +224,9 @@ def main():
             world.tick()
 
         print("[初始注入] 瞬间赋予物理极速，消除起步迟缓...")
-        RTB.set_vehicle_initial_speed(suv, target_speed_kmh=101.0)
+        RTB.set_vehicle_initial_speed(suv, target_speed_kmh=85.0)
         RTB.set_vehicle_initial_speed(truck, target_speed_kmh=98.0)
-        RTB.set_vehicle_initial_speed(ego, target_speed_kmh=80.0, yaw_deg=-90.0)
+        RTB.set_vehicle_initial_speed(ego, target_speed_kmh=80.0, yaw_deg=traj_ego[0][2])
 
         # ==========================================
         # 8. 仿真主循环
@@ -233,7 +274,7 @@ def main():
                 speed_ego = sm_ego.tick(ego.get_location(), sim_time, dt)
 
                 # Ego 的动态循迹模式：调用地图 API 追踪车道中心点 (无固定轨迹)
-                target_wp_ego = RTB.get_random_lane_keeping_waypoint(carla_map, ego.get_location(), lookahead_dist=6.0)
+                target_wp_ego, idx_ego = RTB.get_target_waypoint(ego.get_location(), traj_ego, idx_ego, speed_ego)
                 if target_wp_ego:
                     RTB.apply_pid_control(ego, pid_lon_ego, pid_lat_ego, speed_ego, target_wp_ego)
                     RTB.draw_lookahead_point(world, ego.get_location(), target_wp_ego)

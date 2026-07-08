@@ -46,7 +46,14 @@ score = 0.75 * score_lateral_deviation
 
 ## 综合分
 
-`behavior_capability_score`:
+`behavior_capability_score` 现在按 metadata 里的 `capability_vector.ego_action` 选择动作维度：
+
+```json
+{
+  "names": ["Overtaking", "Following", "Yielding", "Merging", "Crossing", "Braking", "Keeping"],
+  "values": [0, 1, 0, 0, 0, 0, 1]
+}
+```
 
 ```text
 0.35 route_completion
@@ -56,7 +63,14 @@ score = 0.75 * score_lateral_deviation
 + 0.10 control_stability
 ```
 
-`hazard_capability_score`:
+`hazard_capability_score` 现在按 metadata 里的 `capability_vector.hazard_type` 选择隐患类型维度：
+
+```json
+{
+  "names": ["traffic_signs_markings", "separation_protection", "speed_control_facilities", "lighting_facilities", "road_intersection", "road_surface_condition", "road_alignment", "limited_sight_distance", "clearance_intrusion", "adverse_weather"],
+  "values": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+}
+```
 
 ```text
 0.25 route_completion

@@ -4,14 +4,6 @@ import carla
 import time
 import math
 import numpy as np
-# 尝试导入 GlobalRoutePlanner
-try:
-    # 这里的路径通常在 carla 安装包里，如果报错提示找不到 agents，
-    # 你可能需要手动 sys.path.append('你的carla/PythonAPI/carla路径')
-    from agents.navigation.global_route_planner import GlobalRoutePlanner
-except ImportError:
-    print("警告: 无法导入 GlobalRoutePlanner，请确保 'agents' 模块在 Python 路径中。")
-    print("通常位于: .../CARLA_0.9.15/PythonAPI/carla/agents/navigation/")
 
 # ==========================================
 # 轨迹数据清洗 (自动去重)
@@ -117,9 +109,46 @@ RAW_PATH_POINTS = [
     (76.473, -108.752, -74.865), (76.605, -109.242, -74.865), (76.699, -109.587, -74.865),
     (76.699, -109.587, -74.865), (76.699, -109.587, -74.865), (76.699, -109.587, -74.865),
     (76.699, -109.587, -74.865), (76.699, -109.587, -74.865), (76.699, -109.587, -74.865),
-    (76.699, -109.587, -74.865)
+    (76.699, -109.587, -74.865), (77.154, -111.613, -75.398), (77.154, -111.613, -75.398), (77.154, -111.613, -75.398), (77.154, -111.613, -75.398),
+    (77.154, -111.613, -75.398), (77.623, -113.492, -76.096), (78.538, -117.195, -76.375), (79.408, -120.909, -76.933),
+    (80.256, -124.562, -76.933), (81.113, -128.277, -77.492), (81.938, -131.999, -77.492), (82.764, -135.721, -77.491),
+    (83.576, -139.382, -77.491), (84.402, -143.104, -77.490), (84.917, -145.423, -77.489), (84.917, -145.423, -77.489),
+    (84.917, -145.423, -77.489), (84.917, -145.423, -77.489), (84.917, -145.423, -77.489), (84.917, -145.423, -77.489),
+    (84.917, -145.423, -77.489)
 ]
 VEHICLE_PATH_POINTS = clean_path_points(RAW_PATH_POINTS)
+
+
+RAW_EGO_PATH_POINTS = [
+    (-23.716, 35.122, -93.747), (-23.716, 35.122, -93.747), (-23.716, 35.122, -93.747), (-23.716, 35.122, -93.747),
+    (-23.716, 35.122, -93.747), (-23.751, 34.641, -94.307), (-23.789, 34.137, -94.097), (-23.824, 33.621, -93.887),
+    (-23.878, 32.828, -93.887), (-24.077, 29.768, -93.130), (-24.255, 25.999, -92.203), (-24.395, 22.194, -91.993),
+    (-24.515, 18.359, -91.783), (-24.580, 14.610, -90.289), (-24.553, 10.817, -88.300), (-24.364, 7.032, -86.422),
+    (-24.016, 3.230, -83.531), (-23.514, -0.513, -80.964), (-22.823, -4.330, -78.096), (-21.927, -8.039, -74.436),
+    (-20.801, -11.695, -72.186), (-20.108, -13.849, -72.186), (-19.726, -15.038, -72.186), (-19.335, -16.252, -71.836),
+    (-18.920, -17.453, -69.635), (-18.482, -18.604, -69.056), (-18.021, -19.808, -68.986), (-17.538, -20.997, -67.270),
+    (-17.036, -22.164, -66.122), (-16.519, -23.328, -66.052), (-16.007, -24.471, -65.843), (-15.482, -25.641, -65.843),
+    (-14.971, -26.776, -65.703), (-14.443, -27.935, -65.355), (-13.914, -29.083, -64.932), (-13.367, -30.220, -63.903),
+    (-12.808, -31.361, -63.903), (-12.250, -32.500, -63.903), (-11.698, -33.638, -64.392), (-11.153, -34.785, -64.671),
+    (-10.599, -35.953, -64.327), (-10.051, -37.080, -64.044), (-9.476, -38.219, -61.507), (-8.883, -39.280, -59.833),
+    (-8.215, -40.397, -58.253), (-7.534, -41.479, -56.873), (-6.812, -42.497, -52.266), (-5.986, -43.487, -48.082),
+    (-5.127, -44.400, -45.808), (-4.242, -45.310, -45.808), (-3.365, -46.213, -45.808), (-2.491, -47.117, -46.699),
+    (-1.634, -48.058, -48.211), (-0.810, -48.975, -47.414), (0.060, -49.911, -47.071), (0.933, -50.850, -47.071),
+    (1.799, -51.781, -47.349), (2.658, -52.713, -46.871), (3.533, -53.625, -45.571), (4.422, -54.519, -43.738),
+    (5.349, -55.395, -42.983), (6.288, -56.236, -40.872), (7.254, -57.048, -39.154), (8.244, -57.835, -37.631),
+    (9.241, -58.601, -36.941), (10.255, -59.356, -36.594), (11.267, -60.099, -36.114), (12.279, -60.834, -35.576),
+    (13.324, -61.557, -33.322), (14.386, -62.240, -32.174), (15.477, -62.926, -32.174), (16.571, -63.595, -31.076),
+    (17.653, -64.226, -29.951), (18.769, -64.869, -29.951), (19.864, -65.497, -29.263), (20.981, -66.115, -28.779),
+    (22.877, -67.156, -28.779), (26.231, -68.949, -26.136), (29.730, -70.515, -22.737), (33.213, -71.960, -21.531),
+    (36.850, -73.271, -17.698), (40.457, -74.355, -16.331), (44.141, -75.359, -14.364), (47.834, -76.222, -12.404),
+    (51.604, -77.061, -13.689), (55.197, -78.120, -19.979), (58.592, -79.797, -33.936), (61.577, -82.071, -40.507),
+    (64.361, -84.715, -47.442), (66.807, -87.618, -50.774), (69.103, -90.659, -56.659), (71.010, -93.885, -62.406),
+    (72.591, -97.350, -68.143), (74.000, -100.890, -69.170), (75.249, -104.491, -72.280), (76.297, -108.092, -74.389),
+    (77.323, -111.764, -74.389), (78.330, -115.441, -75.022), (79.231, -119.145, -77.426), (80.021, -122.810, -78.667),
+    (80.802, -126.542, -77.560), (81.615, -130.268, -77.933), (82.391, -133.937, -78.057), (83.180, -137.667, -78.057),
+    (83.245, -137.973, -78.057), (83.245, -137.973, -78.057), (83.245, -137.973, -78.057), (83.245, -137.973, -78.057),
+]
+EGO_PATH_POINTS = clean_path_points(RAW_EGO_PATH_POINTS)
 
 
 # ==========================================
@@ -167,6 +196,68 @@ class PIDLateralController2:
         return np.clip((self._k_p * _dot) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0)
 
 
+class MultiStageBehaviorMachine:
+    def __init__(self, initial_speed=0.0):
+        self.current_speed = initial_speed
+        self.stages = []
+        self.current_idx = 0
+        self.stage_enter_time = None
+
+    def add_stage(self, trigger_type, target_speed, trigger_val=None, accel=15.0, tolerance=2.0):
+        self.stages.append({
+            "type": trigger_type,
+            "val": trigger_val,
+            "target_speed": target_speed,
+            "accel": accel,
+            "tolerance": tolerance,
+        })
+
+    def _check_trigger(self, stage, vehicle_loc, current_time):
+        trigger_type = stage["type"]
+        trigger_val = stage["val"]
+        if trigger_type == "immediate":
+            return True
+        if trigger_type == "time":
+            if self.stage_enter_time is None:
+                self.stage_enter_time = current_time
+            if current_time - self.stage_enter_time >= trigger_val:
+                self.stage_enter_time = None
+                return True
+            return False
+        if trigger_type == "point":
+            return math.hypot(vehicle_loc.x - trigger_val[0], vehicle_loc.y - trigger_val[1]) <= stage["tolerance"]
+        if trigger_type == "x_greater":
+            return vehicle_loc.x > trigger_val
+        if trigger_type == "x_less":
+            return vehicle_loc.x < trigger_val
+        if trigger_type == "y_greater":
+            return vehicle_loc.y > trigger_val
+        if trigger_type == "y_less":
+            return vehicle_loc.y < trigger_val
+        return False
+
+    def tick(self, vehicle_loc, current_time, dt):
+        if self.stages and self.current_idx < len(self.stages):
+            current_stage = self.stages[self.current_idx]
+            if self._check_trigger(current_stage, vehicle_loc, current_time):
+                print(f"[Ego状态机] 触发阶段 {self.current_idx}: {current_stage['type']} -> {current_stage['target_speed']} km/h")
+                self.current_idx += 1
+                self.stage_enter_time = None
+
+        if self.current_idx == 0:
+            return self.current_speed
+
+        active_stage = self.stages[max(0, self.current_idx - 1)]
+        target_speed = active_stage["target_speed"]
+        accel_rate = active_stage["accel"]
+        if accel_rate > 0.0:
+            if self.current_speed < target_speed:
+                self.current_speed = min(target_speed, self.current_speed + accel_rate * dt)
+            elif self.current_speed > target_speed:
+                self.current_speed = max(target_speed, self.current_speed - accel_rate * dt)
+        return self.current_speed
+
+
 # ==========================================
 # 辅助函数
 # ==========================================
@@ -201,6 +292,35 @@ def get_target_waypoint(actor_loc, path_points, lookahead_dist=4.0):
     return path_points[target_index]
 
 
+def destroy_if_out_of_road(vehicle, carla_map, actor_list, threshold_dist=6.0):
+    if not vehicle or not vehicle.is_alive:
+        return True
+
+    loc = vehicle.get_location()
+    wp_exact = carla_map.get_waypoint(loc, project_to_road=False, lane_type=carla.LaneType.Driving)
+    wp_nearest = carla_map.get_waypoint(loc, project_to_road=True, lane_type=carla.LaneType.Driving)
+
+    out_of_road = False
+    if wp_nearest is None:
+        out_of_road = True
+        print(f"[道路守护] 车辆 [{vehicle.id}] 无法投影到可行驶道路，销毁 actor。")
+    elif wp_exact is None:
+        dist_to_road = wp_nearest.transform.location.distance(loc)
+        if dist_to_road > threshold_dist:
+            out_of_road = True
+            print(f"[道路守护] 车辆 [{vehicle.id}] 偏离可行驶道路 {dist_to_road:.1f}m，销毁 actor。")
+
+    if out_of_road:
+        try:
+            if vehicle in actor_list:
+                actor_list.remove(vehicle)
+            vehicle.destroy()
+        except Exception as exc:
+            print(f"[道路守护] 销毁车辆失败: {exc}")
+        return True
+    return False
+
+
 # ==========================================
 # 主程序
 # ==========================================
@@ -208,13 +328,7 @@ def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
     world = client.get_world()
-
-    # 引入路径规划器 (放在函数内引用防止没安装报错时还能跑前面)
-    try:
-        from agents.navigation.global_route_planner import GlobalRoutePlanner
-    except ImportError:
-        print("Error: 缺少 agents 模块，请检查 Carla PythonAPI 环境配置")
-        return
+    carla_map = world.get_map()
 
     # ---------------------------------------------------------
     # 设置 Traffic Manager (TM)
@@ -278,10 +392,15 @@ def main():
         # 2. 生成 Ego 车辆 (vehicle.chevrolet.impala)
         # ---------------------------------------------------------
         ego_bp = bp_lib.find('vehicle.chevrolet.impala')
-        ego_bp.set_attribute('role_name', 'hero')
+        ego_bp.set_attribute('role_name', 'ego')
 
-        # 初始位置 x=-23.700, y=47.344, z=0.5, yaw=-90.0 (向下行驶)
-        ego_spawn_trans = get_transform(x=-23.700, y=47.344, z=0.5, yaw=-90.0)
+        ego_initial_point = EGO_PATH_POINTS[0]
+        ego_spawn_trans = get_transform(
+            x=ego_initial_point[0],
+            y=ego_initial_point[1],
+            z=0.5,
+            yaw=ego_initial_point[2],
+        )
 
         ego_vehicle = world.try_spawn_actor(ego_bp, ego_spawn_trans)
 
@@ -329,20 +448,20 @@ def main():
             tm.update_vehicle_lights(ego_vehicle, False)
 
         # ==========================================
-        # 【关键修改 2】: 落地后再设置速度和自动驾驶
+        # 【关键修改 2】: 落地后启用 Ego PID 轨迹跟随
         # ==========================================
-        # 前提：此时代码刚结束了 20 帧的物理稳定等待期 (world.tick)，车辆已从悬空状态落地并稳定悬挂
+        ego_lon_controller = None
+        ego_lat_controller = None
         if ego_vehicle:
             # -----------------------------------------------------
             # 1. 物理层面的速度初始化
             # -----------------------------------------------------
-            # 设定目标初始速度为 110 km/h
-            initial_speed_kmh = 110.0
-            # Carla 物理引擎使用国际单位制 (m/s)，需要转换：110 / 3.6 ≈ 30.56 m/s
+            # 设定目标初始速度为 65 km/h
+            initial_speed_kmh = 65.0
+            # Carla 物理引擎使用国际单位制 (m/s)，需要转换：65 / 3.6 ≈ 18.06 m/s
             initial_speed_mps = initial_speed_kmh / 3.6
 
-            # 将角度转换为弧度。Carla 中 yaw=-90 通常指向地图坐标系的负 Y 轴方向
-            yaw_rad = math.radians(-90.0)
+            yaw_rad = math.radians(ego_initial_point[2])
 
             # 根据三角函数分解速度向量
             # vx = 速度 * cos(角度)，vy = 速度 * sin(角度)
@@ -351,95 +470,18 @@ def main():
 
             # 【物理注入】：直接修改车辆刚体的线性速度
             # z=0.0 表示不给垂直方向的速度，让车辆紧贴地面平滑滑行
-            # 这行代码让车辆在这一帧瞬间获得 110km/h 的动能
+            # 这行代码让车辆在这一帧瞬间获得 65km/h 的动能
             ego_vehicle.set_target_velocity(carla.Vector3D(x=vx, y=vy, z=0.0))
-
-            # -----------------------------------------------------
-            # 2. 行为决策层 (Traffic Manager) 初始化
-            # -----------------------------------------------------
-            # 开启自动驾驶模式。
-            # 参数 True：开启；参数 tm_port：指定由哪个端口的 Traffic Manager 来接管
-            # 如果不指定端口，默认会使用 8000
-            ego_vehicle.set_autopilot(True, tm_port)
-
-            # -----------------------------------------------------
-            # 3. 设置 TM 的具体驾驶风格 (针对 ego_vehicle 个体)
-            # -----------------------------------------------------
-            # CarlaTM的底线：Traffic Manager的算法写死了一条规则——只要开启避障，必须保证物理上能刹停
-            # TM内部有一个强制的纵向安全模型，它的刹车逻辑是基于碰撞时间(TTC)和物理刹车距离计算的
-            # 【闯红灯设置】：100% 的概率忽略红绿灯
-            # 效果：遇到红灯完全不减速，直接通过
-            tm.ignore_lights_percentage(ego_vehicle, 100)
-
-            #  规则破坏：无视停车牌
-            tm.ignore_signs_percentage(ego_vehicle, 100)
-
-            # 【碰撞忽略设置】：100% 的概率忽略前车 跟车也会失效
-            # 效果：TM 的纵向控制逻辑将不再考虑“避免碰撞”。
-            # 即便前方有障碍物，TM 也不会为了避让而踩刹车（除非物理碰撞发生）
-            # *注意：这是导致车不减速直接撞上去的关键参数*
-            tm.ignore_vehicles_percentage(ego_vehicle, 100)
-
-            # 避障关闭：无视行人 (直接撞)
-            tm.ignore_walkers_percentage(ego_vehicle, 100)
-
-            # 【超速设置】：设置速度与路段限速的百分比差值
-            # 公式：目标速度 = 当前路段限速 * (1 - percentage/100)
-            # 填 -20.0 意味着：目标速度 = 限速 * 1.2 (即超速 20%)
-            # 如果想让它跑得飞快，可以设为 -50% 甚至更低，或者设为 -200%
-            tm.vehicle_percentage_speed_difference(ego_vehicle, -20.0)
-
-            # 【变道设置】：False 表示禁止自动变道
-            # 效果：车辆将死死地保持在当前车道中心，除非车道结束，否则不会为了超车而变道
-            tm.auto_lane_change(ego_vehicle, False)
-
-            # 【跟车距离设置】：设置与前车的最小保持距离 (单位：米)
-            # 这里你用的是 set_global...，这意味着这个设置会影响 TM 管理的 *所有* 车辆
-            # 设为 0.5 米意味着只有贴到 0.5 米才会尝试刹车（当然，配合上面的 ignore_vehicles 100%，这行其实失效了）
-            tm.set_global_distance_to_leading_vehicle(0.5)
-            # # 建议使用针对单个车的 API
-            # tm.distance_to_leading_vehicle(ego_vehicle, 0.5)
-
-        # ==========================================
-        # 【新增逻辑】: 强制 Ego 车辆进入匝道
-        # 【核心修改】：计算并锁定匝道路径
-        # ==========================================
-            print("正在计算强制进入匝道的路径...")
-
-            # 1. 获取地图和路由规划器
-            amap = world.get_map()
-            # 采样分辨率 1.0 米，意味着生成的路径点每隔 1 米一个，非常顺滑
-            grp = GlobalRoutePlanner(amap, sampling_resolution=1.0)
-
-            # 2. 设定起点和终点
-            # 起点：Ego 车当前位置
-            start_loc = ego_vehicle.get_location()
-
-            # 终点：你提供的匝道最深处的坐标 (x=80.721, y=-131.473)
-            # 规划器会自动计算如何从高速并入这里
-            end_loc = carla.Location(x=80.721, y=-131.473, z=0.0)
-
-            # 3. 计算路径
-            # trace_route 返回的是列表 [(waypoint, road_option), ...]
-            route = grp.trace_route(start_loc, end_loc)
-
-            # 4. 提取 Location 列表传给 Traffic Manager
-            # TM 的 set_path 需要的是 carla.Location 的列表
-            path_locations = []
-            for snapshot in route:
-                # snapshot[0] 是 waypoint
-                path_locations.append(snapshot[0].transform.location)
-
-            # 5. 强制应用路径
-            if path_locations:
-                # 这一步是关键：告诉 TM "别随机跑了，严格按这个坐标列表跑"
-                tm.set_path(ego_vehicle, path_locations)
-                print(f"路径设置成功！已锁定匝道路线，全长 {len(path_locations)} 个路径点。")
-            else:
-                print("错误：无法计算到匝道的路径，请检查终点坐标是否在路面上。")
+            ego_vehicle.set_autopilot(False, tm_port)
+            ego_lon_controller = PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.0, dt=settings.fixed_delta_seconds)
+            ego_lat_controller = PIDLateralController2(K_P=1.95, K_I=0.05, K_D=0.2, dt=settings.fixed_delta_seconds)
+            print(f"Ego PID 轨迹控制已启用，共 {len(EGO_PATH_POINTS)} 个路径点。")
 
         print("场景运行中...")
+        sim_time = 0.0
         target_speed_vw_kmh = 25.0
+        sm_ego = MultiStageBehaviorMachine(initial_speed=65.0)
+        sm_ego.add_stage("y_less", target_speed=25.0, trigger_val=-20.0, accel=20.0)
 
         # 控制开关：是否使用外部模型控制 Ego 车辆
         # 如果为 True，则关闭 Autopilot 并应用下方计算的 Control
@@ -450,11 +492,12 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            sim_time += settings.fixed_delta_seconds
 
             # -------------------------------------------------
             # A. 控制 VW T2 (PID 轨迹跟随)
             # -------------------------------------------------
-            if vehicle and vehicle.is_alive:
+            if vehicle and vehicle.is_alive and not destroy_if_out_of_road(vehicle, carla_map, actor_list):
                 tf = vehicle.get_transform()
                 vel = vehicle.get_velocity()
                 current_speed_kmh = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
@@ -474,9 +517,9 @@ def main():
                 vehicle.apply_control(control)
 
             # -------------------------------------------------
-            # B. 控制 Ego Impala (预留接口)
+            # B. 控制 Ego Impala (PID 轨迹跟随，预留外部接口)
             # -------------------------------------------------
-            if ego_vehicle and ego_vehicle.is_alive:
+            if ego_vehicle and ego_vehicle.is_alive and not destroy_if_out_of_road(ego_vehicle, carla_map, actor_list):
                 # 可以在这里获取传感器数据、图像等传给 UniAD
                 # ego_transform = ego_vehicle.get_transform()
                 # ego_velocity = ego_vehicle.get_velocity()
@@ -504,10 +547,24 @@ def main():
                     ego_vehicle.apply_control(ego_control)
 
                 else:
-                    # 保持 Traffic Manager 控制 (车道保持 + 高速)
-                    # 如果需要强制设置每一帧的速度而不受物理引擎阻力影响(不推荐，物理不真实)，
-                    # 可以用 ego_vehicle.set_target_velocity()，但通常 autopilo 足够。
-                    pass
+                    tf = ego_vehicle.get_transform()
+                    vel = ego_vehicle.get_velocity()
+                    current_speed_kmh = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
+                    target_speed_ego_kmh = sm_ego.tick(tf.location, sim_time, settings.fixed_delta_seconds)
+                    target_wp = get_target_waypoint(tf.location, EGO_PATH_POINTS, lookahead_dist=6.0)
+
+                    throttle_output = ego_lon_controller.run_step(target_speed_ego_kmh, current_speed_kmh)
+                    steer_output = ego_lat_controller.run_step(target_wp, tf)
+
+                    ego_control = carla.VehicleControl()
+                    ego_control.steer = steer_output
+                    if throttle_output >= 0.0:
+                        ego_control.throttle = throttle_output
+                        ego_control.brake = 0.0
+                    else:
+                        ego_control.throttle = 0.0
+                        ego_control.brake = abs(throttle_output)
+                    ego_vehicle.apply_control(ego_control)
 
             # ==============================
             # 同步时间控制

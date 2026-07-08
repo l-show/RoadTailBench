@@ -16,8 +16,8 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 - `trajectory_adherence_mode`: 默认为 `spatial`。可显式写 `spatiotemporal` 复用旧的进度/时间偏差评分。
 - `speed_limit_kmh`: 普通区域速度上限。
 - `reference_speed_kmh`: 兼容旧字段，仍可被效率和速度指标读取，但默认不再用于轨迹贴合评分。
-- `hazards`: 隐患点列表，每项建议包含 `id`、`center`、`radius_m`、`perception_radius_m`、`reference_speed_kmh`。
-- `capability_vector`: 固定候选表的 0/1 能力向量，分为 `behavior` 和 `hazard` 两类。
+- `hazards`: 隐患点列表，每项建议包含 `id`、`type`、`center`、`radius_m`、`reference_speed_kmh`。`radius_m` 同时作为风险区域半径和隐患响应半径。
+- `capability_vector`: 固定候选表的 0/1 能力数组，分为 `ego_action` 和 `hazard_type` 两类。每类都用 `names` 写候选名字，用 `values` 写对应 0/1，例如 `[a,b,c]=[1,0,1]` 的 JSON 形式。
 
 ## Ego 绑定约定
 
@@ -57,9 +57,37 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
   "reference_trajectory": [[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]],
   "trajectory_adherence_mode": "spatial",
   "speed_limit_kmh": 50.0,
+  "capability_vector": {
+    "ego_action": {
+      "names": ["Overtaking", "Following", "Yielding", "Merging", "Crossing", "Braking", "Keeping"],
+      "values": [0, 1, 0, 0, 0, 0, 1]
+    },
+    "hazard_type": {
+      "names": ["traffic_signs_markings", "separation_protection", "speed_control_facilities", "lighting_facilities", "road_intersection", "road_surface_condition", "road_alignment", "limited_sight_distance", "clearance_intrusion", "adverse_weather"],
+      "values": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+    }
+  },
   "hazards": []
 }
 ```
+
+## 能力字段
+
+`ego_action.names` 固定为：
+
+```json
+["Overtaking", "Following", "Yielding", "Merging", "Crossing", "Braking", "Keeping"]
+```
+
+含义依次为：超车/绕行、跟车、让行、汇入/并线/切入、交叉口通行、紧急制动、车道保持/稳定巡航/路径跟随。
+
+`hazard_type.names` 固定为：
+
+```json
+["traffic_signs_markings", "separation_protection", "speed_control_facilities", "lighting_facilities", "road_intersection", "road_surface_condition", "road_alignment", "limited_sight_distance", "clearance_intrusion", "adverse_weather"]
+```
+
+含义依次为：标志标线、隔离防护、限速设施、照明设施、道路交叉、路面情况、道路线形、视距不良、限界侵入、恶劣天气。
 
 ## 轨迹约定
 

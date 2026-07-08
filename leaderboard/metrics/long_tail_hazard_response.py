@@ -16,7 +16,7 @@ class LongTailHazardResponseMetric(BaseMetric):
         results = []
         for hazard in hazards:
             center = tuple(hazard.get("center", [0.0, 0.0])[:2])
-            perception = float(hazard.get("perception_radius_m", hazard.get("radius_m", 10.0) + 15.0))
+            risk_radius = float(hazard.get("radius_m", hazard.get("radius", 10.0)))
             enter_time, response_time, min_distance, min_speed = None, None, float("inf"), float("inf")
             collision_violation, prev_speed = False, None
             entry_speed = None
@@ -29,7 +29,7 @@ class LongTailHazardResponseMetric(BaseMetric):
                 cur_speed = speed_mps(e)
                 min_distance = min(min_distance, d)
                 min_speed = min(min_speed, cur_speed)
-                if enter_time is None and d <= perception:
+                if enter_time is None and d <= risk_radius:
                     enter_time = t
                     entry_speed = cur_speed
                 if frame.get("collisions"):
@@ -68,6 +68,7 @@ class LongTailHazardResponseMetric(BaseMetric):
             results.append({
                 "id": hazard.get("id"),
                 "type": hazard.get("type"),
+                "risk_radius_m": risk_radius,
                 "reaction_time_s": rt,
                 "enter_time_s": enter_time,
                 "response_time_s": response_time,

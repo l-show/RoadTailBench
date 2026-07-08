@@ -228,17 +228,55 @@ def test_capability_scores_use_binary_vector():
     config = {
         "scenario_id": "RTB_CAP",
         "capability_vector": {
-            "behavior": {"overtaking": 1, "lane_change": 0},
-            "hazard": {"limited_sight_distance": 1},
+            "ego_action": {
+                "names": ["Overtaking", "Following", "Yielding", "Merging", "Crossing", "Braking", "Keeping"],
+                "values": [1, 0, 0, 0, 0, 0, 1],
+            },
+            "hazard_type": {
+                "names": [
+                    "traffic_signs_markings",
+                    "separation_protection",
+                    "speed_control_facilities",
+                    "lighting_facilities",
+                    "road_intersection",
+                    "road_surface_condition",
+                    "road_alignment",
+                    "limited_sight_distance",
+                    "clearance_intrusion",
+                    "adverse_weather",
+                ],
+                "values": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            },
         },
     }
     result = evaluate_leaderboard(frames, config)["metrics"]
     behavior = result["behavior_capability_score"]
     hazard = result["hazard_capability_score"]
-    assert "overtaking" in behavior["details"]["selected_capabilities"]
-    assert behavior["details"]["per_capability_scores"]["lane_change"] is None
+    assert "Overtaking" in behavior["details"]["selected_capabilities"]
+    assert "Keeping" in behavior["details"]["selected_capabilities"]
+    assert behavior["details"]["per_capability_scores"]["Following"] is None
+    assert behavior["details"]["capability_names"] == ["Overtaking", "Following", "Yielding", "Merging", "Crossing", "Braking", "Keeping"]
     assert "limited_sight_distance" in hazard["details"]["selected_capabilities"]
+    assert behavior["details"]["group"] == "ego_action"
+    assert hazard["details"]["group"] == "hazard_type"
     assert result["ability_score"]["details"]["mode"] == "compatibility_aggregate_of_two_capability_scores"
+
+
+def test_capability_scores_accept_legacy_dict_vector():
+    frames = [{"ego": {"location": [0.0, 0.0, 0.0]}}]
+    config = {
+        "scenario_id": "RTB_CAP_LEGACY",
+        "capability_vector": {
+            "behavior": {"overtaking": 1, "lane_change": 0},
+            "hazard": {"road_surface_low_friction": 1},
+        },
+    }
+    result = evaluate_leaderboard(frames, config)["metrics"]
+    behavior = result["behavior_capability_score"]
+    hazard = result["hazard_capability_score"]
+    assert "Overtaking" in behavior["details"]["selected_capabilities"]
+    assert "Keeping" not in behavior["details"]["selected_capabilities"]
+    assert "road_surface_condition" in hazard["details"]["selected_capabilities"]
 
 
 def test_collision_penalty_is_weighted_not_binary():
@@ -252,7 +290,7 @@ def test_collision_penalty_is_weighted_not_binary():
     assert result["details"]["weighted_collision_count"] == 0.25
 
 
-def test_hazard_response_ignores_danger_zone_fields_when_responding():
+def test_hazard_response_uses_risk_radius_when_responding():
     frames = [
         {"time": 0.0, "ego": {"location": [10.0, 0.0, 0.0], "speed_mps": 12.0, "control": {"brake": 0.0}}},
         {"time": 0.5, "ego": {"location": [2.0, 0.0, 0.0], "speed_mps": 3.0, "control": {"brake": 1.0}}},
@@ -262,7 +300,7 @@ def test_hazard_response_ignores_danger_zone_fields_when_responding():
         "hazards": [{
             "id": "yield_test",
             "center": [0.0, 0.0, 0.0],
-            "perception_radius_m": 15.0,
+            "radius_m": 3.0,
             "reference_speed_kmh": 15.0,
             "expected_behavior": "yield_or_stop_for_priority_conflict",
         }]
@@ -271,7 +309,27 @@ def test_hazard_response_ignores_danger_zone_fields_when_responding():
     assert result["score"] > 0.5
     response = result["details"]["hazard_responses"][0]
     assert "danger_frames" not in response
+    assert response["risk_radius_m"] == 3.0
     assert response["reason"] == "responded"
+
+
+def test_hazard_response_ignores_legacy_perception_radius():
+    frames = [
+        {"time": 0.0, "ego": {"location": [9.0, 0.0, 0.0], "speed_mps": 12.0, "control": {"brake": 1.0}}},
+        {"time": 0.5, "ego": {"location": [8.0, 0.0, 0.0], "speed_mps": 6.0, "control": {"brake": 1.0}}},
+    ]
+    config = {
+        "hazards": [{
+            "id": "legacy_field_test",
+            "center": [0.0, 0.0],
+            "radius_m": 3.0,
+            "perception_radius_m": 20.0,
+        }]
+    }
+    result = LongTailHazardResponseMetric().compute(frames, config)
+    response = result["details"]["hazard_responses"][0]
+    assert response["reason"] == "not_encountered"
+    assert response["risk_radius_m"] == 3.0
 
 
 def test_driving_efficiency_uses_sim_time_not_speed_average():
@@ -389,7 +447,7 @@ def test_hazard_response_requires_control_or_speed_change_not_speed_compliance_o
         {"time": 0.0, "ego": {"location": [3.0, 0.0, 0.0], "speed_mps": 2.0, "control": {"throttle": 0.2, "brake": 0.0, "steer": 0.0}}},
         {"time": 0.1, "ego": {"location": [2.0, 0.0, 0.0], "speed_mps": 2.0, "control": {"throttle": 0.2, "brake": 0.0, "steer": 0.0}}},
     ]
-    config = {"hazards": [{"center": [0.0, 0.0], "perception_radius_m": 5.0, "radius_m": 3.0, "reference_speed_kmh": 40.0}]}
+    config = {"hazards": [{"center": [0.0, 0.0], "radius_m": 3.0, "reference_speed_kmh": 40.0}]}
     result = LongTailHazardResponseMetric().compute(frames, config)
     assert result["score"] == 0.0
     assert result["details"]["hazard_responses"][0]["reason"] == "no_response"

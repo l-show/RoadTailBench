@@ -1,28 +1,49 @@
 {
-  "schema_version": "roadtailbench.capability_taxonomy.v1",
-  "behavior": [
-    "lane_change",
-    "overtaking",
-    "bypass_obstacle",
-    "car_following",
-    "yielding",
-    "merge_or_cut_in",
-    "intersection_crossing",
-    "pedestrian_interaction",
-    "emergency_braking",
-    "low_speed_maneuver"
-  ],
-  "hazard": [
-    "traffic_sign_marking",
-    "road_geometry",
-    "limited_sight_distance",
-    "road_surface_low_friction",
-    "static_obstacle_or_intrusion",
-    "falling_or_moving_obstacle",
-    "construction_or_lane_blockage",
-    "priority_conflict",
-    "adverse_weather_visibility",
-    "adverse_lighting_glare",
-    "adverse_lighting_low_light"
-  ]
+  "schema_version": "roadtailbench.capability_taxonomy.v2",
+  "ego_action": {
+    "names": [
+      "Overtaking",
+      "Following",
+      "Yielding",
+      "Merging",
+      "Crossing",
+      "Braking",
+      "Keeping"
+    ],
+    "descriptions_zh": [
+      "超车、绕行",
+      "跟车",
+      "让行",
+      "汇入、并线、切入",
+      "交叉口通行",
+      "紧急制动",
+      "车道保持、稳定巡航、路径跟随"
+    ]
+  },
+  "hazard_type": {
+    "names": [
+      "traffic_signs_markings",
+      "separation_protection",
+      "speed_control_facilities",
+      "lighting_facilities",
+      "road_intersection",
+      "road_surface_condition",
+      "road_alignment",
+      "limited_sight_distance",
+      "clearance_intrusion",
+      "adverse_weather"
+    ],
+    "descriptions_zh": [
+      "标志标线",
+      "隔离防护",
+      "限速设施",
+      "照明设施",
+      "道路交叉",
+      "路面情况",
+      "道路线形",
+      "视距不良",
+      "限界侵入",
+      "恶劣天气"
+    ]
+  }
 }
