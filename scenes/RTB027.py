@@ -113,6 +113,87 @@ POLICE_TRAJECTORY = [
 
 
 # ================= 主程序 =================
+EGO_TRAJECTORY = [
+    (19.009, -77.257, 35.182), (19.009, -77.257, 35.182), (19.009, -77.257, 35.182),
+    (19.009, -77.257, 35.182), (19.009, -77.257, 35.182), (19.009, -77.257, 35.182),
+    (19.009, -77.257, 35.182), (20.643, -76.105, 35.182), (24.780, -73.154, 35.784),
+    (28.814, -70.200, 37.286), (32.835, -67.091, 38.186), (36.732, -63.959, 39.776),
+    (40.576, -60.635, 42.085), (44.181, -57.169, 46.053), (47.578, -53.504, 48.784),
+    (50.344, -50.307, 49.194), (51.390, -49.092, 50.322), (52.193, -48.109, 50.800),
+    (52.982, -47.141, 50.800), (53.772, -46.173, 50.800), (54.578, -45.195, 50.434),
+    (55.388, -44.221, 50.069), (56.188, -43.266, 50.069), (56.978, -42.307, 51.824),
+    (57.710, -41.306, 55.520), (58.391, -40.247, 58.988), (59.019, -39.180, 60.343),
+    (59.641, -38.086, 60.652), (60.236, -36.976, 62.409), (60.795, -35.846, 65.011),
+    (61.298, -34.708, 66.993), (61.737, -33.610, 69.194), (61.737, -33.610, 69.194),
+    (61.737, -33.610, 69.194), (61.737, -33.610, 69.194), (61.737, -33.610, 69.194),
+    (61.737, -33.610, 69.194), (61.737, -33.610, 69.194), (61.737, -33.610, 69.194),
+    (61.853, -33.299, 70.049), (62.228, -32.107, 74.828), (62.546, -30.877, 75.640),
+    (62.856, -29.666, 75.640), (63.171, -28.435, 75.640), (63.485, -27.225, 74.893),
+    (63.813, -26.007, 74.893), (64.455, -23.681, 73.501), (65.147, -21.256, 75.049),
+    (65.752, -18.868, 76.043), (66.357, -16.462, 75.793), (67.350, -12.541, 75.793),
+    (68.571, -7.734, 75.350), (69.898, -2.924, 74.683), (71.246, 1.839, 73.187),
+    (72.709, 6.683, 73.187), (74.149, 11.445, 73.187), (75.633, 16.204, 72.314),
+    (77.144, 21.056, 73.282), (78.606, 25.924, 73.281), (80.065, 30.703, 72.406),
+    (81.626, 35.529, 71.518), (83.247, 40.252, 70.536), (84.939, 45.040, 70.536),
+    (86.659, 49.906, 70.536), (88.315, 54.619, 70.785), (89.966, 59.420, 71.035),
+    (91.567, 64.152, 71.782), (93.180, 69.054, 71.782), (94.757, 73.881, 72.156),
+    (96.317, 78.713, 71.781), (97.892, 83.445, 71.532), (99.492, 88.260, 72.154),
+    (100.969, 93.035, 73.897), (102.240, 97.953, 77.382), (103.319, 102.904, 77.755),
+    (104.398, 107.784, 77.129), (105.531, 112.743, 77.128), (106.683, 117.609, 76.379),
+    (107.860, 122.468, 76.378), (109.058, 127.409, 76.378), (109.293, 128.380, 76.378),
+    (109.293, 128.380, 76.378), (109.293, 128.380, 76.378), (109.293, 128.380, 76.378),
+]
+
+
+def get_trajectory_target(vehicle_loc, trajectory, current_index, lookahead_m=8.0, max_search_ahead=30):
+    if not trajectory:
+        return None, current_index
+
+    vx, vy = vehicle_loc.x, vehicle_loc.y
+    closest_index = current_index
+    min_dist_sq = float('inf')
+
+    search_end = min(current_index + max_search_ahead, len(trajectory))
+    for i in range(current_index, search_end):
+        px, py, _ = trajectory[i]
+        dist_sq = (px - vx) ** 2 + (py - vy) ** 2
+        if dist_sq < min_dist_sq:
+            min_dist_sq = dist_sq
+            closest_index = i
+
+    if min_dist_sq > 25.0 ** 2:
+        min_dist_sq = float('inf')
+        for i, (px, py, _) in enumerate(trajectory):
+            dist_sq = (px - vx) ** 2 + (py - vy) ** 2
+            if dist_sq < min_dist_sq:
+                min_dist_sq = dist_sq
+                closest_index = i
+
+    target_index = closest_index
+    accumulated = 0.0
+    for i in range(closest_index, len(trajectory) - 1):
+        x1, y1, _ = trajectory[i]
+        x2, y2, _ = trajectory[i + 1]
+        seg_len = math.hypot(x2 - x1, y2 - y1)
+        target_index = i + 1
+        if seg_len < 1e-3:
+            continue
+        accumulated += seg_len
+        if accumulated >= lookahead_m:
+            break
+
+    tx, ty, _ = trajectory[target_index]
+    return carla.Location(x=tx, y=ty, z=vehicle_loc.z), closest_index
+
+
+def get_ego_target_speed_kmh(ego_y):
+    if ego_y >= 9.618:
+        return 60.0
+    if ego_y >= -40.0:
+        return 15.0
+    return 52.0
+
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -208,14 +289,16 @@ def main():
 
         # ================= Actor 2：Audi TT (Ego) =================
         bp_audi = bp_lib.find('vehicle.audi.tt')
+        if bp_audi.has_attribute('role_name'):
+            bp_audi.set_attribute('role_name', 'ego')
         if bp_audi.has_attribute('color'):
             bp_audi.set_attribute('color', '255,165,0')  # 橙色
 
-        audi_start_loc = carla.Location(x=17.659, y=-78.859, z=0.5)
+        audi_start_x, audi_start_y, audi_start_yaw = EGO_TRAJECTORY[0]
+        audi_start_loc = carla.Location(x=audi_start_x, y=audi_start_y, z=0.5)
         audi_start_wp = carla_map.get_waypoint(audi_start_loc, project_to_road=True)
         audi_start_loc.z = audi_start_wp.transform.location.z + 0.5
-        audi_start_yaw = audi_start_wp.transform.rotation.yaw
-        audi = world.try_spawn_actor(bp_audi, carla.Transform(audi_start_loc, audi_start_wp.transform.rotation))
+        audi = world.try_spawn_actor(bp_audi, carla.Transform(audi_start_loc, carla.Rotation(yaw=audi_start_yaw)))
 
         if audi:
             actor_list.append(audi)
@@ -226,14 +309,15 @@ def main():
         for _ in range(20):
             world.tick()
 
-        print("赋予两车 50km/h 的初始速度...")
+        print("赋予警车 50km/h、Ego 52km/h 的初始速度...")
         if police_car: apply_initial_velocity(police_car, 50.0, police_start_yaw)
-        if audi: apply_initial_velocity(audi, 50.0, audi_start_yaw)
+        if audi: apply_initial_velocity(audi, 52.0, audi_start_yaw)
 
         world.tick()
 
         print("\n仿真正式开始！")
         police_traj_idx = 0
+        ego_traj_idx = 0
 
         while True:
             start_time = time.time()
@@ -261,13 +345,14 @@ def main():
             if audi and audi.is_alive:
                 if not check_and_handle_out_of_bounds(audi, carla_map):
                     ego_loc = audi.get_location()
-                    current_wp = carla_map.get_waypoint(ego_loc, project_to_road=True, lane_type=carla.LaneType.Driving)
-                    next_wps = current_wp.next(10.0)
+                    ego_speed = get_ego_target_speed_kmh(ego_loc.y)
+                    ego_target_loc, ego_traj_idx = get_trajectory_target(
+                        ego_loc, EGO_TRAJECTORY, ego_traj_idx, lookahead_m=max(5.0, ego_speed / 3.6 * 0.6)
+                    )
 
-                    if next_wps:
-                        ego_target_loc = next_wps[0].transform.location
+                    if ego_target_loc:
                         # Ego 也将面临打滑考验与警车的强光炫目干扰
-                        apply_pid_control(audi, pid_ego['lon'], pid_ego['lat'], 50.0, ego_target_loc)
+                        apply_pid_control(audi, pid_ego['lon'], pid_ego['lat'], ego_speed, ego_target_loc)
                     else:
                         audi.apply_control(carla.VehicleControl(brake=1.0))
 

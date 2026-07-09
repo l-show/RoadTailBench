@@ -188,7 +188,15 @@ class RuntimeFrameLogger:
                         pass
         finally:
             self._file.close()
-        metrics = evaluate_leaderboard(self._frames, self.config)
+        eval_config = dict(self.config)
+        if run_summary:
+            eval_config["runtime_summary"] = {
+                "status": run_summary.get("status"),
+                "termination_reason": run_summary.get("termination_reason"),
+                "ticks": run_summary.get("ticks"),
+            }
+            save_json(self.config_path, eval_config)
+        metrics = evaluate_leaderboard(self._frames, eval_config)
         save_json(self.metrics_path, metrics)
         save_metrics_csv(self.metrics_csv_path, metrics)
         if run_summary:

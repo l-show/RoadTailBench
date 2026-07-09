@@ -73,13 +73,31 @@ def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed_kmh, target_loc):
 
 
 def check_and_handle_out_of_bounds(actor, carla_map, tolerance=6.0):
+    if actor is None or not actor.is_alive:
+        return True
     loc = actor.get_location()
     wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
     if wp_nearest is None:
+        actor.destroy()
         return True
     if wp_nearest.transform.location.distance(loc) > tolerance:
+        print(f"[{actor.type_id}] out of bounds, destroyed.")
+        actor.destroy()
         return True
     return False
+
+
+def destroy_all_actors(actors):
+    for actor in actors:
+        if actor and actor.is_alive:
+            actor.destroy()
+
+
+def find_actor_by_role_name(world, role_name):
+    for actor in world.get_actors():
+        if actor.attributes.get('role_name') == role_name:
+            return actor
+    return None
 
 
 # ==========================
@@ -204,6 +222,8 @@ def main():
         bp_ego = bp_lib.find('vehicle.bmw.grandtourer')
         if bp_ego.has_attribute('color'):
             bp_ego.set_attribute('color', '111,111,255')
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
         ego_sx, ego_sy, ego_syaw = EGO_TRAJ[0]
         ego_loc = carla.Location(x=ego_sx, y=ego_sy, z=0.5)
         ego_loc.z = carla_map.get_waypoint(ego_loc).transform.location.z + 0.5
@@ -288,8 +308,9 @@ def main():
             current_snap_time = world.get_snapshot().timestamp.elapsed_seconds
             sim_time = current_snap_time - start_sim_time
             # ---------------- 视角跟随 ----------------
-            if ego and ego.is_alive:
-                tf = ego.get_transform()
+            spectator_ego = find_actor_by_role_name(world, 'ego')
+            if spectator_ego and spectator_ego.is_alive:
+                tf = spectator_ego.get_transform()
                 spectator.set_transform(carla.Transform(
                     tf.location + carla.Location(z=3.0) - tf.get_forward_vector() * 6.0,
                     carla.Rotation(pitch=-15.0, yaw=tf.rotation.yaw)
@@ -365,22 +386,41 @@ def main():
             # ==========================
             # Ego 车控制
             # ==========================
-            if ego_active and ego.is_alive:
+            ego_terminal = False
+            if ego_active and ego and ego.is_alive:
                 if check_and_handle_out_of_bounds(ego, carla_map):
                     ego_active = False
+                    ego_terminal = True
                 elif ego_traj_idx < len(EGO_TRAJ):
                     tx, ty, tyaw = EGO_TRAJ[ego_traj_idx]
                     target_loc = carla.Location(x=tx, y=ty, z=ego.get_location().z)
 
                     if ego.get_location().distance(target_loc) < 3.5 and ego_traj_idx < len(EGO_TRAJ) - 1:
                         ego_traj_idx += 1
+                        tx, ty, tyaw = EGO_TRAJ[ego_traj_idx]
+                        target_loc = carla.Location(x=tx, y=ty, z=ego.get_location().z)
 
-                    apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], 70.0, target_loc)
+                    if ego_traj_idx >= len(EGO_TRAJ) - 1 and ego.get_location().distance(target_loc) < 3.5:
+                        ego.apply_control(carla.VehicleControl(brake=1.0))
+                        ego_active = False
+                        ego_terminal = True
+                    else:
+                        apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], 70.0, target_loc)
                 else:
                     ego.apply_control(carla.VehicleControl(brake=1.0))
                     ego_active = False
+                    ego_terminal = True
 
             # 结束判断
+            elif ego_active:
+                ego_active = False
+                ego_terminal = True
+
+            if ego_terminal:
+                print("Ego reached the end or was destroyed. Destroying all actors and ending simulation.")
+                destroy_all_actors(actor_list)
+                break
+
             if not v1_active and not ego_active and not ped_active:
                 print("主体车辆及行人已完成剧本，仿真结束。")
                 break
@@ -396,9 +436,7 @@ def main():
         print(f"\n捕获到异常: {e}")
     finally:
         print("\n清理环境并恢复异步设置...")
-        for actor in actor_list:
-            if actor.is_alive:
-                actor.destroy()
+        destroy_all_actors(actor_list)
 
         settings = world.get_settings()
         settings.synchronous_mode = False

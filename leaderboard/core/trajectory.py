@@ -3,6 +3,29 @@ import math
 from .geometry import angle_delta_deg, distance2, point_xy, polyline_lengths, sample_polyline_at_s
 
 
+def _parse_trajectory_text(raw):
+    rows = []
+    for line in raw.splitlines():
+        clean = line.strip().replace(",", " ")
+        if not clean or clean.startswith("#"):
+            continue
+        parts = clean.split()
+        if len(parts) < 2:
+            continue
+        try:
+            rows.append([float(part) for part in parts])
+        except ValueError:
+            continue
+    return rows
+
+
+def _yaw_index(fmt):
+    tokens = [part for part in str(fmt).lower().split("_") if part]
+    if "yaw" not in tokens:
+        return None
+    return tokens.index("yaw") if len(tokens) > 1 else 2
+
+
 def normalize_reference_trajectory(config):
     source = "reference_trajectory"
     raw = config.get("reference_trajectory") or config.get("ego_reference_trajectory")
@@ -10,7 +33,9 @@ def normalize_reference_trajectory(config):
         source = "legacy_route"
         raw = config.get("route") or config.get("centerline_route") or []
     fmt = str(config.get("reference_trajectory_format", "x_y_yaw" if source == "reference_trajectory" else "x_y"))
-    has_yaw = "yaw" in fmt and source == "reference_trajectory"
+    yaw_index = _yaw_index(fmt) if source == "reference_trajectory" else None
+    if isinstance(raw, str):
+        raw = _parse_trajectory_text(raw)
     points = []
     for item in raw:
         if isinstance(item, dict):
@@ -25,7 +50,7 @@ def normalize_reference_trajectory(config):
             if len(item) < 2:
                 continue
             x, y = item[0], item[1]
-            yaw = item[2] if has_yaw and len(item) >= 3 else None
+            yaw = item[yaw_index] if yaw_index is not None and len(item) > yaw_index else None
         point = {"x": float(x), "y": float(y)}
         if yaw is not None:
             point["yaw"] = float(yaw)

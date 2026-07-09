@@ -1,11 +1,11 @@
-# RoadTailBench 指标说明 v7
+# RoadTailBench 指标说明 v8
 
 本文档对应当前 `leaderboard-eval` 的离线指标实现。输入为 `leaderboard_frame_log.jsonl` 和 `leaderboard_scenario_config.json`，每个核心指标输出 `[0, 1]` 分数，综合驾驶分 `leaderboard_driving_score` 输出 0-100 分。
 
 ## 核心指标
 
-- `route_completion`: 路线完成率。优先使用 `reference_trajectory` 投影计算最大路线进度；如果 metadata 同时提供 `ego_start` 和 `ego_end`/`ego_goal`，会用起终点距离缩短比例作为兜底，并取两者较大值。若参考路线和终点都缺失，返回 0。
-- `trajectory_adherence`: 轨迹贴合度。默认模式为 `spatial_reference_deviation`，只评价 ego 相对 `reference_trajectory` 的横向偏差和航向偏差，不按时间或参考速度惩罚进度快慢。缺少 `reference_trajectory` 时返回 0。
+- `route_completion`: 路线完成率。若 runtime summary 明确记录 `status=completed` 且终止原因是 `ego_reached_goal` 或 `ego_destroyed`，直接记为完成；否则优先使用 `reference_trajectory` 投影计算最大路线进度。如果 metadata 同时提供 `ego_start` 和 `ego_end`/`ego_goal`，会用起终点距离缩短比例作为兜底，并取两者较大值。若参考路线和终点都缺失，返回 0。
+- `trajectory_adherence`: 轨迹贴合度。默认模式为 `spatial_reference_deviation`，只评价 ego 相对 `reference_trajectory` 的横向偏差和航向偏差，不按时间或参考速度惩罚进度快慢。缺少可解析的 `reference_trajectory` 时返回 0。
 - `collision_penalty`: 碰撞惩罚。通过 CARLA `sensor.other.collision` 记录碰撞，按对象类型加权扣分。
 - `driving_efficiency`: 驾驶效率。使用仿真时间 `frame.time` 评价完成路线耗时；期望时间由路线长度和 `speed_limit_kmh` / `reference_speed_kmh` 得到。
 - `speed_appropriateness`: 速度适配度。普通区域按 `speed_limit_kmh` 扣超速；进入 `hazards[].radius_m` 内时按 `hazards[].reference_speed_kmh` 扣过快。
@@ -43,6 +43,23 @@ score = 0.75 * score_lateral_deviation
 ```
 
 时空模式会额外使用 `reference_speed_kmh` 推算期望进度，并输出 `max_progress_error_m`、`mean_progress_error_m` 等 details。
+
+## 参考轨迹输入
+
+`reference_trajectory`、`ego_reference_trajectory` 支持两类输入：
+
+```json
+[[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]]
+```
+
+也支持场景脚本里常见的多行字符串：
+
+```text
+0.0 0.0 0.0
+100.0 0.0 0.0
+```
+
+`reference_trajectory_format` 决定列含义，常用值为 `x_y`、`x_y_yaw` 和 `x_y_z_yaw`。`x_y_z_yaw` 中的 `z` 会被忽略，`yaw` 用于航向误差。兼容旧字段 `route` / `centerline_route` 时，第三列仍按旧逻辑视为高度或额外数值，不作为 yaw 使用。
 
 ## 综合分
 

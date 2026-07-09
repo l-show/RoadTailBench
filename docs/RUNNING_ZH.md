@@ -167,6 +167,10 @@ leaderboard_run_summary.json
 scenario_stdout.log
 ```
 
+`leaderboard_scenario_config.json` 会保存评测使用的完整 config。场景结束时如果有 `leaderboard_run_summary.json`，runner 会把 `runtime_summary.status`、`runtime_summary.termination_reason` 和 `runtime_summary.ticks` 同步写入 config，便于之后 `leaderboard-eval` 复现与在线评测一致的 `route_completion` 结果。
+
+`reference_trajectory` 可以是 JSON 数组，也可以是从场景脚本复制出来的多行字符串。当前指标、绘图和自然结束会统一通过 `leaderboard.core.trajectory.normalize_reference_trajectory()` 读取它；`x_y_yaw` 和 `x_y_z_yaw` 都支持，旧 `route` / `centerline_route` 只作为兜底兼容字段。
+
 ### CARLA 崩溃检测
 
 - `--abort-on-carla-crash`: 默认开启。检测到 CARLA fatal error、端口断开或 RPC 不可用后，当前场景标记 `carla_crashed`，并停止后续场景。

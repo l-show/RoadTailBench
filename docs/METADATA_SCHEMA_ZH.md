@@ -1,4 +1,4 @@
-# leaderboard Metadata v4
+# leaderboard Metadata v5
 
 metadata 只服务于评测语义，不负责加载或运行场景。动态 actor、天气、同步模式和控制逻辑仍由 `scenes/RTBXXX.py` 定义。
 
@@ -11,8 +11,8 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 - `ego`: ego 发现和匹配信息，包含 `role_names`、`type_id`、`start_match_radius_m`。
 - `ego_role_names` / `ego_type_id` / `ego_blueprint`: runner 兼容字段。新场景建议 `ego_role_names` 只写 `["ego"]`。
 - `ego_start` / `ego_end`: ego 起终点。自然结束只看 ego 是否到达终点或 ego 是否被销毁。
-- `reference_trajectory_format`: `x_y` 或 `x_y_yaw`。
-- `reference_trajectory`: ego 合理参考路线，格式为 `[[x, y, yaw], ...]` 或 `[[x, y], ...]`。
+- `reference_trajectory_format`: `x_y`、`x_y_yaw` 或 `x_y_z_yaw`。
+- `reference_trajectory`: ego 合理参考路线。推荐使用 `[[x, y, yaw], ...]` 或 `[[x, y], ...]`；也兼容场景脚本中的多行字符串轨迹。
 - `trajectory_adherence_mode`: 默认为 `spatial`。可显式写 `spatiotemporal` 复用旧的进度/时间偏差评分。
 - `speed_limit_kmh`: 普通区域速度上限。
 - `reference_speed_kmh`: 兼容旧字段，仍可被效率和速度指标读取，但默认不再用于轨迹贴合评分。
@@ -28,6 +28,12 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 3. 如果同车型不唯一，再按 `ego_start` 和 `ego_start_match_radius_m` 选择最近车辆。
 
 因此每个场景必须只给真正自车设置 `role_name='ego'`。背景车不要使用 `ego` 或 `hero`。
+
+场景脚本里生成自车时建议直接传入 `role_name='ego'`，例如：
+
+```python
+ego = RTB.spawn_vehicle(world, "vehicle.audi.tt", x, y, role_name="ego", z_offset=0.5)
+```
 
 ## Metadata 模板
 
@@ -93,13 +99,29 @@ metadata 只服务于评测语义，不负责加载或运行场景。动态 acto
 
 `reference_trajectory` 是合理参考路线，不是专家最优时空轨迹。默认 `trajectory_adherence` 只评价 ego 相对参考路线的横向偏差和航向偏差；不要求 metadata 记录每个时刻的位置，也不因车辆快慢直接扣轨迹分。
 
+数组写法：
+
+```json
+"reference_trajectory_format": "x_y_yaw",
+"reference_trajectory": [[-10.453, -137.365, 84.618], [-10.453, -127.365, 84.618]]
+```
+
+字符串写法也可被指标、绘图和自然结束逻辑读取：
+
+```json
+"reference_trajectory_format": "x_y_yaw",
+"reference_trajectory": "-10.453 -137.365 84.618\n-10.453 -127.365 84.618\n"
+```
+
+如果格式为 `x_y_z_yaw`，第 3 列 `z` 不参与平面路线计算，第 4 列 `yaw` 参与航向误差。旧字段 `route` / `centerline_route` 仍只作为兼容兜底使用，第三列不会被当作 yaw。
+
 速度相关行为由 `speed_appropriateness`、`driving_efficiency`、`comfort`、`control_stability` 等指标处理。若确实需要旧版“按参考速度推算期望进度”的评分，可在单个场景 metadata 中设置：
 
 ```json
 {"trajectory_adherence_mode": "spatiotemporal"}
 ```
 
-缺少 `reference_trajectory` 时，`trajectory_adherence` 返回 0。`route_completion` 可以在有 `ego_start` 和 `ego_end` 时使用起终点兜底，但这只能说明 ego 接近了终点，不能说明它沿合理路线通过了场景。
+缺少可解析的 `reference_trajectory` 时，`trajectory_adherence` 返回 0。`route_completion` 可以在有 `ego_start` 和 `ego_end` 时使用起终点兜底，但这只能说明 ego 接近了终点，不能说明它沿合理路线通过了场景。
 
 ## 审计报告
 

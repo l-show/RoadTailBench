@@ -541,7 +541,7 @@ def main():
                 apply_pid_control(v4, pids['v4']['lon'], pids['v4']['lat'], v4_target_speed_actual, target_wp)
 
             # ==========================
-            # 控制 5: jeep TT (恒定自动搜索前方锚点循迹)
+            # 控制 5: Jeep EGO (轨迹点 PID 循迹)
             # ==========================
             if jeep and jeep.is_alive:
                 jeep_loc = jeep.get_location()

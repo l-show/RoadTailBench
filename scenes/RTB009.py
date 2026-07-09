@@ -231,6 +231,46 @@ EGO_TRAJECTORY_DATA = [
     (83.435, -252.776, -69.403), (83.435, -252.776, -69.403), (83.435, -252.776, -69.403)
 ]
 
+V2_TRAJECTORY_DATA = [
+    (23.584, -110.355, -90.506), (23.584, -110.355, -90.506), (23.584, -110.355, -90.506),
+    (23.584, -110.355, -90.506), (23.584, -110.355, -90.506), (23.542, -113.964, -91.240),
+    (23.514, -117.711, -89.418), (23.535, -121.523, -90.152), (23.525, -125.272, -90.152),
+    (23.487, -129.084, -91.132), (23.378, -132.895, -91.744), (23.284, -136.644, -91.132),
+    (23.217, -140.393, -91.009), (23.150, -144.205, -91.009), (23.098, -148.016, -90.764),
+    (23.048, -151.765, -90.764), (22.997, -155.577, -90.764), (22.947, -159.327, -90.764),
+    (22.896, -163.201, -90.764), (22.852, -166.473, -90.764), (22.829, -168.202, -90.764),
+    (22.812, -169.452, -90.764), (22.795, -170.722, -90.764), (22.772, -172.431, -90.764),
+    (22.738, -174.972, -90.764), (22.705, -177.472, -90.764), (22.648, -180.013, -92.029),
+    (22.559, -182.511, -92.029), (22.471, -185.010, -92.029), (22.386, -187.550, -90.951),
+    (22.410, -189.799, -88.907), (22.434, -191.069, -88.907), (22.487, -192.318, -84.711),
+    (22.668, -193.574, -78.316), (22.975, -194.785, -73.708), (23.332, -195.983, -73.349),
+    (23.698, -197.200, -72.975), (24.064, -198.394, -72.975), (24.443, -199.606, -71.857),
+    (24.847, -200.811, -71.111), (25.256, -201.993, -70.738), (25.673, -203.193, -71.111),
+    (26.077, -204.376, -71.111), (26.456, -205.567, -72.531), (26.863, -206.793, -70.723),
+    (27.284, -207.970, -70.225), (27.718, -209.165, -69.507), (28.184, -210.346, -67.908),
+    (28.679, -211.494, -65.820), (29.217, -212.645, -64.577), (29.754, -213.774, -64.577),
+    (30.302, -214.908, -62.784), (30.898, -216.030, -60.943), (31.526, -217.135, -59.615),
+    (32.205, -218.233, -57.260), (32.901, -219.296, -56.207), (33.598, -220.333, -56.082),
+    (34.319, -221.405, -56.082), (35.034, -222.430, -53.933), (35.782, -223.457, -53.933),
+    (36.546, -224.471, -52.416), (37.307, -225.460, -52.291), (38.108, -226.445, -49.272),
+    (38.938, -227.377, -46.987), (39.819, -228.290, -45.578), (40.711, -229.194, -44.781),
+    (41.610, -230.059, -42.853), (42.552, -230.910, -41.807), (43.485, -231.740, -41.557),
+    (44.436, -232.583, -41.557), (45.387, -233.425, -41.557), (46.330, -234.245, -39.725),
+    (47.301, -235.030, -38.723), (48.294, -235.822, -38.024), (49.283, -236.585, -36.791),
+    (50.316, -237.324, -33.923), (51.368, -237.999, -31.148), (52.469, -238.632, -29.276),
+    (53.559, -239.243, -29.276), (54.663, -239.828, -26.772), (55.799, -240.396, -25.892),
+    (56.929, -240.932, -24.620), (58.087, -241.454, -23.879), (59.251, -241.965, -23.376),
+    (60.402, -242.451, -22.622), (61.582, -242.924, -21.616), (62.750, -243.369, -20.484),
+    (63.944, -243.803, -19.353), (65.148, -244.209, -18.121), (66.338, -244.589, -17.493),
+    (67.547, -244.980, -18.976), (68.745, -245.403, -20.056), (69.919, -245.832, -20.056),
+    (71.115, -246.261, -18.822), (72.299, -246.664, -18.822), (73.502, -247.074, -18.822),
+    (74.685, -247.477, -18.822), (75.888, -247.887, -18.822), (77.091, -248.297, -18.822),
+    (78.275, -248.700, -18.822), (79.478, -249.110, -18.822), (80.681, -249.520, -18.822),
+    (81.903, -249.939, -19.073), (83.102, -250.353, -19.073), (84.301, -250.768, -19.073),
+    (85.505, -251.172, -18.319), (86.692, -251.565, -18.319), (87.522, -251.840, -18.319),
+    (87.522, -251.840, -18.319), (87.522, -251.840, -18.319), (87.522, -251.840, -18.319)
+]
+
 
 def custom_ad_algorithm_step(vehicle, target_wp_loc, sensor_data=None):
     control = carla.VehicleControl()
@@ -294,6 +334,7 @@ def main():
 
         pids = {
             'v1': {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)},
+            'v2': {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)},
             'ego': {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
         }
         STORM_LIGHTS = carla.VehicleLightState.Position | carla.VehicleLightState.LowBeam
@@ -311,6 +352,7 @@ def main():
 
         bp_ego = bp_lib.find('vehicle.mercedes.coupe_2020')
         if bp_ego.has_attribute('color'): bp_ego.set_attribute('color', '0,50,0')
+        if bp_ego.has_attribute('role_name'): bp_ego.set_attribute('role_name', 'ego')
         ego_init_loc = carla.Location(x=EGO_TRAJECTORY_DATA[0][0], y=EGO_TRAJECTORY_DATA[0][1], z=0.5)
         ego_init_loc.z = carla_map.get_waypoint(ego_init_loc).transform.location.z + 0.5
         ego = world.try_spawn_actor(bp_ego,
@@ -322,30 +364,25 @@ def main():
 
         bp_v2 = bp_lib.find('vehicle.citroen.c3')
         if bp_v2.has_attribute('color'): bp_v2.set_attribute('color', '255,255,0')
-        loc_v2 = carla.Location(x=23.393, y=-120, z=0.5)
-        v2_wp = carla_map.get_waypoint(loc_v2)
-        loc_v2.z = v2_wp.transform.location.z + 0.5
-        v2 = world.try_spawn_actor(bp_v2, carla.Transform(loc_v2, v2_wp.transform.rotation))
+        v2_init_loc = carla.Location(x=V2_TRAJECTORY_DATA[0][0], y=V2_TRAJECTORY_DATA[0][1], z=0.5)
+        v2_init_loc.z = carla_map.get_waypoint(v2_init_loc).transform.location.z + 0.5
+        v2 = world.try_spawn_actor(bp_v2,
+                                   carla.Transform(v2_init_loc, carla.Rotation(yaw=V2_TRAJECTORY_DATA[0][2])))
         if v2:
             actor_list.append(v2)
             active_vehicles['v2'] = True
             v2.set_light_state(carla.VehicleLightState(STORM_LIGHTS))
-            v2.set_autopilot(True, tm.get_port())
-            tm.ignore_vehicles_percentage(v2, 100)
-            tm.ignore_lights_percentage(v2, 100.0)
-            tm.distance_to_leading_vehicle(v2, 2.0)
-            tm.global_percentage_speed_difference(-80.0)
-            tm.force_lane_change(v2, True)
 
         # 解决瞬移BUG：重力加载完后再赋予物理初速度
         print("\n正在等待悬挂系统贴合地面...")
         for _ in range(30):
             world.tick()
 
-        print("为所有车辆瞬间赋予 80km/h 物理初速度...")
-        initial_speed_ms = 80.0 / 3.6
-        for vehicle in [v1, v2, ego]:
+        print("为所有车辆赋予分车物理初速度...")
+        initial_speeds_kmh = [(v1, 72.0), (v2, 70.0), (ego, 80.0)]
+        for vehicle, initial_speed_kmh in initial_speeds_kmh:
             if vehicle and vehicle.is_alive:
+                initial_speed_ms = initial_speed_kmh / 3.6
                 yaw = math.radians(vehicle.get_transform().rotation.yaw)
                 vehicle.set_target_velocity(carla.Vector3D(
                     x=initial_speed_ms * math.cos(yaw),
@@ -354,7 +391,7 @@ def main():
 
         print("仿真正式开始！等待仿真运行到 2.0 秒触发落叶...")
 
-        v1_traj_idx, ego_traj_idx = 0, 0
+        v1_traj_idx, v2_traj_idx, ego_traj_idx = 0, 0, 0
         enable_external_takeover = False
         _is_currently_taken_over = False
 
@@ -363,24 +400,6 @@ def main():
             start_time = time.time()
             world.tick()
             sim_time = world.get_snapshot().timestamp.elapsed_seconds
-
-            # # ----------------------------------------
-            # # 【完美触发落叶系统：基于动态距离】
-            # # ----------------------------------------
-            # if active_vehicles['ego'] and ego.is_alive and not leaf_manager.has_spawned:
-            #     # 计算 Ego 车距离树叶目标落点的平面距离
-            #     dist_to_leaf_target = ego.get_location().distance(leaf_manager.target_point)
-            #
-            #     # 80km/h = 22.2m/s。设置在距离落点 45 米时触发（大约提前 2 秒）
-            #     # 这个距离参数(45.0)您可以微调：设大一点(比如55)，树叶就更早掉在地上等车；
-            #     # 设小一点(比如35)，树叶刚好砸在车的挡风玻璃上。
-            #     if dist_to_leaf_target < 45.0:
-            #         print(f"\n[触发器] Ego 距落点 {dist_to_leaf_target:.1f}m，触发狂风落叶！")
-            #         leaf_manager.spawn_leaves()
-            #
-            # # 每帧刷新树叶受力
-            # leaf_manager.tick(sim_time)
-            # # ----------------------------------------
 
             # ----------------------------------------
             # 【落叶系统模块】
@@ -420,6 +439,21 @@ def main():
                                       50.0 if v1.get_location().y <= -200.0 else 80.0, target_loc)
                 else:
                     v1.apply_control(carla.VehicleControl(brake=1.0))
+
+            if active_vehicles['v2'] and v2.is_alive:
+                if v2_traj_idx < len(V2_TRAJECTORY_DATA):
+                    tx, ty, tyaw = V2_TRAJECTORY_DATA[v2_traj_idx]
+                    target_loc = carla.Location(x=tx, y=ty, z=v2_init_loc.z)
+                    if v2.get_location().distance(target_loc) < 3.0 and v2_traj_idx < len(V2_TRAJECTORY_DATA) - 1:
+                        while v2_traj_idx < len(V2_TRAJECTORY_DATA) - 1:
+                            v2_traj_idx += 1
+                            if v2.get_location().distance(carla.Location(x=V2_TRAJECTORY_DATA[v2_traj_idx][0],
+                                                                         y=V2_TRAJECTORY_DATA[v2_traj_idx][1],
+                                                                         z=v2_init_loc.z)) > 2.0: break
+                    desired_speed_v2 = 30.0 if v2.get_location().y <= -185.0 else 70.0
+                    apply_pid_control(v2, pids['v2']['lon'], pids['v2']['lat'], desired_speed_v2, target_loc)
+                else:
+                    v2.apply_control(carla.VehicleControl(brake=1.0))
 
             # ==========================
             # Ego 控制逻辑

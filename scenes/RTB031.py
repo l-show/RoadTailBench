@@ -8,6 +8,7 @@ Carla 版本: 0.9.15
 import sys
 import carla
 import time
+import math
 
 # 1. 动态引入标准化函数库路径
 LIBRARY_PATH = r"G:\RoadTailCode\标准化函数库"
@@ -33,40 +34,6 @@ RAW_TRAJ_BUS = """
 -8.035	14.644	89.346
 -8.03	15.101	89.346
 -8.028	15.307	89.136
--8.002	15.811	86.538
--7.97	16.333	86.538
--7.8	19.151	86.538
--7.617	22.93	88.48
--7.546	26.589	89.319
--7.561	30.459	90.875
--7.638	34.154	91.323
--7.754	39.144	91.323
--7.893	45.652	90.223
--7.863	51.87	88.964
--7.748	58.301	89.034
--7.632	64.756	88.614
--7.422	71.027	87.634
--7.16	77.254	87.564
--6.922	83.794	88.054
--6.733	90.082	88.926
--6.621	96.365	88.996
--6.55	102.607	89.976
--6.571	108.923	90.396
--6.618	115.26	90.466
--6.671	121.793	90.466
--6.708	128.088	89.881
--6.655	134.418	88.942
--6.531	140.866	88.872
--6.407	147.15	88.802
--6.254	153.552	88.592
--6.064	161.291	88.592
--5.819	171.268	88.592
--5.693	181.581	90.107
--5.699	191.685	89.897
--5.68	202.071	89.897
--5.606	212.219	89.179
--5.461	222.302	89.179
--5.391	227.21	89.179
 """
 
 RAW_TRAJ_EGO = """
@@ -237,7 +204,7 @@ RAW_TRAJ_FIRE = """
 -38.443	-432.983	-100.465
 """
 
-RAW_TRAJ_HGV = """
+RAW_TRAJ_sprinter = """
 -6.579	-123.489	89.285
 -6.425	-114.524	89.168
 -6.303	-105.59	89.308
@@ -342,14 +309,14 @@ def main():
         dense_bus = RTB.interpolate_trajectory(RTB.parse_string_trajectory(RAW_TRAJ_BUS), 0.5)
         dense_ego = RTB.interpolate_trajectory(RTB.parse_string_trajectory(RAW_TRAJ_EGO), 0.5)
         dense_fire = RTB.interpolate_trajectory(RTB.parse_string_trajectory(RAW_TRAJ_FIRE), 0.5)
-        dense_hgv = RTB.interpolate_trajectory(RTB.parse_string_trajectory(RAW_TRAJ_HGV), 0.5)
+        dense_sprinter = RTB.interpolate_trajectory(RTB.parse_string_trajectory(RAW_TRAJ_sprinter), 0.5)
         dense_ped = RTB.interpolate_trajectory(RTB.parse_string_trajectory(RAW_TRAJ_PED), 0.2)  # 行人需要更密集的锚点
 
         # 绘制所有预设轨迹，以便在场景中直观检查
         RTB.draw_preset_trajectory(world, dense_bus, color=carla.Color(255, 0, 0), z_offset=0.2)
         RTB.draw_preset_trajectory(world, dense_ego, color=carla.Color(0, 255, 0), z_offset=0.2)
         RTB.draw_preset_trajectory(world, dense_fire, color=carla.Color(0, 0, 255), z_offset=0.2)
-        RTB.draw_preset_trajectory(world, dense_hgv, color=carla.Color(255, 255, 0), z_offset=0.2)
+        RTB.draw_preset_trajectory(world, dense_sprinter, color=carla.Color(255, 255, 0), z_offset=0.2)
 
         # ==========================================
         # 3. 车辆实体安全生成与初始状态注入
@@ -361,7 +328,7 @@ def main():
         RTB.set_vehicle_initial_speed(bus, target_speed_kmh=60.0)
 
         # 车辆2：Ego小轿车 Audi TT
-        ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt', dense_ego[0][0], dense_ego[0][1], z_offset=0.5)
+        ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt', dense_ego[0][0], dense_ego[0][1], role_name='ego', z_offset=0.5)
         actor_list.append(ego)
         RTB.set_vehicle_initial_speed(ego, target_speed_kmh=60.0)
         # 灯光：开启行车灯、近光灯
@@ -378,13 +345,13 @@ def main():
         light_fire.set_static_lights(low_beam=False, high_beam=False)
 
         # 车辆4：重型欧洲货车
-        hgv = RTB.spawn_vehicle(world, 'vehicle.mercedes.sprinter', dense_hgv[0][0], dense_hgv[0][1],
+        sprinter = RTB.spawn_vehicle(world, 'vehicle.mercedes.sprinter', dense_sprinter[0][0], dense_sprinter[0][1],
                                 z_offset=1.5)
-        actor_list.append(hgv)
+        actor_list.append(sprinter)
 
         # 🚀【核心优化：突破重卡物理限制】🚀
-        if hgv:
-            physics_control = hgv.get_physics_control()
+        if sprinter:
+            physics_control = sprinter.get_physics_control()
             # 1. 适当减重 (防止原版一两万千克的重量拖慢起步)
             physics_control.mass = 8000.0
             # 2. 极大降低空气阻力
@@ -393,10 +360,10 @@ def main():
             physics_control.torque_curve = [carla.Vector2D(x=0, y=4000), carla.Vector2D(x=8000, y=8000)]
             physics_control.max_rpm = 8000.0 # 拉高引擎最高转速极限，防止速度刚提起来就断油
             # 将魔改后的物理属性应用回车辆
-            hgv.apply_physics_control(physics_control)
+            sprinter.apply_physics_control(physics_control)
 
         # 初始速度提升到 80 km/h
-        RTB.set_vehicle_initial_speed(hgv, target_speed_kmh=80.0)
+        RTB.set_vehicle_initial_speed(sprinter, target_speed_kmh=80.0)
 
         # ==========================================
         # 4. 行人生成与防碰撞跟随配置
@@ -425,26 +392,21 @@ def main():
         # 提醒：每辆车必须分配独占的 PID 实例，防止历史积分混淆干扰！
 
         # --- Bus 逻辑 ---
-        # 剧本：在 X 坐标 > -8.03 时减速为 0 停车，等待 10 秒后重新加速到 60
-        sm_bus = RTB.MultiStageBehaviorMachine(initial_speed=60.0)
-        sm_bus.add_stage(trigger_type='x_greater', trigger_val=-8, target_speed=0.0, accel=40.0)
-        sm_bus.add_stage(trigger_type='time', trigger_val=10.0, target_speed=60.0, accel=15.0)
+        # 剧本：bus 行驶到轨迹末端后停车，并在后续仿真中保持静止。
         pid_bus_lon = RTB.PIDLongitudinalController(preset='truck')
         pid_bus_lat = RTB.PIDLateralController(preset='truck')
         idx_bus = 0
+        bus_stop_point = dense_bus[-1]
+        bus_stop_radius = 1.5
+        bus_stopped = False
 
         # --- Ego 逻辑 ---
-        # 剧本解释：车辆沿 Y 轴正向行驶（数值从负到正增加）。
-        # 1. 遇到 Y > -30 时减速到 30
-        # 2. 遇到 Y > -20 时减速到 0 停车
-        # 3. 等待 6 秒后逐渐起步恢复 60
-        sm_ego = RTB.MultiStageBehaviorMachine(initial_speed=60.0)
-        sm_ego.add_stage(trigger_type='y_greater', trigger_val=-30.0, target_speed=30.0, accel=20.0)
-        sm_ego.add_stage(trigger_type='y_greater', trigger_val=-20.0, target_speed=20.0, accel=15.0)
-        sm_ego.add_stage(trigger_type='time', trigger_val=6.0, target_speed=60.0, accel=10.0)
         pid_ego_lon = RTB.PIDLongitudinalController(preset='default_car')
         pid_ego_lat = RTB.PIDLateralController(preset='default_car')
         idx_ego = 0
+        ego_target_speed = 60.0
+        ego_slowdown_started_at = None
+        ego_recovering = False
 
         # --- Firetruck 逻辑 ---
         # 剧本：一路 80km/h 狂飙。由于消防车极重，给予最大纵向加速度极限
@@ -453,20 +415,55 @@ def main():
         pid_fire_lat = RTB.PIDLateralController(preset='truck')
         idx_fire = 0
 
-        # --- HGV 逻辑 ---
-        # 剧本：在 Y > 7.824 时减速到 30km/h，保持 3s 后恢复 60km/h
-        sm_hgv = RTB.MultiStageBehaviorMachine(initial_speed=60.0)
-        sm_hgv.add_stage(trigger_type='y_greater', trigger_val=7.824, target_speed=30.0, accel=20.0)
-        sm_hgv.add_stage(trigger_type='time', trigger_val=3.0, target_speed=60.0, accel=15.0)
-        pid_hgv_lon = RTB.PIDLongitudinalController(preset='truck')
-        pid_hgv_lat = RTB.PIDLateralController(preset='truck')
-        idx_hgv = 0
+        # --- sprinter 逻辑 ---
+        sm_sprinter = RTB.MultiStageBehaviorMachine(initial_speed=60.0)
+        sm_sprinter.add_stage(trigger_type='y_greater', trigger_val=-20, target_speed=85.0, accel=45.0)
+        sm_sprinter.add_stage(trigger_type='time', trigger_val=2.0, target_speed=60.0, accel=15.0)
+        pid_sprinter_lon = RTB.PIDLongitudinalController(preset='truck')
+        pid_sprinter_lat = RTB.PIDLateralController(preset='truck')
+        idx_sprinter = 0
 
         # ==========================================
         # 6. 仿真主循环
         # ==========================================
         print("\n[仿真开启] 长尾剧本已激活，正在同步推演...")
         sim_time = 0.0
+        endpoint_radius = 2.0
+        ego_endpoint_radius = 5.0
+
+        def actor_alive(actor):
+            return actor is not None and actor.is_alive
+
+        def distance_to_point(actor, point):
+            loc = actor.get_location()
+            return math.hypot(loc.x - point[0], loc.y - point[1])
+
+        def destroy_actor(actor, reason):
+            if not actor_alive(actor):
+                return False
+            try:
+                actor.destroy()
+                print("[生命周期] 销毁 actor {}: {}".format(actor.id, reason))
+                return True
+            except Exception as exc:
+                print("[生命周期] 销毁 actor 失败 {}: {}".format(getattr(actor, "id", "unknown"), exc))
+                return False
+
+        def destroy_all_actors(reason):
+            print("[生命周期] {}，销毁场景内所有 actor。".format(reason))
+            for actor in list(actor_list):
+                destroy_actor(actor, reason)
+
+        def destroy_if_out_of_bounds(actor, label):
+            if actor_alive(actor) and RTB.check_vehicle_out_of_bounds(actor, carla_map, auto_destroy=True):
+                print("[生命周期] {} 出界，已销毁。".format(label))
+                return True
+            return False
+
+        def destroy_if_reached_endpoint(actor, endpoint, label, radius=endpoint_radius):
+            if actor_alive(actor) and distance_to_point(actor, endpoint) <= radius:
+                return destroy_actor(actor, "{} 到达终点".format(label))
+            return False
 
         while True:
             # 记录本帧开始的时间，用于补齐时钟
@@ -475,48 +472,83 @@ def main():
             sim_time += dt
 
             # ---------------- A. 出界安全拦截器 ----------------
-            # 如果车辆偏离道路超过 6m 或彻底掉出地图，自动销毁，但不中断整体仿真
-            RTB.check_vehicle_out_of_bounds(bus, carla_map, auto_destroy=True)
-            RTB.check_vehicle_out_of_bounds(ego, carla_map, auto_destroy=True)
-            RTB.check_vehicle_out_of_bounds(fire, carla_map, auto_destroy=True)
-            RTB.check_vehicle_out_of_bounds(hgv, carla_map, auto_destroy=True)
+            # 如果 actor 偏离道路超过 6m、彻底掉出地图或到达自己的终点，自动销毁。
+            destroy_if_out_of_bounds(ego, "Ego")
+            destroy_if_out_of_bounds(fire, "Firetruck")
+            destroy_if_out_of_bounds(sprinter, "Sprinter")
+
+            if actor_alive(ego) and distance_to_point(ego, dense_ego[-1]) <= ego_endpoint_radius:
+                destroy_all_actors("Ego 到达终点")
+                break
+            if not actor_alive(ego):
+                print("[生命周期] Ego 已销毁，结束场景主循环。")
+                break
+
+            destroy_if_reached_endpoint(fire, dense_fire[-1], "Firetruck")
+            destroy_if_reached_endpoint(sprinter, dense_sprinter[-1], "Sprinter")
+            destroy_if_reached_endpoint(walker1, dense_ped[-1], "Walker1")
+            destroy_if_reached_endpoint(walker2, dense_ped[-15], "Walker2")
 
             # ---------------- B. 动态车灯更新 ----------------
-            if ego.is_alive: light_ego.auto_update_from_control()
-            if fire.is_alive: light_fire.auto_update_from_control()
+            if actor_alive(ego): light_ego.auto_update_from_control()
+            if actor_alive(fire): light_fire.auto_update_from_control()
 
             # ---------------- C. 行人控制器更新 ----------------
-            ped1_ctrl.run_step(dt, sim_time)
-            ped2_ctrl.run_step(dt, sim_time)
+            if actor_alive(walker1): ped1_ctrl.run_step(dt, sim_time)
+            if actor_alive(walker2): ped2_ctrl.run_step(dt, sim_time)
 
             # ---------------- D. 车辆状态机与循迹控制 ----------------
 
             # [1] Bus 控制
-            if bus.is_alive:
-                tgt_spd = sm_bus.tick(bus.get_location(), sim_time, dt)
-                tgt_wp, idx_bus = RTB.get_target_waypoint(bus.get_location(), dense_bus, idx_bus, tgt_spd)
-                RTB.apply_pid_control(bus, pid_bus_lon, pid_bus_lat, tgt_spd, tgt_wp)
+            if actor_alive(bus):
+                bus_loc = bus.get_location()
+                dist_to_bus_stop = math.hypot(bus_loc.x - bus_stop_point[0], bus_loc.y - bus_stop_point[1])
+                if bus_stopped or dist_to_bus_stop <= bus_stop_radius:
+                    bus_stopped = True
+                    bus.set_target_velocity(carla.Vector3D(0.0, 0.0, 0.0))
+                    bus.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0, steer=0.0, hand_brake=True))
+                else:
+                    stopping_distance = max(dist_to_bus_stop - bus_stop_radius, 0.0)
+                    tgt_spd = min(60.0, math.sqrt(2.0 * 5.0 * stopping_distance) * 3.6)
+                    tgt_wp, idx_bus = RTB.get_target_waypoint(bus_loc, dense_bus, idx_bus, tgt_spd)
+                    if dist_to_bus_stop < 15.0:
+                        tgt_wp = bus_stop_point
+                    RTB.apply_pid_control(bus, pid_bus_lon, pid_bus_lat, tgt_spd, tgt_wp)
 
             # [2] Ego 控制 (含预瞄点绘制)
-            if ego.is_alive:
-                tgt_spd = sm_ego.tick(ego.get_location(), sim_time, dt)
-                tgt_wp, idx_ego = RTB.get_target_waypoint(ego.get_location(), dense_ego, idx_ego, tgt_spd)
-                RTB.apply_pid_control(ego, pid_ego_lon, pid_ego_lat, tgt_spd, tgt_wp)
+            if actor_alive(ego):
+                ego_loc = ego.get_location()
+                if ego_slowdown_started_at is None and ego_loc.y > -30.0:
+                    ego_slowdown_started_at = sim_time
+                    print("[Ego 逻辑] Y > -30.0，开始减速到 30km/h。")
+                if ego_slowdown_started_at is not None and not ego_recovering and sim_time - ego_slowdown_started_at >= 4.0:
+                    ego_recovering = True
+                    print("[Ego 逻辑] 低速保持 4s 完成，恢复到 60km/h。")
+
+                desired_ego_speed = 60.0 if ego_recovering or ego_slowdown_started_at is None else 30.0
+                ego_accel = 10.0 if ego_recovering else 40.0
+                if ego_target_speed < desired_ego_speed:
+                    ego_target_speed = min(desired_ego_speed, ego_target_speed + ego_accel * dt)
+                elif ego_target_speed > desired_ego_speed:
+                    ego_target_speed = max(desired_ego_speed, ego_target_speed - ego_accel * dt)
+
+                tgt_wp, idx_ego = RTB.get_target_waypoint(ego_loc, dense_ego, idx_ego, ego_target_speed)
+                RTB.apply_pid_control(ego, pid_ego_lon, pid_ego_lat, ego_target_speed, tgt_wp)
 
                 # 【要求实现】实时绘制 Ego 的动态前视预瞄点 (亮绿色)
-                RTB.draw_lookahead_point(world, ego.get_location(), tgt_wp, color=carla.Color(0, 255, 0))
+                RTB.draw_lookahead_point(world, ego_loc, tgt_wp, color=carla.Color(0, 255, 0))
 
             # [3] Firetruck 控制
-            if fire.is_alive:
+            if actor_alive(fire):
                 tgt_spd = sm_fire.tick(fire.get_location(), sim_time, dt)
                 tgt_wp, idx_fire = RTB.get_target_waypoint(fire.get_location(), dense_fire, idx_fire, tgt_spd)
                 RTB.apply_pid_control(fire, pid_fire_lon, pid_fire_lat, tgt_spd, tgt_wp)
 
-            # [4] HGV 控制
-            if hgv.is_alive:
-                tgt_spd = sm_hgv.tick(hgv.get_location(), sim_time, dt)
-                tgt_wp, idx_hgv = RTB.get_target_waypoint(hgv.get_location(), dense_hgv, idx_hgv, tgt_spd)
-                RTB.apply_pid_control(hgv, pid_hgv_lon, pid_hgv_lat, tgt_spd, tgt_wp)
+            # [4] sprinter 控制
+            if actor_alive(sprinter):
+                tgt_spd = sm_sprinter.tick(sprinter.get_location(), sim_time, dt)
+                tgt_wp, idx_sprinter = RTB.get_target_waypoint(sprinter.get_location(), dense_sprinter, idx_sprinter, tgt_spd)
+                RTB.apply_pid_control(sprinter, pid_sprinter_lon, pid_sprinter_lat, tgt_spd, tgt_wp)
 
             # ---------------- E. 硬件时钟补齐 (强制 1X 真实时间流逝) ----------------
             compute_time = time.time() - start_time

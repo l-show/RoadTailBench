@@ -11,15 +11,15 @@
       "ego",
       "hero"
     ],
-    "type_id": "vehicle.lincoln.mkz_2020",
+    "type_id": "vehicle.audi.tt",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
     "ego",
     "hero"
   ],
-  "ego_type_id": "vehicle.lincoln.mkz_2020",
-  "ego_blueprint": "vehicle.lincoln.mkz_2020",
+  "ego_type_id": "vehicle.audi.tt",
+  "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
   "reference_trajectory_source": "EGO_TRAJECTORY",
   "reference_trajectory_format": "x_y_yaw",

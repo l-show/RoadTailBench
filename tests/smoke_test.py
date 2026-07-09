@@ -174,6 +174,38 @@ def test_legacy_route_third_column_is_not_treated_as_yaw():
     assert points == [{"x": 0.0, "y": 0.0}, {"x": 10.0, "y": 0.0}]
 
 
+def test_reference_trajectory_can_be_multiline_text_with_yaw():
+    raw = """
+    -10.453 -137.365 84.618
+    -10.453 -127.365 84.618
+    -10.453 -117.365 84.618
+    """
+    points = normalize_reference_trajectory({
+        "reference_trajectory": raw,
+        "reference_trajectory_format": "x_y_yaw",
+    })
+    assert points == [
+        {"x": -10.453, "y": -137.365, "yaw": 84.618},
+        {"x": -10.453, "y": -127.365, "yaw": 84.618},
+        {"x": -10.453, "y": -117.365, "yaw": 84.618},
+    ]
+
+
+def test_reference_trajectory_text_supports_x_y_z_yaw_format():
+    raw = """
+    1.0 2.0 0.5 90.0
+    3.0 4.0 0.5 91.0
+    """
+    points = normalize_reference_trajectory({
+        "reference_trajectory": raw,
+        "reference_trajectory_format": "x_y_z_yaw",
+    })
+    assert points == [
+        {"x": 1.0, "y": 2.0, "yaw": 90.0},
+        {"x": 3.0, "y": 4.0, "yaw": 91.0},
+    ]
+
+
 def test_route_completion_missing_route_without_goal_is_zero():
     frames = [{"ego": {"location": [0.0, 0.0, 0.0]}}]
     result = RouteCompletionMetric().compute(frames, {})
@@ -204,6 +236,48 @@ def test_route_completion_goal_can_succeed_off_reference_trajectory():
     }
     assert RouteCompletionMetric().compute(frames, config)["score"] == 1.0
     assert TrajectoryAdherenceMetric().compute(frames, config)["score"] < 0.6
+
+
+def test_route_completion_completed_ego_destroyed_is_complete():
+    frames = [
+        {"ego": {"location": [0.0, 0.0, 0.0]}},
+        {"ego": {"location": [2.0, 0.0, 0.0]}},
+    ]
+    config = {
+        "reference_trajectory": [[0, 0, 0], [100, 0, 0]],
+        "ego_end": {"location": {"x": 100.0, "y": 0.0}},
+        "runtime_summary": {"status": "completed", "termination_reason": "ego_destroyed"},
+    }
+    result = RouteCompletionMetric().compute(frames, config)
+    assert result["score"] == 1.0
+    assert result["details"]["mode"] == "runtime_terminal_event"
+    assert result["details"]["termination_reason"] == "ego_destroyed"
+
+
+def test_route_completion_completed_goal_terminal_event_is_complete():
+    frames = [{"ego": {"location": [0.0, 0.0, 0.0]}}]
+    config = {
+        "reference_trajectory": [[0, 0, 0], [100, 0, 0]],
+        "runtime_summary": {"status": "completed", "termination_reason": "ego_reached_goal"},
+    }
+    result = RouteCompletionMetric().compute(frames, config)
+    assert result["score"] == 1.0
+    assert result["details"]["termination_reason"] == "ego_reached_goal"
+
+
+def test_route_completion_failed_ego_destroyed_uses_geometry():
+    frames = [
+        {"ego": {"location": [0.0, 0.0, 0.0]}},
+        {"ego": {"location": [2.0, 0.0, 0.0]}},
+    ]
+    config = {
+        "reference_trajectory": [[0, 0, 0], [100, 0, 0]],
+        "ego_end": {"location": {"x": 100.0, "y": 0.0}},
+        "runtime_summary": {"status": "failed", "termination_reason": "ego_destroyed"},
+    }
+    result = RouteCompletionMetric().compute(frames, config)
+    assert result["score"] < 1.0
+    assert result["details"]["mode"] == "reference_trajectory_projection"
 
 
 def test_trajectory_adherence_missing_reference_is_zero():

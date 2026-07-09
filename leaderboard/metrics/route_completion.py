@@ -18,6 +18,16 @@ class RouteCompletionMetric(BaseMetric):
     name = "route_completion"
 
     def compute(self, frames, config, context=None):
+        runtime_summary = config.get("runtime_summary") or {}
+        status = runtime_summary.get("status") or config.get("status")
+        termination_reason = runtime_summary.get("termination_reason") or config.get("termination_reason")
+        if status == "completed" and termination_reason in {"ego_destroyed", "ego_reached_goal"}:
+            return MetricResult.make(self.name, 1.0, {
+                "mode": "runtime_terminal_event",
+                "status": status,
+                "termination_reason": termination_reason,
+            })
+
         route = reference_xy(config)
         if not frames:
             return MetricResult.make(self.name, 0.0, {"reason": "missing_frames"})

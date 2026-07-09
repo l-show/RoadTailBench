@@ -86,24 +86,19 @@ def get_next_waypoint_loc(vehicle, carla_map, distance=5.0):
 # 2. 轨迹数据
 # ==========================================
 BUS_TRAJECTORY = [
-    (-63.206, -36.334, 25.055),    (-63.206, -36.334, 23.638),
-    (-62.978, -36.232, 24.128),    (-56.144, -33.168, 24.197),
-    (-49.077, -29.988, 24.266),    (-42.239, -26.907, 24.126),
-    (-35.157, -23.765, 23.494),    (-28.012, -20.766, 21.374),
-    (-20.897, -18.031, 20.951),    (-14.0, -15.097, 26.64),
-    (-7.714, -11.034, 38.638),    (-2.448, -5.319, 58.257),
-    (0.97, 1.495, 65.302),    (3.953, 8.377, 66.728),
-    (6.582, 15.396, 73.78),    (7.83, 23.032, 83.685),
-    (9.536, 30.573, 70.921),    (12.302, 36.584, 62.969),
-    (12.302, 36.584, 64.812),    (12.302, 36.584, 64.953),
-    (12.302, 36.584, 64.953),    (15.318, 43.039, 64.953),
-    (18.561, 50.077, 65.728),    (21.536, 56.961, 66.967),
-    (24.599, 64.083, 64.473),    (28.565, 70.435, 54.491),
-    (32.687, 76.706, 61.376),    (36.169, 83.498, 65.47),
-    (39.278, 90.323, 65.75),    (42.336, 97.17, 66.032),
-    (45.46, 104.263, 66.313),    (48.554, 111.368, 66.525),
-    (51.641, 118.477, 66.525),    (54.678, 125.471, 66.525),
-    (55.276, 126.847, 66.525),    (55.276, 126.847, 66.525),
+    (-54.612, -32.109, 23.226), (-54.612, -32.109, 23.226), (-54.612, -32.109, 23.226), (-54.612, -32.109, 23.226),
+    (-54.612, -32.109, 23.226), (-54.612, -32.109, 23.226), (-54.612, -32.109, 22.847), (-50.064, -30.244, 22.033),
+    (-45.388, -28.254, 23.999), (-40.760, -26.152, 24.449), (-36.135, -24.043, 24.575), (-31.599, -21.942, 25.302),
+    (-26.973, -19.639, 28.661), (-22.704, -17.039, 34.270), (-18.680, -14.074, 37.366), (-14.588, -10.922, 38.976),
+    (-10.776, -7.561, 44.498), (-7.330, -3.940, 48.596), (-4.154, 0.028, 54.285), (-1.407, 4.203, 60.045),
+    (0.975, 8.691, 63.676), (2.998, 13.262, 67.821), (4.894, 17.976, 69.364), (6.646, 22.658, 68.171),
+    (8.505, 27.299, 69.329), (10.273, 32.065, 69.078), (12.107, 36.716, 68.089), (14.064, 41.407, 65.143),
+    (16.297, 46.064, 64.314), (18.358, 50.619, 66.188), (20.377, 55.284, 67.349), (22.273, 59.911, 67.737),
+    (24.185, 64.621, 68.382), (26.000, 69.279, 68.769), (27.959, 74.059, 65.378), (30.070, 78.591, 64.682),
+    (32.243, 83.186, 64.682), (34.345, 87.723, 66.723), (36.290, 92.329, 67.120), (38.260, 96.924, 65.630),
+    (40.453, 101.601, 64.777), (42.544, 106.234, 66.993), (44.525, 110.826, 66.219), (46.569, 115.569, 67.084),
+    (48.548, 120.251, 67.084), (50.477, 124.863, 67.342), (50.766, 125.555, 67.342), (50.766, 125.555, 67.342),
+    (50.766, 125.555, 67.342), (50.766, 125.555, 67.342)
 ]
 
 # 新增：Ford Crown 的轨迹
@@ -146,15 +141,19 @@ EGO_TRAJECTORY = [
 # ==========================================
 # 3. 辅助函数：安全生成车辆
 # ==========================================
-def spawn_vehicle(world, bp_name, loc_x, loc_y, yaw, color=None):
+def spawn_vehicle(world, bp_name, loc_x, loc_y, yaw=None, color=None, role_name=None):
     bp_lib = world.get_blueprint_library()
     bp = bp_lib.find(bp_name)
     if color and bp.has_attribute('color'):
         bp.set_attribute('color', color)
+    if role_name and bp.has_attribute('role_name'):
+        bp.set_attribute('role_name', role_name)
 
     carla_map = world.get_map()
     spawn_loc = carla.Location(x=loc_x, y=loc_y, z=0.5)
     wp = carla_map.get_waypoint(spawn_loc, project_to_road=True)
+    if yaw is None or abs(yaw) < 1e-3:
+        yaw = wp.transform.rotation.yaw
 
     # 使用投影后的高度保证不悬空
     spawn_transform = carla.Transform(
@@ -162,6 +161,41 @@ def spawn_vehicle(world, bp_name, loc_x, loc_y, yaw, color=None):
         carla.Rotation(yaw=yaw)
     )
     return world.try_spawn_actor(bp, spawn_transform)
+
+
+def check_vehicle_out_of_bounds(vehicle, carla_map, threshold_dist=6.0):
+    if not vehicle or not vehicle.is_alive:
+        return True
+
+    loc = vehicle.get_location()
+    wp_exact = carla_map.get_waypoint(loc, project_to_road=False)
+    wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
+
+    if wp_nearest is None:
+        return True
+    if wp_exact is None:
+        dist_to_road = wp_nearest.transform.location.distance(loc)
+        return dist_to_road > threshold_dist
+    return False
+
+
+def destroy_actor(actor_list, actor, reason=""):
+    if not actor:
+        return None
+
+    actor_id = getattr(actor, "id", "unknown")
+    actor_type = getattr(actor, "type_id", "actor")
+    try:
+        if actor.is_alive:
+            actor.destroy()
+            suffix = f" ({reason})" if reason else ""
+            print(f"Destroyed {actor_type} [{actor_id}]{suffix}")
+    except RuntimeError:
+        pass
+
+    if actor in actor_list:
+        actor_list.remove(actor)
+    return None
 
 
 # ==========================================
@@ -206,9 +240,6 @@ def main():
         if bus: actor_list.append(bus)
 
         bus_traj_idx = 0
-        bus_state = 'moving'
-        bus_wait_start_time = 0.0
-        bus_has_waited = False
 
         # ================= 车2：Ford Crown (PID循迹，变速行驶) =================
         # 根据需求：出生在轨迹第一点
@@ -234,7 +265,7 @@ def main():
 
         # ================= 车5：Ego - Audi TT (橙色, 循迹) =================
         ego = spawn_vehicle(world, 'vehicle.audi.tt', EGO_TRAJECTORY[0][0], EGO_TRAJECTORY[0][1], EGO_TRAJECTORY[0][2],
-                            color='255,165,0')
+                            color='255,165,0', role_name='ego')
         if ego: actor_list.append(ego)
         ego_traj_idx = 0
 
@@ -247,75 +278,80 @@ def main():
             world.tick()
             sim_time = world.get_snapshot().timestamp.elapsed_seconds
 
-            # ----------------- 1. BUS 逻辑 -----------------
+            # ----------------- 1. BUS logic -----------------
             if bus and bus.is_alive:
-                if bus_traj_idx < len(BUS_TRAJECTORY):
+                if check_vehicle_out_of_bounds(bus, carla_map):
+                    bus = destroy_actor(actor_list, bus, "out of bounds")
+                elif bus_traj_idx >= len(BUS_TRAJECTORY) - 1 and bus.get_location().distance(
+                        carla.Location(x=BUS_TRAJECTORY[-1][0], y=BUS_TRAJECTORY[-1][1], z=bus.get_location().z)) < 3.0:
+                    bus = destroy_actor(actor_list, bus, "trajectory complete")
+                else:
                     tx, ty, tyaw = BUS_TRAJECTORY[bus_traj_idx]
                     target_loc = carla.Location(x=tx, y=ty, z=bus.get_location().z)
+                    if bus.get_location().distance(target_loc) < 2.5 and bus_traj_idx < len(BUS_TRAJECTORY) - 1:
+                        bus_traj_idx += 1
+                        tx, ty, tyaw = BUS_TRAJECTORY[bus_traj_idx]
+                        target_loc = carla.Location(x=tx, y=ty, z=bus.get_location().z)
+                    apply_pid_control(bus, pid_bus['lon'], pid_bus['lat'], 60.0, target_loc)
 
-                    if not bus_has_waited and bus_state == 'moving' and (31.5 <= bus.get_location().y <= 33.5):
-                        bus_state = 'waiting'
-                        bus_wait_start_time = sim_time
-                        print(f"[{sim_time:.1f}s] BUS 到达等待点(y={bus.get_location().y:.1f})，刹车等待5秒...")
-
-                    if bus_state == 'waiting':
-                        bus.apply_control(carla.VehicleControl(brake=1.0))
-                        if sim_time - bus_wait_start_time >= 5.0:
-                            bus_state = 'moving'
-                            bus_has_waited = True
-                            print(f"[{sim_time:.1f}s] BUS 等待结束，恢复行驶。")
-                    else:
-                        if bus.get_location().distance(target_loc) < 2.5 and bus_traj_idx < len(BUS_TRAJECTORY) - 1:
-                            bus_traj_idx += 1
-                        apply_pid_control(bus, pid_bus['lon'], pid_bus['lat'], 60.0, target_loc)
-                else:
-                    bus.apply_control(carla.VehicleControl(brake=1.0))
-
-            # ----------------- 2. Ford Crown 逻辑 (轨迹行驶 + Y>=20 加速) -----------------
+            # ----------------- 2. Ford Crown logic -----------------
             if ford and ford.is_alive:
-                if ford_traj_idx < len(FORD_TRAJECTORY):
+                if check_vehicle_out_of_bounds(ford, carla_map):
+                    ford = destroy_actor(actor_list, ford, "out of bounds")
+                elif ford_traj_idx >= len(FORD_TRAJECTORY) - 1 and ford.get_location().distance(
+                        carla.Location(x=FORD_TRAJECTORY[-1][0], y=FORD_TRAJECTORY[-1][1], z=ford.get_location().z)) < 3.0:
+                    ford = destroy_actor(actor_list, ford, "trajectory complete")
+                else:
                     tx, ty, tyaw = FORD_TRAJECTORY[ford_traj_idx]
                     target_loc = carla.Location(x=tx, y=ty, z=ford.get_location().z)
 
-                    # 靠近目标点时切换下一个路径点
                     if ford.get_location().distance(target_loc) < 2.5 and ford_traj_idx < len(FORD_TRAJECTORY) - 1:
                         ford_traj_idx += 1
+                        tx, ty, tyaw = FORD_TRAJECTORY[ford_traj_idx]
+                        target_loc = carla.Location(x=tx, y=ty, z=ford.get_location().z)
 
-                    # 动态设定车速逻辑
                     ford_y = ford.get_location().y
                     if ford_y >= 20.0:
                         target_speed = 60.0
                         if not ford_has_accelerated:
-                            print(f"[{sim_time:.1f}s] Ford Crown 到达 Y={ford_y:.1f}，开始加速至 60 km/h！")
+                            print(f"[{sim_time:.1f}s] Ford Crown reaches Y={ford_y:.1f}, accelerating to 60 km/h")
                             ford_has_accelerated = True
                     else:
                         target_speed = 30.0
 
-                    # 应用控制器跟随
                     apply_pid_control(ford, pid_ford['lon'], pid_ford['lat'], target_speed, target_loc)
-                else:
-                    # 轨迹走完刹停
-                    ford.apply_control(carla.VehicleControl(brake=1.0))
 
-            # ----------------- 3. Tesla Cybertruck 逻辑 (自主搜寻锚点/车道保持) -----------------
+            # ----------------- 3. Tesla Cybertruck logic -----------------
             if tesla and tesla.is_alive:
-                next_wp_loc = get_next_waypoint_loc(tesla, carla_map, distance=8.0)
-                apply_pid_control(tesla, pid_v3['lon'], pid_v3['lat'], 60.0, next_wp_loc)
+                if check_vehicle_out_of_bounds(tesla, carla_map):
+                    tesla = destroy_actor(actor_list, tesla, "out of bounds")
+                else:
+                    next_wp_loc = get_next_waypoint_loc(tesla, carla_map, distance=8.0)
+                    apply_pid_control(tesla, pid_v3['lon'], pid_v3['lat'], 60.0, next_wp_loc)
 
-            # ----------------- 5. Ego Audi TT 逻辑 -----------------
+            # ----------------- 4. Jeep Wrangler guard -----------------
+            if jeep and jeep.is_alive and check_vehicle_out_of_bounds(jeep, carla_map):
+                jeep = destroy_actor(actor_list, jeep, "out of bounds")
+
+            # ----------------- 5. Ego Audi TT logic -----------------
             if ego and ego.is_alive:
-                if ego_traj_idx < len(EGO_TRAJECTORY):
+                if check_vehicle_out_of_bounds(ego, carla_map):
+                    ego = destroy_actor(actor_list, ego, "out of bounds")
+                elif ego_traj_idx >= len(EGO_TRAJECTORY) - 1 and ego.get_location().distance(
+                        carla.Location(x=EGO_TRAJECTORY[-1][0], y=EGO_TRAJECTORY[-1][1], z=ego.get_location().z)) < 3.0:
+                    ego = destroy_actor(actor_list, ego, "trajectory complete")
+                else:
                     tx, ty, tyaw = EGO_TRAJECTORY[ego_traj_idx]
                     target_loc = carla.Location(x=tx, y=ty, z=ego.get_location().z)
 
                     if ego.get_location().distance(target_loc) < 2.5 and ego_traj_idx < len(EGO_TRAJECTORY) - 1:
                         ego_traj_idx += 1
+                        tx, ty, tyaw = EGO_TRAJECTORY[ego_traj_idx]
+                        target_loc = carla.Location(x=tx, y=ty, z=ego.get_location().z)
 
                     apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], 70.0, target_loc)
-                else:
-                    ego.apply_control(carla.VehicleControl(brake=1.0))
 
-            # 帧率同步控制
+            # frame-rate sync
             compute_time = time.time() - start_time
             if compute_time < dt:
                 time.sleep(dt - compute_time)

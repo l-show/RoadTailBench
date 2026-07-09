@@ -76,6 +76,8 @@ leaderboard-eval `
   --output G:\Codex\RoadTailBench\outputs\<run>\metrics.json
 ```
 
+Scenario-owned ego vehicles should set `role_name="ego"` so the runner can bind logs, video, and natural termination to the correct actor. Reference trajectories are read through one shared parser and may be stored either as JSON arrays or copied multi-line text in `reference_trajectory`; supported formats include `x_y`, `x_y_yaw`, and `x_y_z_yaw`.
+
 Plot a finished run:
 
 ```powershell

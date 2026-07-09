@@ -76,7 +76,32 @@ def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed_kmh, target_loc):
 # ==========================================
 # 2. 辅助函数：车辆出界检测与初速度赋予
 # ==========================================
+def destroy_actor(actor_list, actor, reason=""):
+    if not actor:
+        return None
+    try:
+        actor_id = actor.id
+    except Exception:
+        actor_id = "unknown"
+    if actor.is_alive:
+        try:
+            actor.destroy()
+            if reason:
+                print(f"[RTB018] destroyed actor {actor_id}: {reason}")
+        except Exception as exc:
+            print(f"[RTB018] failed to destroy actor {actor_id}: {exc}")
+    return None
+
+
+def destroy_all_actors(actor_list, reason=""):
+    for actor in actor_list:
+        destroy_actor(actor_list, actor, reason)
+
+
 def check_and_handle_out_of_bounds(actor, carla_map):
+    if not actor or not actor.is_alive:
+        return True
+
     loc = actor.get_location()
     wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
     wp_exact = carla_map.get_waypoint(loc, project_to_road=False)
@@ -91,6 +116,15 @@ def check_and_handle_out_of_bounds(actor, carla_map):
         actor.destroy()
         return True
     return False
+
+
+def actor_reached_trajectory_end(actor, trajectory, threshold=2.0):
+    if not actor or not actor.is_alive or not trajectory:
+        return False
+    loc = actor.get_location()
+    end_x, end_y, _ = trajectory[-1]
+    end_loc = carla.Location(x=end_x, y=end_y, z=loc.z)
+    return loc.distance(end_loc) <= threshold
 
 
 def set_initial_velocity(vehicle, speed_kmh):
@@ -214,10 +248,12 @@ def main():
         tm.set_synchronous_mode(True)
 
         # 辅助生成函数，防止车辆陷入地下
-        def spawn_actor(bp_id, traj, color=None, is_pedestrian=False):
+        def spawn_actor(bp_id, traj, color=None, is_pedestrian=False, role_name=None):
             bp = bp_lib.find(bp_id) if not is_pedestrian else bp_lib.filter(bp_id)[0]
             if color and bp.has_attribute('color'):
                 bp.set_attribute('color', color)
+            if role_name and bp.has_attribute('role_name'):
+                bp.set_attribute('role_name', role_name)
 
             # 强制关闭行人的无敌状态，使得碰撞物理生效(可以被撞飞)
             if is_pedestrian and bp.has_attribute('is_invincible'):
@@ -232,7 +268,7 @@ def main():
 
         print("正在生成所有 Actor...")
 
-        ego_veh = spawn_actor('vehicle.audi.tt', TRAJ_EGO, '0,255,0')
+        ego_veh = spawn_actor('vehicle.audi.tt', TRAJ_EGO, '0,255,0', role_name="ego")
         ego_pid = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
 
         jeep_veh = spawn_actor('vehicle.jeep.wrangler_rubicon', TRAJ_jeep)
@@ -272,7 +308,13 @@ def main():
 
             # --- 控制 Ego 车辆 ---
             if ego_veh and ego_veh.is_alive:
-                if not check_and_handle_out_of_bounds(ego_veh, carla_map):
+                if check_and_handle_out_of_bounds(ego_veh, carla_map):
+                    ego_veh = None
+                elif actor_reached_trajectory_end(ego_veh, TRAJ_EGO, threshold=2.5):
+                    print("[RTB018] ego reached trajectory end; destroying all actors.")
+                    destroy_all_actors(actor_list, "ego reached trajectory end")
+                    break
+                else:
 
                     # 💡 获取当前车辆位置，判定是否过线进行加速
                     current_ego_loc = ego_veh.get_location()
@@ -297,7 +339,11 @@ def main():
 
             # --- 控制 Jeep 车辆 (10 km/h) ---
             if jeep_veh and jeep_veh.is_alive:
-                if not check_and_handle_out_of_bounds(jeep_veh, carla_map):
+                if check_and_handle_out_of_bounds(jeep_veh, carla_map):
+                    jeep_veh = None
+                elif actor_reached_trajectory_end(jeep_veh, TRAJ_jeep, threshold=1.0):
+                    jeep_veh = destroy_actor(actor_list, jeep_veh, "trajectory end")
+                else:
                     if idx_jeep < len(TRAJ_jeep):
                         tx, ty, _ = TRAJ_jeep[idx_jeep]
                         target_loc = carla.Location(x=tx, y=ty, z=jeep_veh.get_location().z)
@@ -309,7 +355,11 @@ def main():
 
             # --- 控制 Harley 摩托车 ---
             if harley_veh and harley_veh.is_alive:
-                if not check_and_handle_out_of_bounds(harley_veh, carla_map):
+                if check_and_handle_out_of_bounds(harley_veh, carla_map):
+                    harley_veh = None
+                elif actor_reached_trajectory_end(harley_veh, TRAJ_HARLEY, threshold=3.0):
+                    harley_veh = destroy_actor(actor_list, harley_veh, "trajectory end")
+                else:
 
                     # 💡 获取当前车辆位置，判定是否过线进行加速
                     current_harley_loc = harley_veh.get_location()

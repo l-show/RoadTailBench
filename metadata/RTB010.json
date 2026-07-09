@@ -21,10 +21,366 @@
   "ego_type_id": "vehicle.lincoln.mkz_2020",
   "ego_blueprint": "vehicle.lincoln.mkz_2020",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "not_static_ego_reference_detected",
-  "reference_trajectory_format": "x_y",
-  "reference_trajectory": [],
-  "reference_speed_kmh": 60.0,
+  "reference_trajectory_source": "EGO_TRAJECTORY",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
+    [
+      -39.949,
+      2.286,
+      -1.64
+    ],
+    [
+      -39.949,
+      2.286,
+      -1.64
+    ],
+    [
+      -39.949,
+      2.286,
+      -1.64
+    ],
+    [
+      -39.949,
+      2.286,
+      -1.64
+    ],
+    [
+      -39.949,
+      2.286,
+      -1.64
+    ],
+    [
+      -39.949,
+      2.286,
+      -1.64
+    ],
+    [
+      -39.636,
+      2.277,
+      -1.64
+    ],
+    [
+      -38.261,
+      2.238,
+      -1.64
+    ],
+    [
+      -34.887,
+      2.141,
+      -1.64
+    ],
+    [
+      -32.263,
+      2.066,
+      -1.64
+    ],
+    [
+      -28.452,
+      1.958,
+      -1.5
+    ],
+    [
+      -24.704,
+      1.86,
+      -1.64
+    ],
+    [
+      -20.893,
+      1.74,
+      -1.92
+    ],
+    [
+      -17.146,
+      1.614,
+      -1.92
+    ],
+    [
+      -14.398,
+      1.522,
+      -1.92
+    ],
+    [
+      -13.848,
+      1.503,
+      -1.92
+    ],
+    [
+      -13.34,
+      1.486,
+      -1.92
+    ],
+    [
+      -12.84,
+      1.47,
+      -1.92
+    ],
+    [
+      -12.332,
+      1.453,
+      -1.92
+    ],
+    [
+      -11.832,
+      1.433,
+      -2.569
+    ],
+    [
+      -11.325,
+      1.41,
+      -2.569
+    ],
+    [
+      -10.193,
+      1.359,
+      -2.569
+    ],
+    [
+      -8.923,
+      1.302,
+      -2.779
+    ],
+    [
+      -7.677,
+      1.209,
+      -5.411
+    ],
+    [
+      -6.433,
+      1.089,
+      -5.904
+    ],
+    [
+      -5.17,
+      0.948,
+      -6.473
+    ],
+    [
+      -3.923,
+      0.876,
+      2.339
+    ],
+    [
+      -2.674,
+      1.089,
+      13.774
+    ],
+    [
+      -1.473,
+      1.492,
+      23.988
+    ],
+    [
+      -0.369,
+      2.112,
+      35.208
+    ],
+    [
+      -0.083,
+      2.32,
+      36.28
+    ],
+    [
+      -0.083,
+      2.32,
+      36.28
+    ],
+    [
+      -0.083,
+      2.32,
+      36.28
+    ],
+    [
+      -0.083,
+      2.32,
+      36.28
+    ],
+    [
+      0.377,
+      2.677,
+      38.763
+    ],
+    [
+      1.326,
+      3.488,
+      42.808
+    ],
+    [
+      2.202,
+      4.378,
+      50.34
+    ],
+    [
+      2.969,
+      5.416,
+      54.571
+    ],
+    [
+      3.672,
+      6.448,
+      59.121
+    ],
+    [
+      4.25,
+      7.579,
+      66.575
+    ],
+    [
+      4.737,
+      8.753,
+      67.567
+    ],
+    [
+      5.193,
+      9.917,
+      70.501
+    ],
+    [
+      5.582,
+      11.104,
+      74.898
+    ],
+    [
+      5.897,
+      12.336,
+      78.921
+    ],
+    [
+      6.058,
+      13.596,
+      85.949
+    ],
+    [
+      6.107,
+      14.842,
+      88.293
+    ],
+    [
+      6.167,
+      16.862,
+      88.293
+    ],
+    [
+      6.135,
+      19.36,
+      95.52
+    ],
+    [
+      5.74,
+      21.87,
+      101.986
+    ],
+    [
+      5.151,
+      24.642,
+      101.986
+    ],
+    [
+      4.359,
+      28.371,
+      101.986
+    ],
+    [
+      3.568,
+      32.101,
+      101.986
+    ],
+    [
+      2.781,
+      35.832,
+      101.426
+    ],
+    [
+      2.126,
+      39.525,
+      97.593
+    ],
+    [
+      1.736,
+      43.254,
+      94.394
+    ],
+    [
+      1.448,
+      47.056,
+      94.324
+    ],
+    [
+      1.185,
+      50.796,
+      93.764
+    ],
+    [
+      1.077,
+      54.543,
+      90.213
+    ],
+    [
+      1.063,
+      58.355,
+      90.213
+    ],
+    [
+      1.063,
+      62.105,
+      89.793
+    ],
+    [
+      1.08,
+      65.856,
+      89.722
+    ],
+    [
+      1.098,
+      69.668,
+      89.722
+    ],
+    [
+      1.116,
+      73.418,
+      89.722
+    ],
+    [
+      1.135,
+      77.293,
+      89.722
+    ],
+    [
+      1.139,
+      81.106,
+      90.212
+    ],
+    [
+      1.117,
+      84.856,
+      90.422
+    ],
+    [
+      1.071,
+      88.668,
+      90.772
+    ],
+    [
+      1.021,
+      92.417,
+      90.772
+    ],
+    [
+      1.018,
+      92.605,
+      90.772
+    ],
+    [
+      1.018,
+      92.605,
+      90.772
+    ],
+    [
+      1.018,
+      92.605,
+      90.772
+    ]
+  ],
+  "reference_speed_kmh": 30.0,
   "speed_limit_kmh": 60.0,
   "allowed_lateral_error_m": 4.0,
   "hard_lateral_error_m": 12.0,
@@ -70,11 +426,62 @@
     }
   },
   "notes": [
-    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-    "Scenario timeout remains the termination fallback for this scene."
+    "Ego follows EGO_TRAJECTORY with PID trajectory control and spawns at z=0.3 m on the road surface.",
+    "Ego speed is controlled by EgoSpeedStateMachine: 30 km/h cruise, 20 km/h after x=-15, 4 wall-clock seconds brake hold near (-0.083, 2.320), then 30 km/h resume.",
+    "Ego is not actively destroyed at the end of the trajectory; runner/metadata termination handles scenario completion."
   ],
-  "blocking_metadata_issues": [
-    "missing_reference_trajectory",
-    "missing_reference_trajectory_and_ego_end"
-  ]
+  "ego_start": {
+    "location": {
+      "x": -39.949,
+      "y": 2.286,
+      "z": 0.3
+    },
+    "rotation": {
+      "yaw": -1.64
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 1.018,
+      "y": 92.605,
+      "z": 0.3
+    },
+    "rotation": {
+      "yaw": 90.772
+    }
+  },
+  "speed_profile": {
+    "controller": "EgoSpeedStateMachine",
+    "initial_state": "CRUISE",
+    "initial_speed_kmh": 30.0,
+    "stages": [
+      {
+        "state": "CRUISE",
+        "target_speed_kmh": 30.0
+      },
+      {
+        "state": "SLOW",
+        "trigger": "ego.location.x >= -15.0",
+        "target_speed_kmh": 20.0
+      },
+      {
+        "state": "STOP",
+        "trigger": "distance_to_stop_point <= 3.0 m",
+        "stop_point": {
+          "x": -0.083,
+          "y": 2.32,
+          "z": 0.3
+        },
+        "target_speed_kmh": 0.0,
+        "hold_brake": true,
+        "wait_s": 4.0,
+        "wait_time_basis": "wall_clock"
+      },
+      {
+        "state": "RESUME",
+        "trigger": "after STOP wait_s",
+        "target_speed_kmh": 30.0
+      }
+    ]
+  }
 }

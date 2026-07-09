@@ -1,8 +1,22 @@
 import carla
 import time
 import math
+import os
 import random
+import sys
 import numpy as np
+
+SCENE_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCENE_DIR not in sys.path:
+    sys.path.append(SCENE_DIR)
+
+# 1. 动态引入标准化函数库路径
+LIBRARY_PATH = r"G:\RoadTailCode\标准化函数库"
+if LIBRARY_PATH not in sys.path:
+    sys.path.append(LIBRARY_PATH)
+
+# 全局导入标准化函数库
+import RoadTailBenchInitV9 as RTB
 
 # ==========================================
 # 0. Ego 车指定轨迹数据
@@ -111,16 +125,40 @@ def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed_kmh, target_loc):
 # 2. 辅助函数：根据坐标生成车辆
 # ==========================================
 def spawn_vehicle_at_xy(world, blueprint_name, x, y, role_name="background", color=None, force_yaw=None):
-    bp_lib = world.get_blueprint_library()
-    bp = bp_lib.find(blueprint_name)
-    bp.set_attribute('role_name', role_name)
+    vehicle = RTB.spawn_vehicle(
+        world,
+        blueprint_name,
+        x=x,
+        y=y,
+        yaw=force_yaw,
+        color=color,
+        role_name=role_name,
+    )
+    if vehicle:
+        print(f"RoadTailBench spawn vehicle [{blueprint_name}] role={role_name}")
+    return vehicle
 
-    if color and bp.has_attribute('color'):
-        bp.set_attribute('color', color)
 
-    carla_map = world.get_map()
-    loc_2d = carla.Location(x=x, y=y, z=0)
-    waypoint = carla_map.get_waypoint(loc_2d, project_to_road=True, lane_type=carla.LaneType.Driving)
+def check_ego_out_of_road_strict(vehicle, carla_map, auto_destroy=True):
+    if not vehicle or not vehicle.is_alive:
+        return True
+
+    loc = vehicle.get_location()
+    waypoint = carla_map.get_waypoint(
+        loc,
+        project_to_road=False,
+        lane_type=carla.LaneType.Driving,
+    )
+    if waypoint is not None:
+        return False
+
+    print(f"[RTB017 guard] ego left Driving lane at ({loc.x:.2f}, {loc.y:.2f}, {loc.z:.2f}); destroying.")
+    if auto_destroy:
+        try:
+            vehicle.destroy()
+        except Exception:
+            pass
+    return True
 
     if not waypoint:
         print(f"警告: 无法在坐标 ({x}, {y}) 找到有效车道!")
@@ -148,6 +186,7 @@ def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
     world = client.get_world()
+    carla_map = world.get_map()
     tm = client.get_trafficmanager(8000)
 
     # ---------------- 夜间大雨天气 ----------------
@@ -182,7 +221,7 @@ def main():
             {"id": 6, "dir": 3, "bp": "vehicle.yamaha.yzf", "x": -1.707, "y": 37.633},
             {"id": 7, "dir": 4, "bp": "vehicle.harley-davidson.low_rider", "x": 44.438, "y": 14.529},
             {"id": "ego", "dir": 5, "bp": "vehicle.audi.tt", "x": ego_start_x, "y": ego_start_y, "color": "255,165,0",
-             "yaw": ego_start_yaw}
+             "yaw": ego_start_yaw, "role_name": "ego"}
         ]
 
         dir2_vehicles = []
@@ -192,7 +231,8 @@ def main():
         # ================= 剧本逻辑分配 =================
         for conf in vehicle_configs:
             force_yaw = conf.get("yaw", None)
-            veh = spawn_vehicle_at_xy(world, conf["bp"], conf["x"], conf["y"], role_name=f"dir_{conf['dir']}",
+            role_name = conf.get("role_name", f"dir_{conf['dir']}")
+            veh = spawn_vehicle_at_xy(world, conf["bp"], conf["x"], conf["y"], role_name=role_name,
                                       color=conf.get("color"), force_yaw=force_yaw)
             if veh is None: continue
             actor_list.append(veh)
@@ -271,9 +311,16 @@ def main():
             world.tick()
             sim_time = world.get_snapshot().timestamp.elapsed_seconds
 
+            for actor in actor_list:
+                if actor is not ego_vehicle:
+                    RTB.check_vehicle_out_of_bounds(actor, carla_map, auto_destroy=True)
+
             # ----------------------------------------
             # 1. Ego 车辆 PID 轨迹跟踪逻辑
             # ----------------------------------------
+            if ego_vehicle and ego_active and check_ego_out_of_road_strict(ego_vehicle, carla_map, auto_destroy=True):
+                ego_active = False
+
             if ego_vehicle and ego_active and ego_vehicle.is_alive:
                 if ego_traj_idx < len(EGO_TRAJECTORY):
                     tx, ty, tyaw = EGO_TRAJECTORY[ego_traj_idx]

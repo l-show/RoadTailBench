@@ -1,11 +1,11 @@
-import carla
+﻿import carla
 import time
 import math
 import numpy as np
 
 
 # ==========================
-# 基础控制算法 (PID) - 保留
+# 鍩虹鎺у埗绠楁硶 (PID) - 淇濈暀
 # ==========================
 class PIDLongitudinalController:
     def __init__(self, K_P=1.0, K_I=0.05, K_D=0.1, dt=0.05):
@@ -80,10 +80,55 @@ def check_and_handle_out_of_bounds(vehicle, carla_map):
     return False
 
 
+class EgoSpeedStateMachine:
+    def __init__(self):
+        self.speed = 80.0
+        self.stage = 0
+        self.timer_start = None
+
+    def tick(self, loc, sim_time, dt):
+        target_speed = 80.0
+        if self.stage == 0 and loc.y >= -80.0:
+            self.stage = 1
+        if self.stage >= 1:
+            target_speed = 40.0
+
+        slow_x, slow_y = -263.698, -55.532
+        dist_to_slow_point = math.hypot(loc.x - slow_x, loc.y - slow_y)
+        if self.stage == 1 and dist_to_slow_point <= 5.0:
+            self.stage = 2
+            self.timer_start = sim_time
+        if self.stage == 2:
+            target_speed = 25.0
+            if self.timer_start is not None and sim_time - self.timer_start >= 2.0:
+                self.stage = 3
+        if self.stage >= 3:
+            target_speed = 40.0
+
+        accel_kmh_s = 25.0 if target_speed < self.speed else 15.0
+        max_delta = accel_kmh_s * dt
+        if self.speed < target_speed:
+            self.speed = min(target_speed, self.speed + max_delta)
+        else:
+            self.speed = max(target_speed, self.speed - max_delta)
+        return self.speed
+
+
+def get_trajectory_target(vehicle_loc, trajectory, current_idx, advance_dist=4.0):
+    idx = min(current_idx, len(trajectory) - 1)
+    while idx < len(trajectory) - 1:
+        tx, ty, _ = trajectory[idx]
+        if math.hypot(vehicle_loc.x - tx, vehicle_loc.y - ty) >= advance_dist:
+            break
+        idx += 1
+    tx, ty, _ = trajectory[idx]
+    return carla.Location(x=tx, y=ty, z=vehicle_loc.z), idx
+
+
 # ==========================
-# 轨迹数据定义
+# 杞ㄨ抗鏁版嵁瀹氫箟
 # ==========================
-# 第一辆车 (Mercedes Sprinter) 的轨迹
+# 绗竴杈嗚溅 (Mercedes Sprinter) 鐨勮建杩?
 V1_TRAJECTORY = [
     (-221.172, -0.776, -157.734), (-221.172, -0.776, -157.734), (-222.172, -1.186, -157.734),
     (-224.453, -2.186, -153.614), (-226.746, -3.354, -151.614), (-228.895, -4.605, -148.104),
@@ -120,6 +165,60 @@ V1_TRAJECTORY = [
 ]
 
 
+EGO_TRAJECTORY = [
+    (-6.278, -120.686, 91.503), (-6.484, -112.858, 91.573), (-6.669, -103.966, 91.739),
+    (-6.978, -96.765, 92.482), (-7.091, -94.811, 96.541), (-7.281, -93.576, 100.797),
+    (-7.525, -92.350, 102.202), (-7.799, -91.110, 102.692), (-8.084, -89.850, 102.902),
+    (-8.689, -87.211, 102.902), (-9.540, -83.495, 102.902), (-10.377, -79.841, 102.902),
+    (-11.240, -76.128, 104.130), (-12.225, -72.510, 105.719), (-13.409, -68.887, 110.049),
+    (-14.825, -65.416, 113.802), (-16.367, -61.929, 114.299), (-17.933, -58.522, 115.566),
+    (-19.594, -55.090, 116.196), (-21.350, -51.707, 119.871), (-23.267, -48.484, 121.566),
+    (-25.375, -45.228, 124.410), (-27.553, -42.174, 126.388), (-29.818, -39.185, 127.934),
+    (-32.190, -36.281, 130.645), (-34.708, -33.419, 133.034), (-37.417, -30.649, 135.324),
+    (-40.128, -28.060, 140.378), (-43.102, -25.674, 141.509), (-46.048, -23.354, 143.034),
+    (-49.070, -21.134, 144.317), (-52.191, -18.944, 145.440), (-55.303, -16.853, 146.840),
+    (-58.538, -14.835, 149.109), (-61.838, -12.927, 151.368), (-65.174, -11.215, 153.794),
+    (-66.015, -10.801, 153.794), (-66.015, -10.801, 153.794), (-66.015, -10.801, 153.794),
+    (-66.015, -10.801, 153.794), (-66.015, -10.801, 153.794), (-66.015, -10.801, 153.794),
+    (-66.015, -10.801, 153.794), (-69.358, -9.245, 156.179), (-72.922, -7.724, 157.805),
+    (-76.426, -6.389, 160.341), (-80.046, -5.197, 162.958), (-83.711, -4.148, 164.873),
+    (-87.351, -3.246, 166.774), (-91.002, -2.393, 167.200), (-94.728, -1.587, 167.902),
+    (-98.395, -0.801, 167.902), (-102.115, 0.031, 167.269), (-105.834, 0.871, 167.269),
+    (-109.553, 1.709, 167.618), (-113.222, 2.482, 168.598), (-116.900, 3.215, 168.737),
+    (-120.578, 3.947, 168.737), (-124.379, 4.704, 168.737), (-128.057, 5.437, 168.737),
+    (-131.796, 6.189, 168.597), (-135.475, 6.915, 169.017), (-139.156, 7.630, 169.017),
+    (-142.897, 8.370, 168.527), (-146.630, 9.140, 168.106), (-150.361, 9.930, 167.756),
+    (-154.022, 10.740, 167.476), (-157.683, 11.554, 167.476), (-161.413, 12.344, 168.875),
+    (-165.112, 12.952, 171.681), (-168.887, 13.490, 171.964), (-172.615, 13.887, 175.879),
+    (-176.362, 13.952, -176.535), (-180.159, 13.605, -174.216), (-183.890, 13.227, -174.216),
+    (-187.683, 12.839, -173.653), (-191.395, 12.318, -170.123), (-195.102, 11.439, -164.255),
+    (-198.689, 10.352, -161.985), (-202.306, 9.157, -160.853), (-205.901, 7.905, -159.553),
+    (-209.397, 6.408, -155.026), (-212.760, 4.775, -152.552), (-216.032, 2.968, -150.685),
+    (-219.314, 1.108, -150.195), (-222.601, -0.793, -149.635), (-225.863, -2.735, -149.145),
+    (-229.053, -4.674, -147.050), (-232.196, -6.797, -145.558), (-235.309, -8.963, -144.578),
+    (-238.328, -11.149, -143.458), (-241.276, -13.424, -140.844), (-244.159, -15.876, -137.346),
+    (-246.843, -18.541, -132.975), (-249.272, -21.361, -130.017), (-251.661, -24.294, -127.007),
+    (-253.820, -27.322, -123.449), (-255.747, -30.570, -118.395), (-257.377, -33.906, -114.208),
+    (-258.836, -37.459, -111.569), (-260.111, -40.954, -107.122), (-261.124, -44.535, -105.548),
+    (-262.624, -47.207, -100.287), (-262.624, -47.207, -100.287), (-262.624, -47.207, -100.287), (-262.624, -47.207, -100.287),
+    (-262.624, -47.207, -101.016), (-263.865, -53.265, -102.357), (-265.419, -60.609, -101.753), (-266.216, -64.438, -101.753),
+    (-266.902, -68.094, -99.202), (-267.362, -71.789, -94.867), (-267.666, -75.564, -92.053), (-267.738, -79.284, -92.005),
+    (-267.979, -83.067, -94.550), (-268.303, -86.846, -95.173), (-268.411, -88.034, -95.173), (-268.476, -88.761, -95.173),
+    (-268.691, -91.134, -94.895), (-268.869, -93.652, -92.936), (-268.931, -96.173, -89.634), (-268.840, -98.650, -85.962),
+    (-268.593, -101.158, -82.354), (-268.206, -103.649, -79.991), (-267.758, -106.135, -79.663), (-267.301, -108.577, -79.335),
+    (-266.834, -111.058, -79.335), (-266.283, -113.988, -79.335), (-265.594, -117.650, -79.335), (-264.891, -121.373, -78.964),
+    (-264.126, -125.082, -78.308), (-263.319, -128.717, -76.274), (-262.352, -132.377, -74.141), (-261.219, -135.989, -71.260),
+    (-259.894, -139.470, -67.459), (-258.336, -142.923, -65.032), (-256.654, -146.242, -61.626), (-254.734, -149.576, -58.251),
+    (-252.710, -152.708, -56.598), (-250.488, -155.778, -53.239), (-248.193, -158.715, -50.153), (-245.674, -161.542, -46.298),
+    (-243.038, -164.176, -42.601), (-240.181, -166.661, -39.134), (-237.229, -169.031, -37.075), (-234.191, -171.284, -35.146),
+    (-231.072, -173.326, -31.141), (-227.776, -175.201, -28.071), (-224.450, -176.884, -25.635), (-221.089, -178.497, -25.635),
+    (-217.671, -180.137, -25.635), (-214.255, -181.776, -25.635), (-210.896, -183.387, -25.635), (-207.482, -185.025, -25.635),
+    (-204.067, -186.664, -25.635), (-200.652, -188.302, -25.635), (-197.299, -189.925, -26.336), (-193.916, -191.627, -27.155),
+    (-190.623, -193.369, -28.519), (-187.294, -195.178, -28.519), (-184.020, -196.958, -28.519), (-180.692, -198.766, -28.519),
+    (-177.364, -200.575, -28.519), (-173.872, -202.473, -28.519), (-169.508, -204.845, -28.519), (-164.234, -207.710, -28.519),
+    (-158.748, -210.605, -26.734), (-153.167, -213.541, -28.817)
+]
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -128,10 +227,10 @@ def main():
     bp_lib = world.get_blueprint_library()
 
     # ==========================
-    # 【1】天气配置
+    # 銆?銆戝ぉ姘旈厤缃?
     # ==========================
     weather = carla.WeatherParameters(
-        cloudiness=100.0, precipitation=50.0, precipitation_deposits=100.0,
+        cloudiness=100.0, precipitation=100.0, precipitation_deposits=100.0,
         wind_intensity=100.0, sun_azimuth_angle=180.0, sun_altitude_angle=20.0,
         fog_density=80.0, fog_distance=15.0, fog_falloff=0.2, wetness=100.0,
         scattering_intensity=10.0, mie_scattering_scale=0.1, rayleigh_scattering_scale=0.04
@@ -145,7 +244,7 @@ def main():
     ego_active = False
 
     try:
-        # 同步模式
+        # 鍚屾妯″紡
         settings = world.get_settings()
         settings.synchronous_mode = True
         settings.fixed_delta_seconds = dt
@@ -155,10 +254,10 @@ def main():
         pid_ego = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
 
         # ==========================
-        # 【2】超大范围湿滑路面生成与可视化
+        # 銆?銆戣秴澶ц寖鍥存箍婊戣矾闈㈢敓鎴愪笌鍙鍖?
         # ==========================
         friction_bp = bp_lib.find('static.trigger.friction')
-        # 设置摩擦力极低 (0.1)，范围 extent 是半尺寸 (即总长宽 40x40)
+        # 璁剧疆鎽╂摝鍔涙瀬浣?(0.1)锛岃寖鍥?extent 鏄崐灏哄 (鍗虫€婚暱瀹?40x40)
         extent_x, extent_y, extent_z = 20.0, 20.0, 5.0
         friction_bp.set_attribute('friction', '0.1')
         friction_bp.set_attribute('extent_x', str(extent_x))
@@ -168,17 +267,17 @@ def main():
         friction_loc = carla.Location(x=-255.862, y=-28.314, z=-2.634)
         friction_trigger = world.spawn_actor(friction_bp, carla.Transform(friction_loc))
         actor_list.append(friction_trigger)
-        print("已生成超大范围湿滑区域。")
+        print("Friction trigger spawned.")
 
-        # 【新增：画出摩擦力触发区域的红色边框】
+        # 銆愭柊澧烇細鐢诲嚭鎽╂摝鍔涜Е鍙戝尯鍩熺殑绾㈣壊杈规銆?
         box_extent = carla.Vector3D(x=extent_x, y=extent_y, z=extent_z)
         bbox = carla.BoundingBox(friction_loc, box_extent)
-        # 红色边框，存活时间 1000 秒，厚度 0.5
+        # 绾㈣壊杈规锛屽瓨娲绘椂闂?1000 绉掞紝鍘氬害 0.5
         world.debug.draw_box(box=bbox, rotation=carla.Rotation(), thickness=0.5, color=carla.Color(255, 0, 0),
                              life_time=1000.0)
 
         # ==========================
-        # 【3】Actor 1：Mercedes Sprinter
+        # 銆?銆慉ctor 1锛歁ercedes Sprinter
         # ==========================
         bp_v1 = bp_lib.find('vehicle.mercedes.sprinter')
         if bp_v1.has_attribute('color'):
@@ -190,32 +289,34 @@ def main():
         if v1:
             actor_list.append(v1)
             v1_active = True
-            print("生成 Sprinter 成功。")
+            print("Sprinter spawned.")
 
         # ==========================
-        # 【4】Actor 2：Ego车 (Citroen C3)
+        # 銆?銆慉ctor 2锛欵go杞?(Citroen C3)
         # ==========================
         bp_ego = bp_lib.find('vehicle.citroen.c3')
+        bp_ego.set_attribute('role_name', 'ego')
         if bp_ego.has_attribute('color'):
-            bp_ego.set_attribute('color', '255,255,0')  # 黄色
+            bp_ego.set_attribute('color', '255,255,0')  # 榛勮壊
 
-        ego_start_loc = carla.Location(x=-11.779, y=-71.222, z=0.5)
+        ego_start_x, ego_start_y, ego_start_yaw = EGO_TRAJECTORY[0]
+        ego_start_loc = carla.Location(x=ego_start_x, y=ego_start_y, z=0.5)
         ego_start_wp = carla_map.get_waypoint(ego_start_loc, project_to_road=True)
         ego_start_loc.z = ego_start_wp.transform.location.z + 0.5
-        ego = world.try_spawn_actor(bp_ego, carla.Transform(ego_start_loc, ego_start_wp.transform.rotation))
+        ego = world.try_spawn_actor(bp_ego, carla.Transform(ego_start_loc, carla.Rotation(yaw=ego_start_yaw)))
 
         if ego:
             actor_list.append(ego)
             ego_active = True
             light_state = carla.VehicleLightState.HighBeam | carla.VehicleLightState.Fog
             ego.set_light_state(carla.VehicleLightState(light_state))
-            print("生成 Ego (Citroen C3) 成功，已开启黄色雾灯及远光灯。")
+            print("Ego (Citroen C3) spawned with role_name=ego.")
 
-        # 等待车辆落地贴面
+        # 绛夊緟杞﹁締钀藉湴璐撮潰
         for _ in range(10):
             world.tick()
 
-        # 【5】赋予初始物理速度
+        # 銆?銆戣祴浜堝垵濮嬬墿鐞嗛€熷害
         if v1_active:
             v1_speed_ms = 10.0 / 3.6
             v1_yaw_rad = math.radians(v1_yaw)
@@ -223,23 +324,24 @@ def main():
                 carla.Vector3D(v1_speed_ms * math.cos(v1_yaw_rad), v1_speed_ms * math.sin(v1_yaw_rad), 0.0))
 
         if ego_active:
-            ego_speed_ms = 60.0 / 3.6
-            ego_yaw_rad = math.radians(ego_start_wp.transform.rotation.yaw)
+            ego_speed_ms = 80.0 / 3.6
+            ego_yaw_rad = math.radians(ego_start_yaw)
             ego.set_target_velocity(
                 carla.Vector3D(ego_speed_ms * math.cos(ego_yaw_rad), ego_speed_ms * math.sin(ego_yaw_rad), 0.0))
 
-            current_target_wp = ego_start_wp
-            ego_has_turned = False
-
         v1_traj_idx = 0
-        print("\n仿真正式开始！红色线框代表极端湿滑区域。绿色点代表车辆正在追踪的锚点。")
+        ego_traj_idx = 0
+        ego_speed_sm = EgoSpeedStateMachine()
+        sim_time = 0.0
+        print("\nSimulation started. Red box marks the low-friction area; green point marks the active target.")
 
         while True:
             start_time = time.time()
             world.tick()
+            sim_time += dt
 
             # ==========================
-            # 车辆 1 (Sprinter) 固定轨迹
+            # 杞﹁締 1 (Sprinter) 鍥哄畾杞ㄨ抗
             # ==========================
             if v1_active and v1.is_alive:
                 if check_and_handle_out_of_bounds(v1, carla_map):
@@ -255,61 +357,31 @@ def main():
                     v1_active = False
 
             # ==========================
-            # Ego车 (Citroen C3)：基于向量投影的最右侧车道判别法
+            # Ego杞?(Citroen C3)锛氬熀浜庡悜閲忔姇褰辩殑鏈€鍙充晶杞﹂亾鍒ゅ埆娉?
             # ==========================
             if ego_active and ego.is_alive:
                 if check_and_handle_out_of_bounds(ego, carla_map):
                     ego_active = False
                 else:
                     ego_loc = ego.get_location()
-
-                    # 可视化当前追踪的 Waypoint (画一个绿色的点，持续时间与物理帧一致)
-                    world.debug.draw_point(current_target_wp.transform.location + carla.Location(z=1.0), size=0.1,
+                    target_loc, ego_traj_idx = get_trajectory_target(ego_loc, EGO_TRAJECTORY, ego_traj_idx)
+                    world.debug.draw_point(target_loc + carla.Location(z=1.0), size=0.1,
                                            color=carla.Color(0, 255, 0), life_time=0.1)
 
-                    # 如果靠近锚点，就搜索下一个锚点
-                    if ego_loc.distance(current_target_wp.transform.location) < 3.5:
-                        next_wps = current_target_wp.next(4.0)
+                    ego_target_speed = ego_speed_sm.tick(ego_loc, sim_time, dt)
+                    apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], ego_target_speed, target_loc)
 
-                        if len(next_wps) == 1:
-                            # 只有一条路，照直走
-                            current_target_wp = next_wps[0]
-                        elif len(next_wps) > 1:
-                            # 【核心修正：利用 Right Vector 判别右侧岔道】
-                            # 获取当前道路的向右的法向量 (Right Vector)
-                            right_vector = current_target_wp.transform.get_right_vector()
-
-                            best_right_wp = None
-                            max_right_projection = -999.0
-
-                            for wp in next_wps:
-                                # 计算从当前锚点指向候选岔路锚点的方向向量
-                                dir_vector = wp.transform.location - current_target_wp.transform.location
-
-                                # 归一化方向向量 (求单位向量)
-                                length = math.sqrt(dir_vector.x ** 2 + dir_vector.y ** 2)
-                                if length > 0.0:
-                                    dir_vector.x /= length
-                                    dir_vector.y /= length
-
-                                # 点乘运算：计算候选岔路在车辆右侧方向上的投影长度
-                                # 投影值越大（正数最大），说明该路点在几何上越偏向右侧
-                                projection = (dir_vector.x * right_vector.x) + (dir_vector.y * right_vector.y)
-
-                                if projection > max_right_projection:
-                                    max_right_projection = projection
-                                    best_right_wp = wp
-
-                            current_target_wp = best_right_wp
-                            ego_has_turned = True  # 标记已经遇到了岔路并执行了右转逻辑
-
-                    # 速度逻辑：遇到岔路右转并完成一次决策后，速度降至 40km/h
-                    ego_target_speed = 40.0 if ego_has_turned else 60.0
-                    apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], ego_target_speed,
-                                      current_target_wp.transform.location)
-
+                    if ego_traj_idx >= len(EGO_TRAJECTORY) - 1 and ego_loc.distance(target_loc) < 3.5:
+                        ego.apply_control(carla.VehicleControl(brake=1.0))
+                        for actor in actor_list:
+                            if actor.is_alive:
+                                actor.destroy()
+                        ego_active = False
+                        v1_active = False
+                        print("Ego reached the end; all actors destroyed.")
+                        break
             if not v1_active and not ego_active:
-                print("所有车辆任务完成或已被清理。")
+                print("All vehicles finished or were cleaned up.")
                 break
 
             compute_time = time.time() - start_time
@@ -317,9 +389,9 @@ def main():
                 time.sleep(dt - compute_time)
 
     except KeyboardInterrupt:
-        print("\n键盘中断，终止运行。")
+        print("\nKeyboard interrupt, stopping simulation.")
     finally:
-        print("\n清理环境并恢复异步设置...")
+        print("\nCleaning up and restoring async settings...")
         for actor in actor_list:
             if actor.is_alive:
                 actor.destroy()
@@ -328,7 +400,7 @@ def main():
         settings.synchronous_mode = False
         settings.fixed_delta_seconds = None
         world.apply_settings(settings)
-        print("清理完毕。")
+        print("Cleanup complete.")
 
 
 if __name__ == '__main__':
