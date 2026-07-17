@@ -214,6 +214,39 @@ TRAJECTORY_2_DATA = """
 269.748 -178.342
 """
 
+RAW_EGO_TRAJECTORY = [
+    (1.847, 100.798, -87.225), (1.899, 99.705, -87.295), (1.954, 98.431, -87.785), (2.020, 96.724, -87.785),
+    (2.118, 94.185, -87.925), (2.175, 91.644, -89.325), (2.188, 89.145, -89.745), (2.199, 86.605, -89.745),
+    (2.211, 84.065, -89.745), (2.221, 81.483, -89.815), (2.229, 78.985, -89.955), (2.222, 76.486, -90.305),
+    (2.203, 73.944, -90.515), (2.180, 71.403, -90.515), (2.157, 68.819, -90.515), (2.134, 66.278, -90.515),
+    (2.111, 63.736, -90.515), (2.089, 61.236, -90.515), (2.066, 58.694, -90.515), (2.043, 56.152, -90.515),
+    (2.021, 53.652, -90.515), (1.998, 51.111, -90.515), (1.977, 48.611, -90.374), (1.962, 46.069, -90.304),
+    (1.948, 43.569, -90.304), (1.935, 41.069, -90.304), (1.922, 38.528, -90.304), (1.908, 35.986, -90.304),
+    (1.895, 33.443, -90.304), (1.881, 30.859, -90.304), (1.868, 28.359, -90.304), (1.854, 25.818, -90.304),
+    (1.841, 23.276, -90.304), (1.827, 20.776, -90.304), (1.814, 18.235, -90.304), (1.800, 15.693, -90.304),
+    (1.787, 13.152, -90.304), (1.774, 10.652, -90.304), (1.760, 8.152, -90.304), (1.747, 5.652, -90.304),
+    (1.733, 3.111, -90.304), (1.726, 1.777, -90.304), (1.720, 0.527, -90.304), (1.713, -0.743, -90.304),
+    (1.706, -1.993, -90.304), (1.700, -3.264, -90.304), (1.693, -4.535, -90.304), (1.683, -5.785, -91.929),
+    (1.559, -7.050, -97.642), (1.354, -8.283, -100.010), (1.125, -9.533, -100.920), (0.874, -10.757, -102.893),
+    (0.568, -11.990, -105.798), (0.200, -13.185, -108.977), (-0.264, -14.345, -114.454), (-0.835, -15.503, -119.541),
+    (-1.502, -16.560, -123.785), (-2.269, -17.599, -129.360), (-3.092, -18.540, -131.896), (-4.561, -20.161, -134.860),
+    (-6.434, -21.815, -141.611), (-8.444, -23.301, -143.949), (-10.465, -24.772, -143.949), (-12.509, -26.283, -141.368),
+    (-14.376, -28.004, -133.647), (-16.018, -29.942, -128.188), (-17.559, -31.910, -127.698), (-19.089, -33.992, -124.946),
+    (-20.490, -36.112, -122.339), (-21.788, -38.249, -120.720), (-23.086, -40.434, -120.720), (-24.363, -42.583, -120.720),
+    (-25.662, -44.768, -120.720), (-26.912, -46.933, -119.448), (-28.561, -49.854, -119.448), (-30.399, -53.122, -118.740),
+    (-32.211, -56.477, -117.684), (-33.918, -59.816, -116.909), (-35.643, -63.216, -116.769), (-37.314, -66.642, -115.148),
+    (-38.888, -70.115, -113.677), (-40.333, -73.575, -111.002), (-41.672, -77.211, -109.666), (-42.929, -80.744, -109.386),
+    (-44.140, -84.293, -107.984), (-45.289, -87.928, -106.863), (-45.470, -88.527, -106.793), (-45.470, -88.527, -106.793),
+    (-45.470, -88.527, -106.793), (-45.470, -88.527, -106.793)
+]
+
+EGO_TRAJECTORY = []
+for point in RAW_EGO_TRAJECTORY:
+    if not EGO_TRAJECTORY or point != EGO_TRAJECTORY[-1]:
+        EGO_TRAJECTORY.append(point)
+
+EGO_PATH = [(point[0], point[1]) for point in EGO_TRAJECTORY]
+
 
 # ==========================================
 # PID 控制器类 (保留原逻辑)
@@ -340,6 +373,14 @@ def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed, target_wp):
     vehicle.apply_control(control)
 
 
+def approach_speed(current_speed, target_speed, delta):
+    if current_speed < target_speed:
+        return min(target_speed, current_speed + delta)
+    if current_speed > target_speed:
+        return max(target_speed, current_speed - delta)
+    return current_speed
+
+
 def set_vehicle_lights(vehicle):
     """强制开启近光灯和示宽灯"""
     light_state = carla.VehicleLightState.Position | carla.VehicleLightState.LowBeam
@@ -351,6 +392,15 @@ def get_proper_spawn_transform(world, x, y):
     trans = waypoint.transform
     trans.location.z += 0.5
     return trans
+
+
+def is_near_xy(actor, goal_xy, threshold=5.0):
+    if not actor or not actor.is_alive:
+        return False
+    loc = actor.get_location()
+    return math.hypot(loc.x - goal_xy[0], loc.y - goal_xy[1]) <= threshold
+
+
 # ==========================================
 # 主程序
 # ==========================================
@@ -359,10 +409,6 @@ def main():
     client.set_timeout(10.0)
     world = client.get_world()
     carla_map = world.get_map()
-
-    # 获取 Traffic Manager
-    tm = client.get_trafficmanager(8000)
-    tm_port = tm.get_port()
 
     # --------------------------
     # 1. 设置严格对应截图的天气参数
@@ -386,9 +432,10 @@ def main():
 
     bp_lib = world.get_blueprint_library()
     actor_list = []
+    ego_end_xy = (-45.470, -88.527)
 
     # 车辆当前目标速度字典，用于平滑减速
-    current_speeds = {'v1': 60.0, 'v2': 60.0}
+    current_speeds = {'v1': 60.0, 'v2': 60.0, 'ego': 35.0}
 
     try:
         # 同步模式
@@ -398,12 +445,11 @@ def main():
         settings.max_substeps = 10
         world.apply_settings(settings)
 
-        tm.set_synchronous_mode(True)
-
         # 定义使用的PID控制器 (大卡车转向K_P设为1.2防侧滑)
         pids = {
             'v1': {'lon': PIDLongitudinalController(), 'lat': PIDLateralController(K_P=1.2)},
             'v2': {'lon': PIDLongitudinalController(), 'lat': PIDLateralController(K_P=1.2)},
+            'ego': {'lon': PIDLongitudinalController(), 'lat': PIDLateralController()},
             'jeep': {'lon': PIDLongitudinalController(), 'lat': PIDLateralController()}
         }
 
@@ -437,28 +483,28 @@ def main():
         if v2: actor_list.append(v2); print("2. 黄色 HGV 生成成功")
 
         # ====================
-        # 3. 生成第三辆车 (TM控制)
+        # 3. 生成ego第三辆车 (PID轨迹控制)
         # ====================
         bp_v3 = bp_lib.filter('vehicle.audi.*')[0]  # 选一辆常见车
-        trans_v3 = carla.Transform(carla.Location(x=1.438, y=113.258, z=10), carla.Rotation(yaw=0.0))
+        if bp_v3.has_attribute('role_name'):
+            bp_v3.set_attribute('role_name', 'ego')
+        if bp_v3.has_attribute('color'):
+            bp_v3.set_attribute('color', '255,255,160')  # 淡黄色
+        ego_start_x, ego_start_y, ego_start_yaw = EGO_TRAJECTORY[0]
+        trans_v3 = carla.Transform(
+            carla.Location(x=ego_start_x, y=ego_start_y, z=10),
+            carla.Rotation(yaw=ego_start_yaw)
+        )
         # 因为强制生成坐标可能未对准路面，用 get_waypoint 对齐一下
         wp_v3 = world.get_map().get_waypoint(trans_v3.location, project_to_road=True)
         v3_trans = wp_v3.transform
+        v3_trans.rotation.yaw = ego_start_yaw
         v3_trans.location.z += 0.5
         v3 = world.try_spawn_actor(bp_v3, v3_trans)
 
         if v3:
             actor_list.append(v3)
-            print("3. TM控制车辆 生成成功")
-            # --- 严格遵循您的 TM 规则配置 ---
-            v3.set_autopilot(True, tm_port)
-            tm.vehicle_percentage_speed_difference(v3, -55.0)  # 超速
-            tm.ignore_lights_percentage(v3, 0)  # 不忽略红绿灯
-            tm.ignore_signs_percentage(v3, 0)  # 不忽略标志
-            tm.ignore_vehicles_percentage(v3, 0)  # 不忽略车辆(100%避让)
-            tm.ignore_walkers_percentage(v3, 0)  # 不忽略行人(100%避让)
-            tm.distance_to_leading_vehicle(v3, 5.0)  # 跟车距离5米
-            tm.auto_lane_change(v3, True)  # 允许自动变道
+            print("3. Ego Audi 生成成功 (PID轨迹控制)")
 
         # 4. 车辆4: vehicle.jeep.wrangler_rubicon (新增：橙色)
         bp_jeep = bp_lib.find('vehicle.jeep.wrangler_rubicon')
@@ -483,9 +529,20 @@ def main():
                 forward_vec.z * initial_speed_mps
             ))
 
+        if v3 and v3.is_alive:
+            forward_vec = v3.get_transform().get_forward_vector()
+            initial_speed_mps = 35.0 / 3.6
+            v3.set_target_velocity(carla.Vector3D(
+                forward_vec.x * initial_speed_mps,
+                forward_vec.y * initial_speed_mps,
+                forward_vec.z * initial_speed_mps
+            ))
+
         # 车辆销毁标记
         v1_destroyed = False
         v2_destroyed = False
+        ego_stage = 'cruise'
+        ego_resume_time = None
 
         while True:
             start_time = time.time()
@@ -551,11 +608,39 @@ def main():
                     apply_pid_control(v2, pids['v2']['lon'], pids['v2']['lat'], current_speeds['v2'], target_wp)
 
             # ==========================
-            # 控制 3: TM 控制的车辆
+            # 控制 3: ego Audi PID轨迹控制
             # ==========================
-            # 交给 Traffic Manager 控制，此处仅作状态监测
             if v3 and v3.is_alive:
                 set_vehicle_lights(v3)
+                if is_near_xy(v3, ego_end_xy, threshold=5.0):
+                    print("Ego reached scenario endpoint; ending simulation.")
+                    return
+                loc = v3.get_location()
+                sim_time = world.get_snapshot().timestamp.elapsed_seconds
+
+                if ego_stage == 'cruise' and loc.y <= 40.0:
+                    ego_stage = 'slow_20'
+                    print("Ego reached y=40; slowing to 20km/h.")
+                elif ego_stage == 'slow_20' and loc.y <= 0.0:
+                    ego_stage = 'slow_15'
+                    ego_resume_time = sim_time + 2.0
+                    print("Ego reached y=0; slowing to 15km/h for 2s.")
+                elif ego_stage == 'slow_15' and ego_resume_time is not None and sim_time >= ego_resume_time:
+                    ego_stage = 'resume_35'
+                    print("Ego 2s slow phase complete; resuming 35km/h.")
+
+                ego_target_speed = 35.0
+                if ego_stage == 'slow_20':
+                    ego_target_speed = 20.0
+                elif ego_stage == 'slow_15':
+                    ego_target_speed = 15.0
+
+                current_speeds['ego'] = approach_speed(current_speeds['ego'], ego_target_speed, 0.5)
+                target_wp, finished, off_road = get_target_from_trajectory(loc, EGO_PATH, lookahead_dist=10.0)
+                if finished or off_road:
+                    print("Ego trajectory finished or off-road; ending simulation.")
+                    return
+                apply_pid_control(v3, pids['ego']['lon'], pids['ego']['lat'], current_speeds['ego'], target_wp)
 
             # 若三辆车均已销毁，可选择退出循环
             # if v1_destroyed and v2_destroyed and (not v3 or not v3.is_alive):
@@ -567,7 +652,7 @@ def main():
             if jeep and jeep.is_alive:
                 # 动态提取前方 6 米的道路中心锚点进行车道保持
                 target_wp = get_lane_keeping_waypoint(carla_map, jeep.get_location(), lookahead_dist=6.0)
-                apply_pid_control(jeep, pids['jeep']['lon'], pids['jeep']['lat'], 20.0, target_wp)
+                apply_pid_control(jeep, pids['jeep']['lon'], pids['jeep']['lat'], 30.0, target_wp)
 
             # --- 帧率同步 ---
             compute_time = time.time() - start_time
@@ -582,8 +667,6 @@ def main():
         settings.synchronous_mode = False
         settings.fixed_delta_seconds = None
         world.apply_settings(settings)
-
-        tm.set_synchronous_mode(False)
 
         # 销毁仍然存活的车辆
         for act in actor_list:

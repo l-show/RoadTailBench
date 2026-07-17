@@ -496,6 +496,193 @@ def get_physical_speed_kmh(vehicle):
     return 3.6 * math.hypot(vel.x, vel.y)
 
 
+def vehicle_reached_trajectory_end(actor, trajectory, current_idx=None, radius=5.0):
+    if not actor or not actor.is_alive or not trajectory:
+        return False
+    try:
+        loc = actor.get_location()
+        goal = trajectory[-1]
+        dist_to_goal = math.hypot(loc.x - goal.x, loc.y - goal.y)
+        reached_by_distance = dist_to_goal <= radius
+        reached_by_index = current_idx is not None and current_idx >= len(trajectory) - 2 and dist_to_goal <= radius * 2.0
+        return reached_by_distance or reached_by_index
+    except Exception as exc:
+        print(f"[RoadTailBench Opt] endpoint check failed: {exc}")
+    return False
+
+
+def destroy_actor_at_trajectory_end(actor, trajectory, label, current_idx=None, radius=5.0):
+    if not vehicle_reached_trajectory_end(actor, trajectory, current_idx, radius):
+        return False
+    try:
+        print(f"[RoadTailBench Opt] {label} reached trajectory endpoint; destroying actor.")
+        actor.destroy()
+        return True
+    except Exception as exc:
+        print(f"[RoadTailBench Opt] {label} endpoint destroy failed: {exc}")
+    return False
+
+
+def destroy_actor_after_path_exhausted(actor, label):
+    if not actor or not actor.is_alive:
+        return False
+    try:
+        print(f"[RoadTailBench Opt] {label} trajectory exhausted; destroying actor.")
+        actor.destroy()
+        return True
+    except Exception as exc:
+        print(f"[RoadTailBench Opt] {label} trajectory exhausted destroy failed: {exc}")
+    return False
+
+
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (-24.265, 91.742)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_is_cleanup_actor(actor):
+    try:
+        type_id = getattr(actor, 'type_id', '')
+    except Exception:
+        type_id = ''
+    return type_id.startswith('vehicle.') or type_id.startswith('walker.') or type_id == 'controller.ai.walker'
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        if not _rtb_opt_is_cleanup_actor(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'controller.ai.walker'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning vehicles/walkers and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     actor_list = []
     client = carla.Client('localhost', 2000)
@@ -609,6 +796,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time += dt
             #
             # # ---------------- 视角跟随 ----------------
@@ -621,6 +810,9 @@ def main():
             # ------------ V1 逻辑 ------------
             if v1 and v1.is_alive:
                 if not RTB.check_vehicle_out_of_bounds(v1, carla_map, threshold_dist=OFFROAD_TOLERANCE, auto_destroy=True):
+                    if destroy_actor_at_trajectory_end(v1, traj_v1, "V1", idx_v1):
+                        v1 = None
+                        continue
                     target_spd_v1 = sm_v1.tick(v1.get_location(), sim_time, dt)
                     real_spd = get_physical_speed_kmh(v1)
 
@@ -631,11 +823,16 @@ def main():
                     if wp_v1:
                         RTB.apply_pid_control(v1, pid_lon_v1, pid_lat_v1, target_spd_v1, wp_v1)
                     else:
-                        v1.apply_control(carla.VehicleControl(brake=1.0))
+                        if destroy_actor_after_path_exhausted(v1, "V1"):
+                            v1 = None
 
             # ------------ EGO 逻辑 ------------
             if ego and ego.is_alive:
                 if not RTB.check_vehicle_out_of_bounds(ego, carla_map, threshold_dist=OFFROAD_TOLERANCE, auto_destroy=True):
+                    if vehicle_reached_trajectory_end(ego, traj_ego, idx_ego):
+                        print("[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning vehicles/walkers and ending simulation.")
+                        _rtb_opt_cleanup_scene(locals(), client, world)
+                        break
                     target_spd_ego = sm_ego.tick(ego.get_location(), sim_time, dt)
                     real_spd = get_physical_speed_kmh(ego)
 
@@ -647,12 +844,17 @@ def main():
                         RTB.apply_pid_control(ego, pid_lon_ego, pid_lat_ego, target_spd_ego, wp_ego)
                         RTB.draw_lookahead_point(world, ego.get_location(), wp_ego, life_time=0.1)
                     else:
-                        ego.apply_control(carla.VehicleControl(brake=1.0))
+                        if destroy_actor_after_path_exhausted(ego, "Ego"):
+                            _rtb_opt_cleanup_scene(locals(), client, world)
+                            break
                     light_ego.auto_update_from_control()
 
             # ------------ V3 逻辑 ------------
             if v3 and v3.is_alive:
                 if not RTB.check_vehicle_out_of_bounds(v3, carla_map, threshold_dist=OFFROAD_TOLERANCE, auto_destroy=True):
+                    if destroy_actor_at_trajectory_end(v3, traj_v3, "V3", idx_v3):
+                        v3 = None
+                        continue
                     target_spd_v3 = sm_v3.tick(v3.get_location(), sim_time, dt)
                     real_spd = get_physical_speed_kmh(v3)
 
@@ -661,12 +863,17 @@ def main():
                     if wp_v3:
                         RTB.apply_pid_control(v3, pid_lon_v3, pid_lat_v3, target_spd_v3, wp_v3)
                     else:
-                        v3.apply_control(carla.VehicleControl(brake=1.0))
-                    light_v3.auto_update_from_control()
+                        if destroy_actor_after_path_exhausted(v3, "V3"):
+                            v3 = None
+                    if v3 and v3.is_alive:
+                        light_v3.auto_update_from_control()
 
             # ------------ V4 逻辑 ------------
             if v4 and v4.is_alive:
                 if not RTB.check_vehicle_out_of_bounds(v4, carla_map, threshold_dist=OFFROAD_TOLERANCE, auto_destroy=True):
+                    if destroy_actor_at_trajectory_end(v4, traj_v4, "V4", idx_v4):
+                        v4 = None
+                        continue
                     target_spd_v4 = sm_v4.tick(v4.get_location(), sim_time, dt)
                     real_spd = get_physical_speed_kmh(v4)
 
@@ -675,8 +882,10 @@ def main():
                     if wp_v4:
                         RTB.apply_pid_control(v4, pid_lon_v4, pid_lat_v4, target_spd_v4, wp_v4)
                     else:
-                        v4.apply_control(carla.VehicleControl(brake=1.0))
-                    light_v4.auto_update_from_control()
+                        if destroy_actor_after_path_exhausted(v4, "V4"):
+                            v4 = None
+                    if v4 and v4.is_alive:
+                        light_v4.auto_update_from_control()
 
             # ---------------- 硬件时钟补齐 ----------------
             compute_time = time.time() - start_time

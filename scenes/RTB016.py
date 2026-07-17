@@ -201,6 +201,12 @@ def destroy_actor(actor_list, actor, reason=""):
 # ==========================================
 # 4. 主程序 (Main Loop)
 # ==========================================
+def destroy_all_scene_actors(actor_list, reason=""):
+    print("Ending scene: {}".format(reason))
+    for actor in list(actor_list):
+        destroy_actor(actor_list, actor, reason)
+
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -337,9 +343,13 @@ def main():
             if ego and ego.is_alive:
                 if check_vehicle_out_of_bounds(ego, carla_map):
                     ego = destroy_actor(actor_list, ego, "out of bounds")
+                    destroy_all_scene_actors(actor_list, "ego destroyed out of bounds")
+                    break
                 elif ego_traj_idx >= len(EGO_TRAJECTORY) - 1 and ego.get_location().distance(
                         carla.Location(x=EGO_TRAJECTORY[-1][0], y=EGO_TRAJECTORY[-1][1], z=ego.get_location().z)) < 3.0:
                     ego = destroy_actor(actor_list, ego, "trajectory complete")
+                    destroy_all_scene_actors(actor_list, "ego reached trajectory endpoint")
+                    break
                 else:
                     tx, ty, tyaw = EGO_TRAJECTORY[ego_traj_idx]
                     target_loc = carla.Location(x=tx, y=ty, z=ego.get_location().z)
@@ -350,6 +360,10 @@ def main():
                         target_loc = carla.Location(x=tx, y=ty, z=ego.get_location().z)
 
                     apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], 70.0, target_loc)
+            elif ego is not None:
+                destroy_all_scene_actors(actor_list, "ego is no longer alive")
+                ego = None
+                break
 
             # frame-rate sync
             compute_time = time.time() - start_time

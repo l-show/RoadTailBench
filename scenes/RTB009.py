@@ -299,6 +299,29 @@ def check_and_handle_out_of_bounds(vehicle, carla_map, name="Vehicle"):
 # ==========================================
 # 4. 主程序 (Main Loop)
 # ==========================================
+def cleanup_scene_and_end(client, actor_list, leaf_manager, reason):
+    print("[RTB009plus] {}; cleaning all scene actors and ending simulation.".format(reason))
+    try:
+        if leaf_manager:
+            leaf_manager.cleanup()
+    except Exception:
+        pass
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actor_list if actor and actor.is_alive]
+        if commands:
+            client.apply_batch(commands)
+            return True
+    except Exception:
+        pass
+    for actor in actor_list:
+        try:
+            if actor and actor.is_alive:
+                actor.destroy()
+        except Exception:
+            pass
+    return True
+
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -420,7 +443,14 @@ def main():
             if active_vehicles['v2'] and v2.is_alive:
                 if check_and_handle_out_of_bounds(v2, carla_map, "V2"): active_vehicles['v2'] = False
             if active_vehicles['ego'] and ego.is_alive:
-                if check_and_handle_out_of_bounds(ego, carla_map, "Ego"): active_vehicles['ego'] = False
+                if check_and_handle_out_of_bounds(ego, carla_map, "Ego"):
+                    active_vehicles['ego'] = False
+                    cleanup_scene_and_end(client, actor_list, leaf_manager, "Ego was destroyed out of bounds")
+                    break
+            elif active_vehicles['ego']:
+                active_vehicles['ego'] = False
+                cleanup_scene_and_end(client, actor_list, leaf_manager, "Ego is no longer alive")
+                break
 
             # ==========================
             # V1 控制逻辑
@@ -459,6 +489,12 @@ def main():
             # Ego 控制逻辑
             # ==========================
             if active_vehicles['ego'] and ego.is_alive:
+                ego_loc = ego.get_location()
+                ego_end = carla.Location(x=EGO_TRAJECTORY_DATA[-1][0], y=EGO_TRAJECTORY_DATA[-1][1], z=ego_init_loc.z)
+                if ego_loc.distance(ego_end) < 3.0:
+                    active_vehicles['ego'] = False
+                    cleanup_scene_and_end(client, actor_list, leaf_manager, "Ego reached trajectory endpoint")
+                    break
                 if ego_traj_idx < len(EGO_TRAJECTORY_DATA):
                     tx, ty, tyaw = EGO_TRAJECTORY_DATA[ego_traj_idx]
                     target_loc = carla.Location(x=tx, y=ty, z=ego_init_loc.z)

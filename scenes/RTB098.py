@@ -67,6 +67,77 @@ def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed_kmh, target_loc):
     vehicle.apply_control(control)
 
 
+def get_vehicle_speed_kmh(vehicle):
+    vel = vehicle.get_velocity()
+    return 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
+
+
+class EgoSpeedStateMachine:
+    def __init__(self):
+        self.state = 'approach_30'
+        self.target_speed = 60.0
+        self.stop_started_at = None
+        self.start_y = EGO_TRAJ[0][1]
+        self.slow_y = -11.0
+        self.stop_y = -44.0
+        self.initial_speed = 70.0
+        self.slow_speed = 40.0
+        self.resume_speed = 50.0
+
+    @staticmethod
+    def _distance_profile_speed(start_speed, end_speed, progress):
+        progress = float(np.clip(progress, 0.0, 1.0))
+        speed_sq = (start_speed ** 2) * (1.0 - progress) + (end_speed ** 2) * progress
+        return math.sqrt(max(speed_sq, 0.0))
+
+    @staticmethod
+    def _move_towards(current, target, rate_kmh_per_s, dt):
+        delta = rate_kmh_per_s * dt
+        if current < target:
+            return min(target, current + delta)
+        if current > target:
+            return max(target, current - delta)
+        return current
+
+    def tick(self, loc, current_speed_kmh, sim_time, dt):
+        if self.state == 'approach_30':
+            if loc.y <= self.slow_y:
+                self.state = 'brake_to_stop'
+                self.target_speed = self.slow_speed
+            else:
+                denom = max(self.start_y - self.slow_y, 0.1)
+                progress = (self.start_y - loc.y) / denom
+                self.target_speed = self._distance_profile_speed(
+                    self.initial_speed, self.slow_speed, progress
+                )
+
+        if self.state == 'brake_to_stop':
+            if loc.y <= self.stop_y:
+                self.state = 'waiting_stop'
+                self.target_speed = 0.0
+            else:
+                denom = max(self.slow_y - self.stop_y, 0.1)
+                progress = (self.slow_y - loc.y) / denom
+                self.target_speed = self._distance_profile_speed(
+                    self.slow_speed, 0.0, progress
+                )
+
+        if self.state == 'waiting_stop':
+            self.target_speed = 0.0
+            if current_speed_kmh <= 0.5:
+                if self.stop_started_at is None:
+                    self.stop_started_at = sim_time
+                if sim_time - self.stop_started_at >= 3.0:
+                    self.state = 'accelerate_50'
+            else:
+                self.stop_started_at = None
+
+        if self.state == 'accelerate_50':
+            self.target_speed = self._move_towards(self.target_speed, self.resume_speed, 15.0, dt)
+
+        return self.target_speed, self.state == 'waiting_stop'
+
+
 # ==========================================
 # 轨迹数据清洗与定义
 # ==========================================
@@ -129,6 +200,144 @@ EGO_TRAJ = clean_trajectory(RAW_EGO_TRAJ)
 # ==========================================
 # 主程序
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (116.765, -67.993)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.chevrolet.impala'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -169,6 +378,10 @@ def main():
 
         # 【生成 Actor 1: Ego (Impala) 】
         bp_ego = bp_lib.find('vehicle.chevrolet.impala')
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
+        if bp_ego.has_attribute('color'):
+            bp_ego.set_attribute('color', '0,255,255')
         ex, ey, eyaw = EGO_TRAJ[0]
         ego_loc = carla.Location(x=ex, y=ey, z=0.5)
         ego_loc.z = carla_map.get_waypoint(ego_loc).transform.location.z + 0.5
@@ -207,6 +420,8 @@ def main():
         # 【修改点2】预热Tick，防止车辆初始悬空导致给速度时起飞
         for _ in range(20):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         # 【修改点3】车辆落稳后，直接赋予物理瞬时初速度 (60km/h -> 16.66m/s)
         init_speed_ms = 60.0 / 3.6
@@ -221,11 +436,14 @@ def main():
 
         print("已赋予车辆 60 km/h 的初始速度！")
 
+        ego_speed_sm = EgoSpeedStateMachine()
         start_sim_time = world.get_snapshot().timestamp.elapsed_seconds
 
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time = world.get_snapshot().timestamp.elapsed_seconds - start_sim_time
 
             # ----------------------------------------
@@ -239,7 +457,13 @@ def main():
                     if ego.get_location().distance(target_loc) < 3.5 and ego_idx < len(EGO_TRAJ) - 1:
                         ego_idx += 1
 
-                    apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], 60.0, target_loc)
+                    ego_loc = ego.get_location()
+                    ego_speed_kmh = get_vehicle_speed_kmh(ego)
+                    ego_target_speed, ego_hold_stop = ego_speed_sm.tick(ego_loc, ego_speed_kmh, sim_time, dt)
+                    if ego_hold_stop:
+                        ego.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0, steer=0.0, hand_brake=True))
+                    else:
+                        apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], ego_target_speed, target_loc)
                 else:
                     ego.apply_control(carla.VehicleControl(brake=1.0))
                     ego_active = False

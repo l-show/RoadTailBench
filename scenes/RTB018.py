@@ -142,34 +142,25 @@ def set_initial_velocity(vehicle, speed_kmh):
 # ==========================================
 # 3. 轨迹数据录入
 # ==========================================
-TRAJ_EGO = [(59.791, -48.223, 147.768), (56.406, -46.089, 147.767), (56.406, -46.089, 147.767),
-            (56.406, -46.089, 147.767), (56.371, -46.067, 147.767), (54.221, -44.711, 147.767),
-            (52.072, -43.355, 147.626), (49.89, -41.972, 147.556), (47.747, -40.605, 147.346),
-            (45.572, -39.21, 147.206), (43.438, -37.83, 146.996), (41.341, -36.468, 146.996), (39.175, -35.06, 146.996),
-            (37.078, -33.699, 146.996), (34.98, -32.339, 147.276), (32.806, -30.943, 147.345),
-            (30.702, -29.594, 147.345), (28.596, -28.247, 147.695), (26.483, -26.911, 147.695),
-            (24.299, -25.53, 147.695), (22.151, -24.172, 147.695), (19.968, -22.792, 147.695),
-            (17.86, -21.448, 147.135), (15.695, -20.038, 146.925), (13.53, -18.629, 146.925),
-            (11.401, -17.242, 146.925), (9.236, -15.832, 146.995), (7.037, -14.478, 149.676), (4.846, -13.275, 153.783),
-            (2.536, -12.323, 159.797), (0.085, -11.512, 165.226), (-2.419, -11.017, 173.935),
-            (-4.913, -10.847, 177.534), (-7.453, -10.778, 179.236), (-9.953, -10.764, -178.806),
-            (-12.449, -10.887, -175.643), (-15.017, -11.168, -171.779), (-17.487, -11.549, -170.426),
-            (-19.944, -12.01, -168.71), (-22.473, -12.539, -167.929), (-24.918, -13.062, -167.929),
-            (-27.446, -13.591, -170.505), (-30.022, -13.725, 179.936), (-32.564, -13.736, -178.143),
-            (-35.138, -13.948, -173.256), (-37.609, -14.326, -170.007), (-40.068, -14.783, -168.595),
-            (-42.51, -15.32, -166.16), (-45.003, -15.994, -164.009), (-47.482, -16.735, -162.736),
-            (-49.869, -17.477, -162.736), (-52.296, -18.231, -162.736), (-54.763, -18.998, -162.736),
-            (-57.15, -19.742, -162.666), (-59.537, -20.487, -162.736), (-61.966, -21.236, -162.876),
-            (-64.355, -21.972, -162.875), (-66.784, -22.72, -162.875), (-69.173, -23.455, -163.085),
-            (-71.647, -24.187, -163.717), (-74.043, -24.887, -163.717), (-76.518, -25.61, -163.717),
-            (-78.993, -26.333, -163.717), (-81.391, -27.028, -164.136), (-83.839, -27.711, -164.557),
-            (-86.329, -28.396, -165.266), (-88.792, -28.773, -178.181), (-91.371, -28.722, 178.05),
-            (-93.909, -28.646, 179.193), (-96.407, -28.662, -178.016), (-98.977, -28.897, -170.982),
-            (-101.505, -29.422, -166.093), (-104.001, -30.087, -164.25), (-106.399, -30.794, -163.054),
-            (-108.861, -31.574, -162.207), (-111.28, -32.35, -162.207), (-113.66, -33.114, -162.277),
-            (-116.041, -33.875, -162.277), (-118.504, -34.662, -162.277), (-120.885, -35.423, -162.277),
-            (-123.349, -36.201, -162.906), (-125.821, -36.95, -163.188), (-126.578, -37.179, -163.188),
-            (-126.578, -37.179, -163.188)]
+TRAJ_EGO = [
+    (55.543, -45.516, 152.084), (55.543, -45.516, 152.084), (55.543, -45.516, 152.084), (55.543, -45.516, 152.084),
+    (55.139, -45.302, 152.084), (52.944, -44.112, 150.120), (50.709, -42.817, 149.385), (48.564, -41.538, 148.650),
+    (46.396, -40.212, 148.527), (44.264, -38.907, 148.527), (42.101, -37.573, 147.578), (39.967, -36.191, 147.565),
+    (37.852, -34.860, 147.849), (35.700, -33.508, 147.848), (33.548, -32.155, 147.848), (31.396, -30.803, 147.848),
+    (29.287, -29.461, 146.991), (27.190, -28.099, 146.991), (25.099, -26.729, 146.623), (23.011, -25.354, 146.623),
+    (20.889, -23.956, 146.623), (18.801, -22.580, 146.623), (16.713, -21.205, 146.623), (14.626, -19.830, 146.623),
+    (12.503, -18.431, 146.623), (10.416, -17.056, 146.623), (8.301, -15.645, 145.554), (6.301, -14.148, 141.440),
+    (4.278, -12.613, 146.887), (2.122, -11.348, 152.139), (-0.186, -10.394, 161.122), (-2.696, -9.793, 170.176),
+    (-5.259, -9.480, 175.507), (-7.756, -9.406, -178.480), (-10.256, -9.473, -177.914), (-12.827, -9.711, -172.477),
+    (-15.301, -10.069, -170.860), (-17.757, -10.534, -167.162), (-20.260, -11.175, -165.039), (-22.663, -11.862, -162.423),
+    (-25.071, -12.672, -160.623), (-27.426, -13.506, -160.497), (-29.860, -14.368, -160.497), (-32.258, -15.217, -160.497),
+    (-34.614, -16.051, -160.497), (-37.030, -16.839, -163.496), (-39.434, -17.521, -164.472), (-43.626, -18.686, -164.472),
+    (-49.721, -20.476, -162.452), (-55.680, -22.361, -162.452), (-61.838, -24.308, -162.452), (-67.880, -26.275, -161.583),
+    (-73.909, -28.283, -161.583), (-80.096, -30.130, -165.560), (-86.143, -31.703, -164.419), (-92.254, -33.443, -163.618),
+    (-98.305, -35.380, -161.711), (-104.236, -37.340, -161.711), (-106.016, -37.928, -161.711), (-106.016, -37.928, -161.711),
+    (-106.016, -37.928, -161.711)
+]
+
 TRAJ_jeep = [(13.465, -14.074, -54.434), (14.291, -15.038, -44.591),
              (15.247, -15.842, -36.017), (16.332, -16.541, -31.485), (17.431, -17.178, -29.198),
              (18.529, -17.777, -28.138), (19.669, -18.384, -28.068), (20.78, -19.001, -29.849),
@@ -220,6 +211,144 @@ TRAJ_HARLEY = [(-3.685, 53.572, -93.29), (-4.084, 47.235, -93.715), (-4.503, 40.
 # ==========================================
 # 4. 主程序 (Main Loop)
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (-106.016, -37.928)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -282,6 +411,8 @@ def main():
         print("等待物理引擎环境预热 (让车辆和平稳落地)...")
         for _ in range(40):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         print("预热完毕，赋予初始运动速度...")
         # 💡 车初始速度km/h
@@ -305,6 +436,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
             # --- 控制 Ego 车辆 ---
             if ego_veh and ego_veh.is_alive:

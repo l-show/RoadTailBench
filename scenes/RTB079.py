@@ -162,6 +162,44 @@ RAW_MINI_PATH_POINTS_WITH_YAW = [
     (-186.441, -660.595, -70.362), (-184.946, -664.029, -63.487), (-183.043, -667.317, -54.805)
 ]
 
+RAW_EGO_PATH_POINTS_WITH_YAW = [
+    (-63.886, -513.237, -143.298), (-63.886, -513.237, -143.298), (-63.886, -513.237, -143.298), (-63.886, -513.237, -143.298),
+    (-63.886, -513.237, -143.298), (-63.886, -513.237, -143.298), (-65.721, -514.606, -143.298), (-67.757, -516.124, -143.158),
+    (-69.756, -517.622, -143.158), (-71.790, -519.144, -143.158), (-73.790, -520.644, -143.158), (-75.786, -522.150, -142.738),
+    (-77.808, -523.692, -142.528), (-79.787, -525.223, -142.179), (-81.763, -526.758, -142.109), (-83.771, -528.320, -142.109),
+    (-85.778, -529.882, -142.109), (-87.753, -531.419, -142.109), (-89.726, -532.954, -142.109), (-91.732, -534.515, -142.109),
+    (-93.704, -536.050, -142.109), (-95.712, -537.609, -143.024), (-97.753, -539.052, -145.536), (-99.866, -540.465, -146.807),
+    (-102.003, -541.840, -147.937), (-104.136, -543.145, -148.852), (-106.257, -544.468, -145.965), (-108.238, -546.056, -137.275),
+    (-110.086, -547.802, -136.489), (-111.942, -549.538, -138.125), (-113.878, -551.185, -141.216), (-115.892, -552.736, -142.649),
+    (-117.881, -554.253, -142.649), (-119.915, -555.779, -143.284), (-122.007, -557.294, -144.969), (-124.086, -558.683, -146.745),
+    (-126.211, -560.077, -146.745), (-128.338, -561.471, -146.745), (-130.538, -562.824, -150.544), (-132.727, -564.033, -151.190),
+    (-134.918, -565.238, -151.190), (-137.145, -566.463, -151.190), (-139.378, -567.677, -151.540), (-141.577, -568.867, -151.750),
+    (-143.828, -570.046, -153.316), (-146.070, -571.153, -154.086), (-148.397, -572.275, -154.576), (-150.710, -573.328, -156.472),
+    (-153.007, -574.316, -156.892), (-155.309, -575.289, -157.732), (-157.638, -576.197, -159.163), (-159.975, -577.085, -159.163),
+    (-162.351, -577.988, -159.163), (-164.688, -578.876, -159.163), (-167.024, -579.765, -159.163), (-169.400, -580.668, -159.163),
+    (-171.739, -581.557, -159.163), (-174.078, -582.446, -159.163), (-176.420, -583.319, -160.234), (-178.814, -584.174, -160.374),
+    (-181.183, -584.968, -163.816), (-183.607, -585.580, -167.143), (-186.096, -586.093, -168.927), (-188.550, -586.571, -168.997),
+    (-191.011, -587.012, -171.166), (-193.566, -587.387, -171.736), (-196.083, -587.743, -172.806), (-198.653, -587.992, -176.121),
+    (-201.233, -588.148, -176.541), (-203.728, -588.289, -178.163), (-206.269, -588.291, 179.161), (-208.769, -588.249, 179.021),
+    (-211.269, -588.207, 179.161), (-213.768, -588.169, 179.161), (-216.310, -588.131, 179.161), (-218.809, -588.090, 178.301),
+    (-221.306, -587.969, 175.746), (-223.787, -587.676, 171.284), (-226.254, -587.276, 169.729), (-228.736, -586.731, 165.806),
+    (-231.176, -586.024, 160.805), (-233.468, -585.029, 154.840), (-235.726, -583.957, 153.431), (-237.959, -582.743, 150.770),
+    (-240.141, -581.522, 150.770), (-242.323, -580.301, 150.770), (-244.578, -579.039, 150.770), (-246.724, -577.838, 150.770),
+    (-247.171, -577.588, 150.770), (-247.607, -577.345, 150.770), (-248.050, -577.097, 150.770), (-248.486, -576.853, 150.770),
+    (-248.922, -576.609, 150.770), (-249.365, -576.362, 150.770), (-249.801, -576.118, 150.770), (-250.244, -575.870, 150.770),
+    (-250.680, -575.625, 150.131), (-251.113, -575.375, 149.991), (-251.552, -575.120, 150.131), (-251.995, -574.870, 151.638),
+    (-252.439, -574.640, 152.851), (-252.894, -574.415, 154.480), (-253.349, -574.208, 157.546), (-253.816, -574.029, 159.343),
+    (-254.291, -573.851, 159.343), (-254.759, -573.675, 159.903), (-255.239, -573.510, 163.774), (-255.719, -573.380, 166.112),
+    (-256.215, -573.267, 167.460), (-256.703, -573.160, 167.880), (-257.201, -573.064, 169.817), (-257.695, -572.986, 172.831),
+    (-258.191, -572.924, 172.971), (-258.695, -572.862, 173.111), (-259.192, -572.813, 175.939), (-259.699, -572.783, 176.793),
+    (-260.198, -572.755, 176.793), (-261.208, -572.698, 176.793), (-262.477, -572.627, 176.793), (-263.723, -572.549, 175.878),
+    (-264.988, -572.447, 174.679), (-266.232, -572.329, 174.539), (-267.496, -572.208, 174.539), (-268.739, -572.088, 174.539),
+    (-269.983, -571.971, 174.819), (-271.227, -571.864, 175.239), (-272.473, -571.765, 175.729), (-273.740, -571.674, 176.078),
+    (-274.987, -571.589, 176.148), (-276.234, -571.507, 176.288), (-277.501, -571.423, 176.288), (-279.767, -571.276, 176.288),
+    (-282.262, -571.113, 176.078), (-284.794, -570.895, 174.417), (-287.325, -570.662, 175.280), (-289.817, -570.460, 175.350),
+    (-292.308, -570.258, 175.350), (-294.883, -570.050, 175.350), (-295.174, -570.026, 175.350), (-295.174, -570.026, 175.350),
+    (-295.174, -570.026, 175.350)
+]
 
 def clean_trajectory_data(raw_path_points_with_yaw):
     """
@@ -176,7 +214,7 @@ def clean_trajectory_data(raw_path_points_with_yaw):
     return cleaned_points
 
 
-TRUCK_PATH_POINTS = clean_trajectory_data(RAW_TRUCK_PATH_POINTS_WITH_YAW)
+TRUCK_PATH_POINTS = clean_trajectory_data(RAW_EGO_PATH_POINTS_WITH_YAW)
 CAR_PATH_POINTS = clean_trajectory_data(RAW_CAR_PATH_POINTS_WITH_YAW)
 MINI_PATH_POINTS = clean_trajectory_data(RAW_MINI_PATH_POINTS_WITH_YAW)
 
@@ -287,6 +325,20 @@ def get_target_waypoint(vehicle_loc, path_points, lookahead_dist=4.0):
     return path_points[target_index][:2]
 
 
+def is_near_path_end(actor, path_points, threshold=5.0):
+    if not actor or not actor.is_alive or not path_points:
+        return False
+    loc = actor.get_location()
+    end_x, end_y, _ = path_points[-1]
+    return math.hypot(loc.x - end_x, loc.y - end_y) <= threshold
+
+
+def destroy_scene_actors(client, actor_list):
+    actors = [actor for actor in actor_list if actor and actor.is_alive]
+    if actors:
+        client.apply_batch([carla.command.DestroyActor(actor) for actor in actors])
+
+
 # ==========================================
 # 主程序
 # ==========================================
@@ -306,7 +358,6 @@ def main():
 
     bp_lib = world.get_blueprint_library()
     actor_list = []  # 用于存储所有生成的Actor
-    original_settings = world.get_settings()  # 保存原始世界设置
 
     try:
         # 设置同步模式
@@ -316,14 +367,11 @@ def main():
         settings.max_substeps = 10
         world.apply_settings(settings)
 
-        tm = client.get_trafficmanager(8000)
-        tm.set_synchronous_mode(True)
-        tm.set_hybrid_physics_mode(True)
-        tm.set_hybrid_physics_radius(100.0)
-
-        # --- 1. 生成 大货车 (主控车辆) ---
-        bp_truck = bp_lib.find('vehicle.carlamotors.carlacola')
-        bp_truck.set_attribute('color', '0,0,255')
+        # --- 1. 生成 Ego 主控车辆 ---
+        bp_truck = bp_lib.find('vehicle.citroen.c3')
+        bp_truck.set_attribute('color', '0,255,0')
+        if bp_truck.has_attribute('role_name'):
+            bp_truck.set_attribute('role_name', 'ego')
 
         initial_point_truck = TRUCK_PATH_POINTS[0]
         spawn_z_truck = 2
@@ -335,15 +383,17 @@ def main():
             actor_list.append(truck)
             truck.set_simulate_physics(True)
             print(
-                f"大货车 (carlacola) 生成成功，初始位置: ({initial_point_truck[0]}, {initial_point_truck[1]}, {spawn_z_truck})")
+                f"Ego (citroen.c3) 生成成功，初始位置: ({initial_point_truck[0]}, {initial_point_truck[1]}, {spawn_z_truck})")
             truck_lon_controller = PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.0)
             truck_lat_controller = PIDLateralController(K_P=1.95, K_I=0.05, K_D=0.2)
+            truck_target_speed = 90
+            truck_speed_state = 0
         else:
-            print("错误：无法生成大货车。")
+            print("错误：无法生成 Ego。")
 
         # --- 2. 生成 小轿车 ---
         bp_car = bp_lib.find('vehicle.tesla.model3')
-        bp_car.set_attribute('color', '255,0,0')
+        bp_car.set_attribute('color', '255,110,0')
 
         initial_point_car = CAR_PATH_POINTS[0]
         spawn_z_car = 2.0
@@ -383,11 +433,6 @@ def main():
             mini_lon_controller = PIDLongitudinalController(K_P=0.8, K_I=0.03, K_D=0.1)
             mini_lat_controller = PIDLateralController(K_P=2.2, K_I=0.08, K_D=0.3)
             mini_target_speed = 60  # 初始速度 60km/h
-
-            # 使用状态机来管理Mini的速度，避免在路口折返时重复触发：
-            # 0: 初始状态 (60km/h)
-            # 1: 穿过 Y = -555，已减速 (10km/h)
-            # 2: 穿过 Y = -660，已加速 (40km/h)
             mini_speed_state = 0
         else:
             print("错误：无法生成 Mini Cooper。")
@@ -405,14 +450,28 @@ def main():
             start_time = time.time()
             world.tick()
 
-            # --- 大货车 PID 控制逻辑 ---
+            # --- Ego PID 控制逻辑 ---
             if truck and truck.is_alive:
+                if is_near_path_end(truck, TRUCK_PATH_POINTS, threshold=5.0):
+                    print("Ego 到达轨迹终点，清理所有 actor 并结束场景。")
+                    destroy_scene_actors(client, actor_list)
+                    return
+
                 tf_truck = truck.get_transform()
                 vel_truck = truck.get_velocity()
                 speed_truck = 3.6 * math.sqrt(vel_truck.x ** 2 + vel_truck.y ** 2 + vel_truck.z ** 2)
 
+                if truck_speed_state == 0 and tf_truck.location.x <= -100:
+                    truck_target_speed = 60
+                    truck_speed_state = 1
+                    print(f"Ego 在 X={tf_truck.location.x:.2f} 处减速至 {truck_target_speed} km/h")
+                elif truck_speed_state == 1 and tf_truck.location.x <= -193:
+                    truck_target_speed = 35
+                    truck_speed_state = 2
+                    print(f"Ego 在 X={tf_truck.location.x:.2f} 处减速至 {truck_target_speed} km/h")
+
                 target_wp_xy_truck = get_target_waypoint(tf_truck.location, TRUCK_PATH_POINTS, lookahead_dist=10.0)
-                throttle_output_truck = truck_lon_controller.run_step(80, speed_truck)  # 目标80km/h
+                throttle_output_truck = truck_lon_controller.run_step(truck_target_speed, speed_truck)
                 steer_output_truck = truck_lat_controller.run_step(target_wp_xy_truck, tf_truck)
 
                 control_truck = carla.VehicleControl()
@@ -458,7 +517,7 @@ def main():
 
                 # Mini 状态机逻辑判定 (因为车一开始往负Y方向行驶)
                 if mini_speed_state == 0 and current_y < -555:
-                    mini_target_speed = 10
+                    mini_target_speed = 50
                     mini_speed_state = 1
                     print(f"Mini Cooper在 Y={current_y:.2f} 处达到阈值，减速至 {mini_target_speed} km/h")
                 elif mini_speed_state == 1 and current_y < -660:
@@ -492,9 +551,13 @@ def main():
     finally:
         print("\n正在恢复环境并清理 Actors...")
         if actor_list:
-            client.apply_batch([carla.command.DestroyActor(a) for a in actor_list])
-            print(f"已销毁 {len(actor_list)} 个 Actor。")
-        world.apply_settings(original_settings)
+            remaining_count = len([actor for actor in actor_list if actor and actor.is_alive])
+            destroy_scene_actors(client, actor_list)
+            print(f"已销毁 {remaining_count} 个 Actor。")
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
         print("清理完成，Carla 已恢复正常。")
 
 

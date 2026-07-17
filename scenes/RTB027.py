@@ -138,10 +138,7 @@ EGO_TRAJECTORY = [
     (86.659, 49.906, 70.536), (88.315, 54.619, 70.785), (89.966, 59.420, 71.035),
     (91.567, 64.152, 71.782), (93.180, 69.054, 71.782), (94.757, 73.881, 72.156),
     (96.317, 78.713, 71.781), (97.892, 83.445, 71.532), (99.492, 88.260, 72.154),
-    (100.969, 93.035, 73.897), (102.240, 97.953, 77.382), (103.319, 102.904, 77.755),
-    (104.398, 107.784, 77.129), (105.531, 112.743, 77.128), (106.683, 117.609, 76.379),
-    (107.860, 122.468, 76.378), (109.058, 127.409, 76.378), (109.293, 128.380, 76.378),
-    (109.293, 128.380, 76.378), (109.293, 128.380, 76.378), (109.293, 128.380, 76.378),
+    (100.969, 93.035, 73.897)
 ]
 
 
@@ -194,6 +191,144 @@ def get_ego_target_speed_kmh(ego_y):
     return 52.0
 
 
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (100.969, 93.035)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -224,22 +359,6 @@ def main():
         pid_police = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
         pid_ego = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
 
-        # # ================= 场景构建：生成超低摩擦力积水区 =================
-        # bp_friction = bp_lib.find('static.trigger.friction')
-        # # 0.1代表极度湿滑，几乎像冰面
-        # bp_friction.set_attribute('friction', '0.1')
-        # # extend 是半长/半宽，设为10代表生成一个 20x20 米的打滑区域
-        # bp_friction.set_attribute('extent_x', '10.0')
-        # bp_friction.set_attribute('extent_y', '10.0')
-        # bp_friction.set_attribute('extent_z', '2.0')
-        #
-        # # 在要求的坐标生成打滑区 (z 稍微抬高避免没检测到)
-        # friction_loc = carla.Location(x=65.293, y=-29.102, z=0.5)
-        # friction_trigger = world.try_spawn_actor(bp_friction, carla.Transform(friction_loc))
-        # if friction_trigger:
-        #     actor_list.append(friction_trigger)
-        #     print("生成摩擦力触发器（积水打滑区）成功。")
-
         # ================= 场景构建：生成超低摩擦力积水区 =================
         bp_friction = bp_lib.find('static.trigger.friction')
         bp_friction.set_attribute('friction', '0.0')
@@ -257,15 +376,15 @@ def main():
             actor_list.append(friction_trigger)
             print("生成摩擦力触发器（单侧积水打滑区）成功。")
 
-            # === 修复的绘图代码 ===
-            box = carla.BoundingBox(friction_loc, carla.Vector3D(10.0, 10.0, 10.0))
-            world.debug.draw_box(
-                box=box,
-                rotation=friction_trigger.get_transform().rotation,
-                thickness=0.1,
-                color=carla.Color(r=255, g=0, b=0),
-                life_time=100.0
-            )
+            # # === 修复的绘图代码 ===
+            # box = carla.BoundingBox(friction_loc, carla.Vector3D(10.0, 10.0, 10.0))
+            # world.debug.draw_box(
+            #     box=box,
+            #     rotation=friction_trigger.get_transform().rotation,
+            #     thickness=0.1,
+            #     color=carla.Color(r=255, g=0, b=0),
+            #     life_time=100.0
+            # )
 
 
         # ================= Actor 1：警车 (代替原卡车) =================
@@ -308,6 +427,8 @@ def main():
         print("等待物理系统预热并稳定车辆底盘...")
         for _ in range(20):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         print("赋予警车 50km/h、Ego 52km/h 的初始速度...")
         if police_car: apply_initial_velocity(police_car, 50.0, police_start_yaw)
@@ -322,6 +443,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
             # ================= 警车：PID寻路 =================
             if police_active and police_car.is_alive:

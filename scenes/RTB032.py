@@ -444,7 +444,8 @@ def main():
         v2 = RTB.spawn_vehicle(world, 'vehicle.chevrolet.impala',
                                x=traj2[0][0], y=traj2[0][1], yaw=traj2_raw[0][2], role_name="v2")
         v3_ego = RTB.spawn_vehicle(world, 'vehicle.audi.tt',
-                                   x=traj3[0][0], y=traj3[0][1], yaw=traj3_raw[0][2], role_name="ego")
+                                   x=traj3[0][0], y=traj3[0][1], yaw=traj3_raw[0][2],
+                                   color="255,105,180", role_name="ego")
         v4_truck = RTB.spawn_vehicle(world, 'vehicle.mercedes.sprinter',
                                      x=traj4[0][0], y=traj4[0][1], yaw=traj4_raw[0][2], color="0,0,0", role_name="v4",
                                      z_offset=1.5)
@@ -470,6 +471,20 @@ def main():
                 light_mgrs[v.id] = lm
 
         idx1 = idx2 = idx3 = idx4 = 0
+        v1_goal_x, v1_goal_y = traj1[-1][0], traj1[-1][1]
+        v2_goal_x, v2_goal_y = traj2[-1][0], traj2[-1][1]
+        ego_goal_x, ego_goal_y = traj3[-1][0], traj3[-1][1]
+        v4_goal_x, v4_goal_y = traj4[-1][0], traj4[-1][1]
+        vehicle_goal_radius_m = 2.5
+
+        def is_at_goal(loc, goal_x, goal_y):
+            return math.hypot(loc.x - goal_x, loc.y - goal_y) <= vehicle_goal_radius_m
+
+        def destroy_scene_vehicle(vehicle):
+            if vehicle and vehicle.is_alive:
+                vehicle.destroy()
+            if vehicle in actor_list:
+                actor_list.remove(vehicle)
 
         # ==========================================
         # 5. 剧本状态机编排
@@ -539,7 +554,14 @@ def main():
                     RTB.draw_lookahead_point(world, loc, wp)
                     RTB.apply_pid_control(v1, pid_lon1, pid_lat1, target_spd, wp)
                 light_mgrs[v1.id].auto_update_from_control()
-                if RTB.check_vehicle_out_of_bounds(v1, carla_map, auto_destroy=True): v1 = None
+                if is_at_goal(loc, v1_goal_x, v1_goal_y):
+                    print("[RTB032] V1 reached trajectory end; destroying actor.")
+                    destroy_scene_vehicle(v1)
+                    v1 = None
+                elif RTB.check_vehicle_out_of_bounds(v1, carla_map, auto_destroy=True):
+                    if v1 in actor_list:
+                        actor_list.remove(v1)
+                    v1 = None
 
             # ----- V2 控制逻辑 -----
             if v2 and v2.is_alive:
@@ -551,7 +573,14 @@ def main():
                     RTB.draw_lookahead_point(world, loc, wp)
                     RTB.apply_pid_control(v2, pid_lon2, pid_lat2, target_spd, wp)
                 light_mgrs[v2.id].auto_update_from_control()
-                if RTB.check_vehicle_out_of_bounds(v2, carla_map, auto_destroy=True): v2 = None
+                if is_at_goal(loc, v2_goal_x, v2_goal_y):
+                    print("[RTB032] V2 reached trajectory end; destroying actor.")
+                    destroy_scene_vehicle(v2)
+                    v2 = None
+                elif RTB.check_vehicle_out_of_bounds(v2, carla_map, auto_destroy=True):
+                    if v2 in actor_list:
+                        actor_list.remove(v2)
+                    v2 = None
 
             # ----- V3 (Ego) 控制逻辑 -----
             if v3_ego and v3_ego.is_alive:
@@ -563,7 +592,18 @@ def main():
                     RTB.draw_lookahead_point(world, loc, wp, color=carla.Color(0, 255, 0), size=0.1)
                     RTB.apply_pid_control(v3_ego, pid_lon3, pid_lat3, target_spd, wp)
                 light_mgrs[v3_ego.id].auto_update_from_control()
-                if RTB.check_vehicle_out_of_bounds(v3_ego, carla_map, auto_destroy=True): v3_ego = None
+                if is_at_goal(loc, ego_goal_x, ego_goal_y):
+                    print("[RTB032] Ego reached trajectory end; destroying scene actors and exiting.")
+                    if leaf_manager:
+                        leaf_manager.cleanup()
+                        leaf_manager = None
+                    RTB.cleanup_actors(client, actor_list)
+                    v1 = v2 = v3_ego = v4_truck = None
+                    break
+                if RTB.check_vehicle_out_of_bounds(v3_ego, carla_map, auto_destroy=True):
+                    if v3_ego in actor_list:
+                        actor_list.remove(v3_ego)
+                    v3_ego = None
 
             # ----- V4 (Truck) 控制逻辑 -----
             if v4_truck and v4_truck.is_alive:
@@ -575,7 +615,14 @@ def main():
                     RTB.draw_lookahead_point(world, loc, wp)
                     RTB.apply_pid_control(v4_truck, pid_lon4, pid_lat4, target_spd, wp)
                 light_mgrs[v4_truck.id].auto_update_from_control()
-                if RTB.check_vehicle_out_of_bounds(v4_truck, carla_map, auto_destroy=True): v4_truck = None
+                if is_at_goal(loc, v4_goal_x, v4_goal_y):
+                    print("[RTB032] V4 reached trajectory end; destroying actor.")
+                    destroy_scene_vehicle(v4_truck)
+                    v4_truck = None
+                elif RTB.check_vehicle_out_of_bounds(v4_truck, carla_map, auto_destroy=True):
+                    if v4_truck in actor_list:
+                        actor_list.remove(v4_truck)
+                    v4_truck = None
 
             # ----- 自定义高空树叶特效系统推演 -----
             if leaf_manager:

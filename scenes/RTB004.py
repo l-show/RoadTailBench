@@ -165,6 +165,25 @@ def clamp(v, a, b):
     return max(a, min(b, v))
 
 
+class BlueVehicleSpeedStateMachine:
+    CRUISE_60 = "CRUISE_60"
+    HOLD_40 = "HOLD_40"
+
+    def __init__(self, initial_speed_kmh=60.0, hold_speed_kmh=40.0, trigger_y=-5.0):
+        self.initial_speed_kmh = initial_speed_kmh
+        self.hold_speed_kmh = hold_speed_kmh
+        self.trigger_y = trigger_y
+        self.state = self.CRUISE_60
+
+    def tick(self, location):
+        if self.state == self.CRUISE_60 and location.y <= self.trigger_y:
+            self.state = self.HOLD_40
+            print("[RoadTailBench] Blue tesla.model3 reached y=-5; state -> HOLD_40.")
+        if self.state == self.HOLD_40:
+            return self.hold_speed_kmh
+        return self.initial_speed_kmh
+
+
 # 【新增】出界判定及销毁函数
 def check_and_handle_out_of_bounds(actor, carla_map, threshold=6.0):
     """
@@ -196,6 +215,143 @@ def check_and_handle_out_of_bounds(actor, carla_map, threshold=6.0):
 # ==========================================
 # 主程序
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = EGO_PATH_POINTS[-1][:2]
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = local_vars.get('orange_audi') or _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+
+
+def _rtb_ego_destroyed(local_vars):
+    return not _rtb_opt_is_alive(local_vars.get('orange_audi'))
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -323,6 +479,8 @@ def main():
         print("等待物理系统初始化...")
         for _ in range(5):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             time.sleep(settings.fixed_delta_seconds)
 
         # 物理稳定后，强制一次性打开远光灯+位置灯
@@ -337,11 +495,20 @@ def main():
         print("\n=> 物理系统稳定，已下发车灯常亮指令！场景运行中...")
 
         # --- 车辆参数 ---
-        initial_vehicle_speed = 65.0
-        decelerate_vehicle_speed = 40.0
-        decelerate_y_threshold = -1.0
-        current_target_vehicle_speed = initial_vehicle_speed
-        deceleration_rate = 15.0
+        blue_speed_sm = BlueVehicleSpeedStateMachine(
+            initial_speed_kmh=52.0,
+            hold_speed_kmh=40.0,
+            trigger_y=-5.0
+        )
+        if vehicle and vehicle.is_alive:
+            yaw_rad = math.radians(initial_vehicle_point[2])
+            speed_ms = blue_speed_sm.initial_speed_kmh / 3.6
+            vehicle.set_target_velocity(carla.Vector3D(
+                x=speed_ms * math.cos(yaw_rad),
+                y=speed_ms * math.sin(yaw_rad),
+                z=0.0
+            ))
+            print(f"[RoadTailBench] Blue tesla.model3 initial speed set to {blue_speed_sm.initial_speed_kmh:.1f} km/h.")
 
         # 行人控制参数
         PED_SPEED_MPS = 5.0 / 3.6  # 5 km/h
@@ -354,6 +521,11 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
+            if _rtb_ego_destroyed(locals()):
+                print("[RoadTailBench] RTB004check ego orange Audi destroyed; ending simulation.")
+                break
 
             # ==============================
             # 1. 蓝车 (tesla.model3) PID 控制逻辑
@@ -367,17 +539,10 @@ def main():
                     vel = vehicle.get_velocity()
                     current_vehicle_speed = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
 
-                    if tf.location.y <= decelerate_y_threshold and current_target_vehicle_speed > decelerate_vehicle_speed:
-                        speed_decrease = deceleration_rate * settings.fixed_delta_seconds
-                        current_target_vehicle_speed = max(decelerate_vehicle_speed,
-                                                           current_target_vehicle_speed - speed_decrease)
-                    elif tf.location.y > decelerate_y_threshold and current_target_vehicle_speed < initial_vehicle_speed:
-                        speed_increase = deceleration_rate * settings.fixed_delta_seconds
-                        current_target_vehicle_speed = min(initial_vehicle_speed,
-                                                           current_target_vehicle_speed + speed_increase)
+                    target_vehicle_speed = blue_speed_sm.tick(tf.location)
 
                     target_wp = get_target_waypoint(tf.location, VEHICLE_PATH_POINTS, lookahead_dist=5.0)
-                    throttle_output = lon_controller.run_step(current_target_vehicle_speed, current_vehicle_speed)
+                    throttle_output = lon_controller.run_step(target_vehicle_speed, current_vehicle_speed)
                     steer_output = lat_controller.run_step(target_wp, tf)
 
                     control = carla.VehicleControl()
@@ -405,18 +570,20 @@ def main():
                 # 【新增出界判定】
                 if check_and_handle_out_of_bounds(orange_audi, carla_map):
                     orange_audi = None
+                    print("[RoadTailBench] RTB004check ego orange Audi destroyed; ending simulation.")
+                    break
                 else:
                     o_tf = orange_audi.get_transform()
                     o_vel = orange_audi.get_velocity()
                     o_current_speed = 3.6 * math.sqrt(o_vel.x ** 2 + o_vel.y ** 2 + o_vel.z ** 2)
 
-                    # 速度策略：初始70km/h，在y=-5减速到40km/h，y=-30恢复到90km/h
+                    # 速度策略：初始70km/h，在y=-5减速
                     if o_tf.location.y > -5.0:
                         o_target_speed = 70.0
                     elif -30.0 < o_tf.location.y <= -5.0:
                         o_target_speed = 40.0
                     else:  # y <= -30.0
-                        o_target_speed = 90.0
+                        o_target_speed = 80.0
 
                     o_target_wp = get_target_waypoint(o_tf.location, EGO_PATH_POINTS, lookahead_dist=4.0)
                     o_steer_output = orange_lat_controller.run_step(o_target_wp, o_tf)

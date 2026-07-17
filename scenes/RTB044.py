@@ -11,10 +11,19 @@ if LIBRARY_PATH not in sys.path:
 # 全局导入标准化函数库
 import RoadTailBenchInitV9 as RTB
 
+
+def ramp_speed_kmh(current_speed, target_speed, rate_kmh_per_s, dt):
+    max_step = rate_kmh_per_s * dt
+    delta = target_speed - current_speed
+    if abs(delta) <= max_step:
+        return target_speed
+    return current_speed + math.copysign(max_step, delta)
+
+
 # ==========================================
 # 轨迹数据硬编码 (X, Y, Yaw)
 # ==========================================
-RAW_TRAJ_NPC = [
+RAW_TRAJ_AUDI_EGO = [
     (30.2, -60.285, 134.595), (30.2, -60.285, 134.595), (30.2, -60.285, 134.595),
     (30.2, -60.285, 134.595), (30.2, -60.285, 133.729), (30.2, -60.285, 132.6),
     (26.715, -56.499, 132.812), (19.688, -49.186, 135.161), (12.38, -42.123, 136.304),
@@ -42,7 +51,7 @@ RAW_TRAJ_NPC = [
     (-23.868, 225.205, 57.557), (-23.868, 225.205, 57.557)
 ]
 
-RAW_TRAJ_EGO = [
+RAW_TRAJ_IMPALA_NPC = [
     (0.981, 152.671, -87.345), (0.981, 152.671, -87.345), (0.981, 152.671, -87.345),
     (0.981, 152.671, -86.632), (1.126, 150.208, -86.632), (1.478, 145.191, -85.058),
     (1.952, 140.147, -84.493), (2.611, 135.195, -79.95), (3.476, 130.186, -81.24),
@@ -71,6 +80,144 @@ RAW_TRAJ_EGO = [
     (27.108, -134.344, -126.495), (26.959, -134.545, -126.495), (26.959, -134.545, -126.495)
 ]
 
+
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (-23.868, 225.205)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
 
 def main():
     actor_list = []
@@ -111,8 +258,8 @@ def main():
         # ==========================================
         # 2. 轨迹数据清洗与可视化绘制
         # ==========================================
-        traj_npc = RTB.clean_trajectory(RAW_TRAJ_NPC, min_dist=0.5)
-        traj_ego = RTB.clean_trajectory(RAW_TRAJ_EGO, min_dist=0.5)
+        traj_ego = RTB.clean_trajectory(RAW_TRAJ_AUDI_EGO, min_dist=0.5)
+        traj_npc = RTB.clean_trajectory(RAW_TRAJ_IMPALA_NPC, min_dist=0.5)
 
         # 绘制所有车辆的预设灰色轨迹线，方便调试观察
         RTB.draw_preset_trajectory(world, traj_npc, color=carla.Color(150, 150, 150, 200))
@@ -122,11 +269,19 @@ def main():
         # 3. 车辆生成
         # ==========================================
         # 提取轨迹起点作为生成点
-        nx, ny, nyaw = traj_npc[0]
-        ex, ey, eyaw = traj_ego[0]
+        ego_start_x, ego_start_y, ego_start_yaw = traj_ego[0]
+        npc_start_x, npc_start_y, npc_start_yaw = traj_npc[0]
 
-        npc_vehicle = RTB.spawn_vehicle(world, 'vehicle.audi.tt', nx, ny, yaw=nyaw, role_name='npc')
-        ego_vehicle = RTB.spawn_vehicle(world, 'vehicle.chevrolet.impala', ex, ey, yaw=eyaw, role_name='ego')
+        ego_vehicle = RTB.spawn_vehicle(
+            world, 'vehicle.audi.tt',
+            ego_start_x, ego_start_y, yaw=ego_start_yaw,
+            role_name='ego', color='0,255,255'
+        )
+        npc_vehicle = RTB.spawn_vehicle(
+            world, 'vehicle.chevrolet.impala',
+            npc_start_x, npc_start_y, yaw=npc_start_yaw,
+            role_name='npc', color='128,0,128'
+        )
 
         if npc_vehicle: actor_list.append(npc_vehicle)
         if ego_vehicle: actor_list.append(ego_vehicle)
@@ -155,18 +310,25 @@ def main():
         # ==========================================
         # 初始速度 60km/h -> y<30时减速至20 -> y<-2时恢复60
         # Ego 是从 Y=150 往负方向开的，所以选用 'y_less' 触发器最准确
-        ego_sm = RTB.MultiStageBehaviorMachine(initial_speed=60.0)
-        ego_sm.add_stage(trigger_type='y_less', trigger_val=30.0, target_speed=20.0, accel=25.0)
-        ego_sm.add_stage(trigger_type='y_less', trigger_val=-2.0, target_speed=60.0, accel=20.0)
+        npc_target_speed = 60.0
+        npc_accel_rate_kmh_per_s = 20.0
+        npc_decel_rate_kmh_per_s = 25.0
 
         # NPC 恒定速度状态机 (只需一层)
-        npc_sm = RTB.MultiStageBehaviorMachine(initial_speed=30.0)
+        ego_cruise_speed = 30.0
+        ego_target_speed = ego_cruise_speed
+        ego_accel_rate_kmh_per_s = 20.0
+        ego_decel_rate_kmh_per_s = 25.0
+        ego_stop_trigger_x = -28.076
+        ego_stop_started = False
+        ego_wait_start_time = None
+        ego_stop_completed = False
 
         # ==========================================
         # 6. 预热与初始速度注入
         # ==========================================
-        if npc_vehicle: RTB.set_vehicle_initial_speed(npc_vehicle, target_speed_kmh=30.0)
-        if ego_vehicle: RTB.set_vehicle_initial_speed(ego_vehicle, target_speed_kmh=60.0)
+        if ego_vehicle: RTB.set_vehicle_initial_speed(ego_vehicle, target_speed_kmh=30.0)
+        if npc_vehicle: RTB.set_vehicle_initial_speed(npc_vehicle, target_speed_kmh=60.0)
 
         print("🚀 仿真开始运行...")
 
@@ -177,6 +339,8 @@ def main():
             # 记录本帧开始的时间，用于补齐硬件时钟
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time += dt
 
             # ---------------- 环境守护：出界检测与清理 ----------------
@@ -187,15 +351,23 @@ def main():
 
             # ---------------- 车辆 1 (NPC) 控制逻辑 ----------------
             if npc_vehicle and npc_vehicle.is_alive:
+                v_loc = npc_vehicle.get_location()
                 vel = npc_vehicle.get_velocity()
                 speed_kmh = 3.6 * math.hypot(vel.x, vel.y)
 
                 # 获取预瞄点
-                target_wp_npc, idx_npc = RTB.get_target_waypoint(npc_vehicle.get_location(), traj_npc, idx_npc,
-                                                                 speed_kmh)
+                target_wp_npc, idx_npc = RTB.get_target_waypoint(v_loc, traj_npc, idx_npc, speed_kmh)
 
                 # 获取状态机期望速度，并执行控制
-                target_speed_npc = npc_sm.tick(npc_vehicle.get_location(), sim_time, dt)
+                if v_loc.y < -2.0:
+                    npc_desired_speed = 60.0
+                elif v_loc.y < 30.0:
+                    npc_desired_speed = 20.0
+                else:
+                    npc_desired_speed = 60.0
+                npc_rate = npc_accel_rate_kmh_per_s if npc_desired_speed > npc_target_speed else npc_decel_rate_kmh_per_s
+                npc_target_speed = ramp_speed_kmh(npc_target_speed, npc_desired_speed, npc_rate, dt)
+                target_speed_npc = npc_target_speed
                 if target_wp_npc:
                     RTB.apply_pid_control(npc_vehicle, pid_lon_npc, pid_lat_npc, target_speed_npc, target_wp_npc)
 
@@ -215,7 +387,24 @@ def main():
                 RTB.draw_lookahead_point(world, v_loc, target_wp_ego, color=carla.Color(0, 255, 0), life_time=0.1)
 
                 # 状态机推进：根据 Y 坐标触发加减速剧本
-                target_speed_ego = ego_sm.tick(v_loc, sim_time, dt)
+                if not ego_stop_completed and not ego_stop_started and v_loc.x <= ego_stop_trigger_x:
+                    ego_stop_started = True
+
+                if ego_stop_started and not ego_stop_completed:
+                    ego_target_speed = ramp_speed_kmh(ego_target_speed, 0.0, ego_decel_rate_kmh_per_s, dt)
+                    target_speed_ego = ego_target_speed
+                    if ego_wait_start_time is None and speed_kmh <= 0.5 and ego_target_speed <= 0.5:
+                        ego_wait_start_time = sim_time
+                    if ego_wait_start_time is not None:
+                        ego_vehicle.apply_control(carla.VehicleControl(throttle=0.0, steer=0.0, brake=1.0))
+                        if sim_time - ego_wait_start_time >= 3.0:
+                            ego_stop_completed = True
+                        else:
+                            light_ego.auto_update_from_control()
+                            continue
+                else:
+                    ego_target_speed = ramp_speed_kmh(ego_target_speed, ego_cruise_speed, ego_accel_rate_kmh_per_s, dt)
+                    target_speed_ego = ego_target_speed
                 if target_wp_ego:
                     RTB.apply_pid_control(ego_vehicle, pid_lon_ego, pid_lat_ego, target_speed_ego, target_wp_ego)
 

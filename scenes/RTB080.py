@@ -67,6 +67,44 @@ for p in RAW_JEEP_TRAJECTORY:
     if not JEEP_TRAJECTORY or p != JEEP_TRAJECTORY[-1]:
         JEEP_TRAJECTORY.append(p)
 
+RAW_EGO_TRAJECTORY = [
+    (99.034, -2.257, 174.159), (99.034, -2.257, 174.159), (99.034, -2.257, 174.159), (99.034, -2.257, 174.159),
+    (99.034, -2.257, 174.159), (98.885, -2.241, 174.159), (98.388, -2.191, 174.159), (97.882, -2.139, 174.509),
+    (97.376, -2.091, 174.649), (96.878, -2.047, 175.348), (96.371, -2.006, 175.418), (95.872, -1.966, 175.418),
+    (95.366, -1.928, 176.258), (94.866, -1.897, 176.538), (94.367, -1.867, 176.538), (93.860, -1.839, 177.168),
+    (93.360, -1.815, 177.168), (92.861, -1.790, 177.168), (92.037, -1.749, 177.168), (90.768, -1.686, 177.168),
+    (89.519, -1.626, 177.588), (88.249, -1.581, 178.498), (86.999, -1.553, 178.988), (85.749, -1.531, 178.988),
+    (84.479, -1.508, 179.058), (83.229, -1.499, -179.892), (81.958, -1.505, -179.682), (80.709, -1.512, -179.682),
+    (79.438, -1.519, -179.682), (78.168, -1.530, -179.402), (76.897, -1.543, -179.402), (75.627, -1.547, 179.268),
+    (74.377, -1.519, 178.288), (73.108, -1.478, 178.497), (71.837, -1.455, 179.477), (70.567, -1.456, -179.613),
+    (69.318, -1.475, -178.773), (68.048, -1.509, -178.213), (66.799, -1.550, -177.933), (65.550, -1.604, -177.303),
+    (64.280, -1.664, -177.303), (63.011, -1.724, -177.303), (61.721, -1.789, -177.093), (60.473, -1.852, -177.093),
+    (59.183, -1.918, -177.093), (57.914, -1.982, -177.093), (56.644, -2.047, -177.093), (55.396, -2.110, -177.093),
+    (54.127, -2.175, -177.093), (52.858, -2.239, -177.093), (51.609, -2.302, -178.143), (50.341, -2.242, 174.997),
+    (50.134, -2.224, 174.997), (50.134, -2.224, 174.997), (49.054, -2.129, 174.997), (47.794, -1.969, 170.237),
+    (46.546, -1.731, 167.926), (45.327, -1.456, 167.156), (44.088, -1.174, 167.156), (42.843, -0.925, 169.745),
+    (41.584, -0.752, 175.134), (40.316, -0.674, 178.671), (39.045, -0.685, -176.549), (37.801, -0.805, -173.461),
+    (36.520, -0.964, -171.173), (35.295, -1.212, -166.991), (34.057, -1.498, -166.991), (32.831, -1.740, -171.510),
+    (31.568, -1.885, -173.756), (30.326, -2.020, -173.966), (29.081, -2.130, -176.590), (27.810, -2.164, -179.521),
+    (26.540, -2.174, -179.521), (25.269, -2.185, -179.521), (23.998, -2.196, -179.521), (22.748, -2.215, -178.113),
+    (21.478, -2.262, -177.472), (20.209, -2.318, -177.472), (18.941, -2.405, -175.349), (17.695, -2.506, -175.489),
+    (16.428, -2.605, -175.699), (15.182, -2.698, -175.917), (13.914, -2.786, -176.547), (12.665, -2.842, -178.598),
+    (11.374, -2.857, -179.508), (10.103, -2.858, 179.635), (9.228, -2.852, 179.635), (9.228, -2.852, 179.635),
+    (9.228, -2.852, 179.635), (9.228, -2.852, 179.635), (9.228, -2.852, 179.635), (9.228, -2.852, 179.565),
+    (8.020, -2.835, 177.074), (6.759, -2.682, 171.864), (5.524, -2.489, 166.305), (4.334, -2.052, 156.511),
+    (3.193, -1.543, 153.035), (2.091, -0.912, 148.764), (1.011, -0.206, 143.761), (-0.467, 0.878, 143.761),
+    (-3.105, 2.811, 143.761), (-6.151, 5.204, 140.350), (-9.038, 7.597, 140.350), (-11.887, 10.035, 138.990),
+    (-14.721, 12.584, 137.436), (-17.576, 15.204, 137.716), (-20.550, 17.687, 141.847), (-23.499, 20.003, 141.847),
+    (-26.448, 22.320, 141.847), (-29.470, 24.645, 142.687), (-32.453, 26.917, 143.037), (-35.555, 29.240, 143.247),
+    (-38.609, 31.522, 143.247), (-41.616, 33.762, 143.317), (-44.674, 36.040, 143.317), (-47.700, 38.358, 141.838),
+    (-50.625, 40.703, 141.198), (-53.569, 43.026, 141.975), (-56.573, 45.375, 141.975), (-59.182, 47.415, 141.975),
+    (-59.182, 47.415, 141.975), (-59.182, 47.415, 141.975), (-59.182, 47.415, 141.975)
+]
+
+EGO_TRAJECTORY = []
+for point in RAW_EGO_TRAJECTORY:
+    if not EGO_TRAJECTORY or point != EGO_TRAJECTORY[-1]:
+        EGO_TRAJECTORY.append(point)
 
 # ==========================================
 # 3. 核心模块: PID 控制器与寻路逻辑
@@ -133,6 +171,48 @@ def get_target_from_trajectory(vehicle_loc, trajectory, lookahead_dist=10.0):
     if target_idx >= len(trajectory) - 1 and current_dist < lookahead_dist:
         return None
     return trajectory[target_idx]
+
+
+def approach_speed(current_speed, target_speed, delta):
+    if current_speed < target_speed:
+        return min(target_speed, current_speed + delta)
+    if current_speed > target_speed:
+        return max(target_speed, current_speed - delta)
+    return current_speed
+
+
+def is_near_path_end(actor, trajectory, threshold=5.0):
+    if not actor or not actor.is_alive or not trajectory:
+        return False
+    loc = actor.get_location()
+    end_x, end_y, _ = trajectory[-1]
+    return math.hypot(loc.x - end_x, loc.y - end_y) <= threshold
+
+
+def destroy_scene_actors(actor_list):
+    for actor in list(actor_list):
+        try:
+            if actor and actor.is_alive:
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def finish_scene(world, tm, actor_list):
+    destroy_scene_actors(actor_list)
+    try:
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
+    except Exception:
+        pass
+    try:
+        if tm:
+            tm.set_synchronous_mode(False)
+    except Exception:
+        pass
+    raise SystemExit(0)
 
 
 # ==========================================
@@ -205,18 +285,29 @@ def main():
             micro.set_autopilot(True, tm.get_port())
             tm.vehicle_percentage_speed_difference(micro, -10.0)
 
-            # --- 车辆 4: Ego (TM控制, 初始速度 60km/h) ---
+            # --- 车辆 4: Ego (PID轨迹控制, 初始速度 60km/h) ---
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2020')
-        loc_ego = carla.Location(x=110.700, y=-1.919, z=1.5)
-        yaw_ego = carla_map.get_waypoint(loc_ego).transform.rotation.yaw
-        ego = world.try_spawn_actor(bp_ego, carla.Transform(loc_ego, carla.Rotation(yaw=yaw_ego)))
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
+        if bp_ego.has_attribute('color'):
+            bp_ego.set_attribute('color', '255,255,255')
+        start_ego = EGO_TRAJECTORY[0]
+        loc_ego = carla.Location(x=start_ego[0], y=start_ego[1], z=1.5)
+        ego = world.try_spawn_actor(bp_ego, carla.Transform(loc_ego, carla.Rotation(yaw=start_ego[2])))
         if ego:
             actor_list.append(ego)
-            ego.set_autopilot(True, tm.get_port())
+            ego.set_simulate_physics(True)
             init_speed_ms = 60.0 / 3.6
-            ego.set_target_velocity(carla.Vector3D(x=init_speed_ms * math.cos(math.radians(yaw_ego)),
-                                                   y=init_speed_ms * math.sin(math.radians(yaw_ego)), z=0.0))
-            print("Ego 生成成功 (TM控制, 初始60km/h, 避障全开)")
+            ego.set_target_velocity(carla.Vector3D(x=init_speed_ms * math.cos(math.radians(start_ego[2])),
+                                                   y=init_speed_ms * math.sin(math.radians(start_ego[2])), z=0.0))
+            active_pid_vehicles.append({
+                'id': 'Ego', 'actor': ego, 'is_ego': True,
+                'lon_pid': PIDLongitudinalController(), 'lat_pid': PIDLateralController2(),
+                'target_speed': 60.0, 'command_speed': 60.0, 'stage': 'cruise',
+                'resume_time': None, 'mode': 'trajectory', 'trajectory': EGO_TRAJECTORY,
+                'lookahead': 10.0,
+            })
+            print("Ego 生成成功 (PID轨迹控制, 初始60km/h)")
 
         # ---------------------------------------------------
         print("\n场景初始化完毕，开始仿真运行...")
@@ -236,16 +327,46 @@ def main():
                 vel = vehicle.get_velocity()
                 speed = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
 
+                if v_data.get('is_ego'):
+                    if is_near_path_end(vehicle, v_data['trajectory'], threshold=5.0):
+                        print("Ego 到达轨迹终点，清理所有 actor 并结束场景。")
+                        finish_scene(world, tm, actor_list)
+
+                    loc = tf.location
+                    sim_time = world.get_snapshot().timestamp.elapsed_seconds
+                    if v_data['stage'] == 'cruise' and loc.x <= 50.0:
+                        v_data['stage'] = 'slow_30'
+                        v_data['target_speed'] = 30.0
+                        print("Ego 首次到达 x=50，减速至30km/h。")
+                    elif v_data['stage'] == 'slow_30' and loc.x <= 10.0:
+                        v_data['stage'] = 'slow_10'
+                        v_data['target_speed'] = 10.0
+                        v_data['resume_time'] = sim_time + 1.5
+                        print("Ego 首次到达 x=10，减速至10km/h，1.5s后恢复60km/h。")
+                    elif (v_data['stage'] == 'slow_10' and v_data['resume_time'] is not None and
+                          sim_time >= v_data['resume_time']):
+                        v_data['stage'] = 'resume_60'
+                        v_data['target_speed'] = 60.0
+                        print("Ego 恢复至60km/h。")
+
+                    v_data['command_speed'] = approach_speed(
+                        v_data['command_speed'], v_data['target_speed'], 1.0
+                    )
+
                 look_dist = v_data.get('lookahead', 12.0)
                 target_point = get_target_from_trajectory(tf.location, v_data['trajectory'], lookahead_dist=look_dist)
 
                 if target_point is None:
+                    if v_data.get('is_ego'):
+                        print("Ego 到达轨迹终点，清理所有 actor 并结束场景。")
+                        finish_scene(world, tm, actor_list)
                     control = carla.VehicleControl(throttle=0.0, steer=0.0, brake=1.0)
                     vehicle.apply_control(control)
                     active_pid_vehicles.remove(v_data)
                     continue
 
-                throttle_out = v_data['lon_pid'].run_step(v_data['target_speed'], speed)
+                target_speed = v_data.get('command_speed', v_data['target_speed'])
+                throttle_out = v_data['lon_pid'].run_step(target_speed, speed)
                 steer_out = v_data['lat_pid'].run_step(target_point, tf)
 
                 control = carla.VehicleControl()
@@ -272,14 +393,13 @@ def main():
         print("\n清理场景及恢复 Carla 设置...")
         settings = world.get_settings()
         settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
         world.apply_settings(settings)
         if 'tm' in locals():
             tm.set_synchronous_mode(False)
 
         # 遍历销毁所有的 Actor (包含所有车辆和鸡群)
-        for a in actor_list:
-            if a.is_alive:
-                a.destroy()
+        destroy_scene_actors(actor_list)
         print("所有实体清理完成！")
 
 

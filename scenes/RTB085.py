@@ -1,6 +1,7 @@
 import carla
 import time
 import math
+import os
 import numpy as np
 
 
@@ -100,10 +101,22 @@ IMPALA_TRAJECTORY = [
     (94.787, 26.487, 0.688), (94.787, 26.487, 0.688)
 ]
 
+AUDI_EGO_START_XY = (77.819, -31.250)
+AUDI_EGO_END_XY = (13.614, -94.236)
+AUDI_EGO_END_Z = 7.281
+AUDI_EGO_END_RADIUS_M = 5.0
+
 
 # ==========================================
 # 3. 辅助函数：车辆出界检测
 # ==========================================
+def is_near_xy(actor, target_xy, threshold=AUDI_EGO_END_RADIUS_M):
+    loc = actor.get_location()
+    dx = loc.x - target_xy[0]
+    dy = loc.y - target_xy[1]
+    return math.sqrt(dx * dx + dy * dy) <= threshold
+
+
 def check_and_handle_out_of_bounds(vehicle, carla_map):
     loc = vehicle.get_location()
     wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
@@ -119,6 +132,39 @@ def check_and_handle_out_of_bounds(vehicle, carla_map):
         vehicle.destroy()
         return True
     return False
+
+
+def end_scene_now(client, world, tm, actor_list):
+    try:
+        commands = [
+            carla.command.DestroyActor(actor.id)
+            for actor in actor_list
+            if actor and actor.is_alive
+        ]
+        if commands:
+            client.apply_batch_sync(commands, True)
+    except Exception:
+        for actor in actor_list:
+            try:
+                if actor and actor.is_alive:
+                    actor.destroy()
+            except Exception:
+                pass
+
+    try:
+        if tm:
+            tm.set_synchronous_mode(False)
+    except Exception:
+        pass
+    try:
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
+    except Exception:
+        pass
+
+    os._exit(0)
 
 
 # ==========================================
@@ -176,7 +222,10 @@ def main():
         if bp_audi.has_attribute('color'):
             bp_audi.set_attribute('color', '255,165,0')  # 橙色
 
-        audi_loc = carla.Location(x=77.819, y=-31.250, z=0.5)
+        if bp_audi.has_attribute('role_name'):
+            bp_audi.set_attribute('role_name', 'ego')
+
+        audi_loc = carla.Location(x=AUDI_EGO_START_XY[0], y=AUDI_EGO_START_XY[1], z=0.5)
         audi_wp = carla_map.get_waypoint(audi_loc, project_to_road=True)  # 投影到路面找准 Z 和朝向
         audi_loc.z = audi_wp.transform.location.z + 0.5
 
@@ -210,6 +259,13 @@ def main():
             start_time = time.time()
             world.tick()
             sim_time = world.get_snapshot().timestamp.elapsed_seconds
+
+            if audi and audi.is_alive:
+                if is_near_xy(audi, AUDI_EGO_END_XY):
+                    print("TM Ego (Audi TT) reached scenario endpoint; cleaning actors and ending simulation.")
+                    end_scene_now(client, world, tm, actor_list)
+            elif audi:
+                audi = None
 
             # ==========================
             # Impala 车：PID 循迹与特殊灯光控制

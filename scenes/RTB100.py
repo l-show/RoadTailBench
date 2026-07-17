@@ -113,17 +113,21 @@ RAW_V6_EGO_TRAJ = [(6.042, 167.375, -89.518), (6.041, 166.875, -90.011), (6.032,
                    (5.931, 146.392, -90.648), (5.844, 136.392, -90.298), (5.869, 126.059, -89.543),
                    (5.904, 115.725, -89.966), (5.843, 105.404, -90.883), (5.86, 95.245, -89.584),
                    (5.959, 84.913, -89.581), (5.947, 74.747, -91.005), (5.724, 64.751, -91.36), (5.557, 57.751, -91.36),
-                   (5.531, 52.585, -90.299), (5.478, 42.585, -90.299), (5.47, 40.918, -90.299), (5.42, 31.414, -90.299),
-                   (5.343, 21.414, -91.08), (5.215, 14.079, -88.764), (5.26, 12.08, -88.479), (9.77, 3.962, -22.348),
-                   (19.617, 2.896, -5.249), (29.886, 2.109, -2.693), (39.887, 1.851, -1.035), (49.884, 1.903, 2.313),
-                   (60.212, 2.185, 0.731), (70.543, 2.325, 0.658), (80.869, 2.292, -0.412), (91.023, 2.26, 0.08),
-                   (101.185, 2.274, 0.08), (111.352, 2.288, 0.08), (121.685, 2.303, 0.08), (131.852, 2.317, 0.08),
-                   (142.185, 2.313, -0.132), (152.185, 2.264, -0.342), (162.466, 2.292, 1.006), (172.461, 2.521, 1.726),
-                   (182.456, 2.781, 1.016), (192.792, 2.965, 1.016), (202.957, 3.102, 0.526), (213.278, 3.522, 4.702),
-                   (223.51, 4.925, 9.142), (233.218, 7.853, 21.107), (242.497, 12.37, 28.898),
-                   (250.939, 18.012, 37.618), (258.325, 24.977, 46.716), (264.624, 32.944, 53.68),
-                   (270.199, 41.24, 58.381), (275.568, 50.069, 59.246), (280.667, 58.673, 59.459),
-                   (285.749, 67.287, 59.459)]
+                    (5.524, 56.678, -90.011), (5.526, 54.149, -89.912), (5.509, 51.651, -91.368), (5.427, 49.111, -91.935),
+                    (5.335, 46.574, -92.321), (5.263, 44.078, -91.019), (5.236, 41.537, -90.091), (5.232, 38.995, -90.091),
+                    (5.228, 36.495, -90.091), (5.236, 33.954, -89.574), (5.255, 31.454, -89.574), (5.273, 28.954, -89.574),
+                    (5.292, 26.454, -89.574), (5.311, 23.912, -89.574), (5.330, 21.412, -89.574), (5.348, 18.870, -89.574),
+                    (5.367, 16.371, -89.574), (5.412, 13.830, -87.439), (5.646, 11.301, -78.805), (6.589, 9.006, -55.778),
+                    (8.215, 7.082, -32.286), (10.527, 6.034, -22.556), (12.935, 5.383, -9.674), (15.424, 5.176, -1.757),
+                    (17.963, 5.099, -1.277), (20.455, 5.250, 9.006), (22.936, 5.795, 13.579), (25.355, 6.419, 13.152),
+                    (27.849, 6.907, 9.727), (30.356, 7.326, 9.192), (32.830, 7.686, 8.020), (35.352, 8.014, 5.738),
+                    (37.889, 8.131, -0.262), (40.389, 8.095, -0.665), (42.889, 8.066, -0.665), (45.389, 8.051, -0.076),
+                    (47.973, 8.066, 0.659), (50.471, 8.125, 1.744), (53.011, 8.202, 1.744), (55.384, 8.294, 3.704),
+                    (58.130, 8.468, 3.025), (60.628, 8.561, 1.477), (63.169, 8.626, 1.477), (65.668, 8.691, 1.477),
+                    (68.210, 8.745, 0.700), (70.710, 8.774, 0.587), (74.293, 8.806, -0.158), (78.106, 8.788, -0.271),
+                    (82.273, 8.768, -0.271), (89.543, 8.734, -0.271), (97.043, 8.694, -0.725), (101.549, 8.604, -1.208),
+                    (101.549, 8.604, -1.208), (101.549, 8.604, -1.208), (101.549, 8.604, -1.208), (101.549, 8.604, -1.208)
+                ]
 
 TRAJ_V4 = remove_duplicate_waypoints(RAW_V4_VESPA_TRAJ)
 TRAJ_V5 = remove_duplicate_waypoints(RAW_V5_POLICE_TRAJ)
@@ -137,6 +141,144 @@ def apply_initial_velocity(vehicle, speed_kmh, yaw_deg):
 
 
 # ================= 3. 主程序 =================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (101.549, 8.604)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.lincoln.mkz_2020'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -226,6 +368,10 @@ def main():
             print("[成功] 生成 警车。")
 
         bp_v6 = bp_lib.find('vehicle.lincoln.mkz_2020')
+        if bp_v6.has_attribute('color'):
+            bp_v6.set_attribute('color', '255,255,0')
+        if bp_v6.has_attribute('role_name'):
+            bp_v6.set_attribute('role_name', 'ego')
         v6_tf = carla.Transform(carla.Location(x=TRAJ_V6[0][0], y=TRAJ_V6[0][1], z=0.2),
                                 carla.Rotation(yaw=TRAJ_V6[0][2]))
         v6_ego = world.try_spawn_actor(bp_v6, v6_tf)
@@ -237,6 +383,8 @@ def main():
         print("\n预热物理引擎中 (Tick 10次)...让车掉落到地面稳定")
         for _ in range(10):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         # 赋予初始物理速度
         if active_flags['v4']: apply_initial_velocity(v4_vespa, 85.0, TRAJ_V4[0][2])
@@ -255,6 +403,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
             sim_time = world.get_snapshot().timestamp.elapsed_seconds - start_sim_time
 
@@ -325,7 +475,7 @@ def main():
 
                     if v6_curr_loc.y > 66.0:
                         v6_target_speed = 60.0
-                    elif 45.0 < v6_curr_loc.y <= 66.0:
+                    elif 30.0 < v6_curr_loc.y <= 66.0:
                         v6_target_speed = 20.0
                     else:
                         v6_target_speed = 50.0

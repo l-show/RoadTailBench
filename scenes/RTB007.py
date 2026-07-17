@@ -548,7 +548,7 @@ def main():
                 if is_near_path_end(jeep, EGO_PATH_POINTS):
                     destroy_all_actors(actor_list, "[Jeep EGO] 到达轨迹终点，销毁全部 actors。")
                     jeep = None
-                    continue
+                    break
 
                 if not jeep_slowdown_triggered and jeep_loc.x <= -35.0:
                     jeep_target_speed = 30.0

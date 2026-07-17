@@ -1,0 +1,525 @@
+import carla
+import time
+import math
+import numpy as np
+
+
+# ==========================================
+# 基础控制算法 (PID) - 保持原样保留
+# ==========================================
+class PIDLongitudinalController:
+    def __init__(self, K_P=1.0, K_I=0.05, K_D=0.1, dt=0.05):
+        self._k_p, self._k_i, self._k_d = K_P, K_I, K_D
+        self._dt = dt
+        self._error_buffer = []
+
+    def run_step(self, target_speed, current_speed):
+        error = target_speed - current_speed
+        self._error_buffer.append(error)
+        if len(self._error_buffer) >= 30: self._error_buffer.pop(0)
+        _de = (self._error_buffer[-1] - self._error_buffer[-2]) / self._dt if len(self._error_buffer) >= 2 else 0.0
+        _ie = sum(self._error_buffer) * self._dt
+        _ie = np.clip(_ie, -2.0, 2.0)
+        return np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 0.8)
+
+
+class PIDLateralController:
+    def __init__(self, K_P=1.0, K_I=0.01, K_D=0.1, dt=0.05):
+        self._k_p, self._k_i, self._k_d = K_P, K_I, K_D
+        self._dt = dt
+        self._error_buffer = []
+
+    def run_step(self, waypoint_loc, vehicle_transform):
+        v_loc = vehicle_transform.location
+        v_yaw = math.radians(vehicle_transform.rotation.yaw)
+        target_vector = np.array([waypoint_loc.x - v_loc.x, waypoint_loc.y - v_loc.y])
+        norm = np.linalg.norm(target_vector)
+        if norm < 0.1: return 0.0
+        target_yaw = math.atan2(target_vector[1], target_vector[0])
+        error = target_yaw - v_yaw
+        while error > math.pi: error -= 2.0 * math.pi
+        while error < -math.pi: error += 2.0 * math.pi
+        self._error_buffer.append(error)
+        if len(self._error_buffer) >= 30: self._error_buffer.pop(0)
+        _de = (self._error_buffer[-1] - self._error_buffer[-2]) / self._dt if len(self._error_buffer) >= 2 else 0.0
+        _ie = sum(self._error_buffer) * self._dt
+        return np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -0.7, 0.7)
+
+
+def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed_kmh, target_loc):
+    target_speed_ms = target_speed_kmh / 3.6
+    tf = vehicle.get_transform()
+    vel = vehicle.get_velocity()
+    current_speed_ms = math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
+
+    throttle_output = pid_lon.run_step(target_speed_ms, current_speed_ms)
+    steer_output = pid_lat.run_step(target_loc, tf)
+    if abs(steer_output) < 0.02: steer_output = 0.0
+
+    control = carla.VehicleControl()
+    control.steer = steer_output
+    if throttle_output >= 0.0:
+        control.throttle = throttle_output
+        control.brake = 0.0
+    else:
+        control.throttle = 0.0
+        control.brake = abs(throttle_output)
+    vehicle.apply_control(control)
+
+
+def check_and_handle_out_of_bounds(vehicle, carla_map):
+    loc = vehicle.get_location()
+    wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
+    if wp_nearest is None:
+        print(f"[{vehicle.type_id}] 彻底脱离地图，被销毁！")
+        vehicle.destroy()
+        return True
+    distance = wp_nearest.transform.location.distance(loc)
+    if distance > 10.0:  # 偏离投影路面6米即销毁
+        print(f"[{vehicle.type_id}] 偏离道路中心 {distance:.2f} 米，判定出界被销毁！")
+        vehicle.destroy()
+        return True
+    return False
+
+
+# ==========================================
+# 轨迹数据定义与去重处理
+# ==========================================
+RAW_V1_TRAJECTORY = [
+    (56.882, 64.333, -50.55), (56.882, 64.333, -50.55), (56.882, 64.333, -50.55), (56.882, 64.333, -50.55),
+    (56.908, 64.3, -51.268), (57.675, 63.317, -52.684), (58.449, 62.312, -52.124), (59.688, 60.719, -52.124),
+    (62, 57.772, -51.13), (64.366, 54.863, -50.36), (66.895, 51.931, -48.579), (69.37, 49.119, -49.001),
+    (71.886, 46.173, -49.705), (74.36, 43.191, -50.762), (76.735, 40.289, -50.622), (79.195, 37.295, -50.552),
+    (82.345, 33.466, -50.552), (86.322, 28.645, -50.343), (90.307, 23.831, -50.693), (94.388, 18.825, -50.766),
+    (98.368, 14.007, -50.342), (102.489, 9.036, -50.342), (106.41, 4.305, -50.342), (106.971, 3.629, -50.342),
+    (107.593, 2.878, -50.342), (109.867, 0.136, -50.342), (112.291, -2.746, -49.705), (114.151, -4.94, -49.705),
+    (115.66, -6.719, -49.705), (116.482, -7.688, -49.705), (116.86, -8.133, -49.705), (117.668, -9.087, -49.705),
+    (118.476, -10.039, -49.705), (119.316, -11.018, -48.721), (120.173, -11.982, -47.362), (121.044, -12.905, -45.879),
+    (121.938, -13.807, -44.679), (122.842, -14.7, -45.105), (123.727, -15.611, -47.099), (124.529, -16.569, -52.504),
+    (125.302, -17.577, -52.504), (126.009, -18.607, -57.223), (126.693, -19.653, -56.519), (127.404, -20.731, -56.728),
+    (128.071, -21.813, -59.556), (128.675, -22.954, -65.031), (129.128, -24.14, -73.696), (129.402, -25.402, -78.79),
+    (129.629, -26.652, -82.074), (129.777, -27.935, -84.884), (129.828, -29.225, -90.076), (129.743, -30.472, -97.005),
+    (129.519, -31.744, -101.058), (129.28, -32.971, -101.058), (129.019, -34.235, -104.49),
+    (128.664, -35.477, -108.461), (128.179, -36.664, -114.023), (127.66, -37.801, -114.667),
+    (127.094, -38.915, -118.015), (126.459, -40.04, -119.96), (125.811, -41.133, -121.445),
+    (125.088, -42.203, -125.021), (124.346, -43.26, -126.467), (123.518, -44.195, -134.171),
+    (122.629, -45.074, -136.023), (121.697, -45.968, -136.233), (120.775, -46.813, -139.828),
+    (119.769, -47.622, -141.776), (118.778, -48.383, -142.769), (117.731, -49.104, -146.32),
+    (116.679, -49.777, -152.121), (115.516, -50.338, -156.206), (114.334, -50.856, -156.349),
+    (113.185, -51.326, -162.292), (111.931, -51.632, -166.788), (110.706, -51.874, -171.069),
+    (109.449, -52.051, -176.06), (108.18, -52.109, 179.967), (106.888, -52.109, 179.967), (104.117, -52.107, 179.897),
+    (100.309, -51.962, 176.892), (96.444, -51.681, 174.962), (92.584, -51.337, 174.682), (88.85, -50.992, 175.182),
+    (85.051, -50.687, 175.329), (81.293, -50.392, 176.178), (77.429, -50.148, 176.323), (73.627, -49.873, 175.758),
+    (68.953, -49.526, 175.758), (62.726, -49.001, 174.186), (56.513, -48.326, 173.624), (48.896, -47.475, 173.624),
+    (37.517, -46.335, 174.845), (26.127, -45.292, 174.633), (14.553, -44.205, 174.633), (4.866, -43.295, 174.633),
+    (-1.025, -42.741, 174.633), (-3.584, -42.402, 169.934), (-6.066, -41.863, 165.881), (-7.879, -41.391, 165.173),
+    (-7.879, -41.391, 165.173), (-7.879, -41.391, 165.173)
+]
+
+RAW_V2_TRAJECTORY = [
+    (0.705, -39.09, -6.755), (0.705, -39.09, -6.755), (0.705, -39.09, -6.755), (1.945, -39.244, -7.109),
+    (8.145, -40.01, -6.472), (14.363, -40.626, -4.772), (20.795, -41.164, -4.194), (27.029, -41.603, -3.842),
+    (33.371, -41.986, -3.408), (39.81, -42.433, -4.472), (46.137, -43, -5.534), (52.358, -43.609, -5.534),
+    (58.685, -44.196, -4.969), (64.911, -44.737, -4.969), (71.346, -45.297, -4.969), (77.675, -45.852, -5.249),
+    (83.898, -46.435, -5.462), (90.12, -47.03, -5.462), (94.475, -47.446, -5.462), (97.005, -47.688, -5.462),
+    (99.576, -47.934, -5.462), (102.122, -48.177, -5.462), (104.611, -48.409, -4.022), (106.672, -48.478, -1.529),
+    (107.181, -48.489, 0.56), (107.68, -48.468, 2.513), (108.192, -48.446, 2.513), (109.394, -48.385, 5.827),
+    (110.645, -48.166, 10.522), (111.9, -47.864, 16.33), (113.082, -47.459, 20.869), (114.221, -46.946, 26.716),
+    (115.35, -46.321, 31.948), (116.415, -45.592, 36.483), (117.42, -44.815, 38.766), (118.38, -43.953, 45.525),
+    (119.21, -42.965, 54.643), (119.923, -41.914, 56.953), (120.633, -40.836, 56.135), (121.352, -39.764, 56.135),
+    (122.072, -38.691, 56.135), (122.773, -37.632, 57.777), (123.419, -36.562, 59.881), (124.043, -35.431, 63),
+    (124.558, -34.293, 68.313), (124.989, -33.076, 73.509), (125.277, -31.817, 80.457), (125.412, -30.554, 87.885),
+    (125.421, -29.284, 90.757), (125.341, -28.037, 96.325), (125.135, -26.783, 102.512), (124.811, -25.534, 107.824),
+    (124.376, -24.362, 112.814), (123.804, -23.205, 119.697), (123.15, -22.14, 123.367), (122.436, -21.115, 126.234),
+    (121.677, -20.12, 127.671), (120.898, -19.143, 130.479), (120.044, -18.175, 132.42), (119.215, -17.24, 128.96),
+    (118.43, -16.268, 128.96), (117.081, -14.6, 128.96), (114.647, -11.586, 128.173), (112.24, -8.551, 129.812),
+    (109.808, -5.615, 129.46), (105.356, -0.187, 128.687), (100.491, 5.845, 129.683), (95.542, 11.809, 129.968),
+    (90.729, 17.56, 129.615), (85.885, 23.448, 129.404), (80.965, 29.435, 129.474), (76.185, 35.212, 129.826),
+    (71.199, 41.145, 130.675), (66.229, 46.928, 130.675), (61.181, 52.808, 130.465), (56.284, 58.653, 129.83),
+    (51.508, 64.435, 129.267), (46.799, 70.276, 128.772), (42.102, 76.123, 128.772), (37.385, 81.953, 129.053),
+    (32.581, 87.874, 129.053), (27.756, 93.779, 130.052), (22.891, 99.489, 130.839), (17.836, 105.367, 130.556),
+    (17.267, 106.031, 130.556), (17.267, 106.031, 130.556), (17.267, 106.031, 130.556), (17.267, 106.031, 130.556)
+]
+
+
+def clean_trajectory(raw_trajectory, min_dist=0.1):
+    """去除轨迹中的重复点（距离过近的点）"""
+    cleaned = []
+    for pt in raw_trajectory:
+        if not cleaned:
+            cleaned.append(pt)
+        else:
+            # 计算与上一个点的距离
+            dist = math.hypot(pt[0] - cleaned[-1][0], pt[1] - cleaned[-1][1])
+            if dist > min_dist:
+                cleaned.append(pt)
+    return cleaned
+
+
+V1_TRAJECTORY = clean_trajectory(RAW_V1_TRAJECTORY)
+V2_TRAJECTORY = clean_trajectory(RAW_V2_TRAJECTORY)
+
+
+# ==========================================
+# 主程序
+# ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (-7.879, -41.391)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
+def main():
+    client = carla.Client('localhost', 2000)
+    client.set_timeout(10.0)
+    world = client.get_world()
+    carla_map = world.get_map()
+    bp_lib = world.get_blueprint_library()
+
+    # 【天气系统配置】严格依据截图参数
+    weather = carla.WeatherParameters(
+        cloudiness=15.0,
+        precipitation=0.0,
+        precipitation_deposits=50.0,  # Puddles
+        wind_intensity=100.0,
+        sun_azimuth_angle=105.0,
+        sun_altitude_angle=10.0,
+        fog_density=40.0,
+        fog_distance=0.75,
+        fog_falloff=0.1,
+        wetness=50.0,
+        scattering_intensity=10.0,
+        mie_scattering_scale=0.0200,
+        rayleigh_scattering_scale=0.0500,
+        dust_storm=0.0  # Dust
+    )
+    world.set_weather(weather)
+
+    dt = 0.05
+    actor_list = []
+
+    try:
+        # 开启同步模式
+        settings = world.get_settings()
+        settings.synchronous_mode = True
+        settings.fixed_delta_seconds = dt
+        world.apply_settings(settings)
+
+        pid_v1 = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
+        pid_v2 = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
+
+        # ================= Actor 1：V1车 (Audi TT) =================
+        bp_v1 = bp_lib.find('vehicle.audi.tt')
+        v1_start_x, v1_start_y, v1_start_yaw = V1_TRAJECTORY[0]
+        v1_loc = carla.Location(x=v1_start_x, y=v1_start_y, z=0.5)
+        v1_loc.z = carla_map.get_waypoint(v1_loc).transform.location.z + 52  # 防止卡地
+        v1 = world.try_spawn_actor(bp_v1, carla.Transform(v1_loc, carla.Rotation(yaw=v1_start_yaw)))
+
+        if v1:
+            actor_list.append(v1)
+            print("生成 V1 (Audi TT) 成功。")
+            v1.set_light_state(
+                carla.VehicleLightState(carla.VehicleLightState.Position | carla.VehicleLightState.LowBeam))
+
+        # ================= Actor 2：V2车 (Citroen C3) =================
+        bp_v2 = bp_lib.find('vehicle.citroen.c3')
+        v2_start_x, v2_start_y, v2_start_yaw = V2_TRAJECTORY[0]
+        v2_loc = carla.Location(x=v2_start_x, y=v2_start_y, z=0.5)
+        v2_loc.z = carla_map.get_waypoint(v2_loc).transform.location.z + 52
+        v2 = world.try_spawn_actor(bp_v2, carla.Transform(v2_loc, carla.Rotation(yaw=v2_start_yaw)))
+
+        if v2:
+            actor_list.append(v2)
+            print("生成 V2 (Citroen C3) 成功。")
+            v2.set_light_state(
+                carla.VehicleLightState(carla.VehicleLightState.Position | carla.VehicleLightState.LowBeam))
+
+        # 【防飞天机制】先让物理引擎预热，让车辆重力生效贴近地面
+        for _ in range(15):
+            if v1: v1.apply_control(carla.VehicleControl(brake=1.0))
+            if v2: v2.apply_control(carla.VehicleControl(brake=1.0))
+            world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
+
+        # 【初始物理速度赋予】避免从0加速
+        initial_speed_ms = 60.0 / 3.6
+        if v1:
+            yaw_rad = math.radians(v1_start_yaw)
+            v1.set_target_velocity(
+                carla.Vector3D(initial_speed_ms * math.cos(yaw_rad), initial_speed_ms * math.sin(yaw_rad), 0.0))
+        if v2:
+            yaw_rad = math.radians(v2_start_yaw)
+            v2.set_target_velocity(
+                carla.Vector3D(initial_speed_ms * math.cos(yaw_rad), initial_speed_ms * math.sin(yaw_rad), 0.0))
+
+        print("已赋予车辆 60 km/h 初始速度。仿真正式开始！\n")
+
+        v1_traj_idx, v2_traj_idx = 0, 0
+        v1_active, v2_active = bool(v1), bool(v2)
+
+        # 状态机参数初始化
+        v1_state = 'NORMAL'  # 可选: NORMAL, BRAKING, WAITING, RECOVERING
+        v2_state = 'NORMAL'
+        v1_wait_start_time = 0
+        v2_wait_start_time = 0
+
+        start_sim_time = world.get_snapshot().timestamp.elapsed_seconds
+
+        while True:
+            start_time = time.time()
+            world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
+            current_snap_time = world.get_snapshot().timestamp.elapsed_seconds
+            sim_time = current_snap_time - start_sim_time
+
+            # ==========================
+            # V1 (Audi TT-EGO) 控制逻辑
+            # 正常60 -> x=105急刹至30 -> 等3s -> 恢复60
+            # ==========================
+            if v1_active and v1.is_alive:
+                if check_and_handle_out_of_bounds(v1, carla_map):
+                    v1_active = False
+                elif v1_traj_idx < len(V1_TRAJECTORY):
+                    v1_loc_current = v1.get_location()
+                    tx, ty, tyaw = V1_TRAJECTORY[v1_traj_idx]
+                    target_loc = carla.Location(x=tx, y=ty, z=v1_loc_current.z)
+
+                    if v1_loc_current.distance(target_loc) < 3.5 and v1_traj_idx < len(V1_TRAJECTORY) - 1:
+                        v1_traj_idx += 1
+
+                    # --- 状态机判断 ---
+                    current_speed_v1 = math.sqrt(v1.get_velocity().x ** 2 + v1.get_velocity().y ** 2) * 3.6
+                    target_speed_v1 = 60.0  # 默认
+
+                    if v1_state == 'NORMAL' and v1_loc_current.x >= 105.0:
+                        print(f"[{sim_time:.1f}s] V1 到达 x=105，开始紧急制动！")
+                        v1_state = 'BRAKING'
+
+                    if v1_state == 'BRAKING':
+                        target_speed_v1 = 30.0
+                        if current_speed_v1 <= 32.0:  # 留一点缓冲
+                            print(f"[{sim_time:.1f}s] V1 降速完毕，维持30km/h等待3秒...")
+                            v1_state = 'WAITING'
+                            v1_wait_start_time = sim_time
+
+                    elif v1_state == 'WAITING':
+                        target_speed_v1 = 30.0
+                        if sim_time - v1_wait_start_time >= 3.0:
+                            print(f"[{sim_time:.1f}s] V1 等待结束，恢复60km/h！")
+                            v1_state = 'RECOVERING'
+
+                    elif v1_state == 'RECOVERING':
+                        target_speed_v1 = 60.0
+
+                    apply_pid_control(v1, pid_v1['lon'], pid_v1['lat'], target_speed_v1, target_loc)
+                else:
+                    v1.apply_control(carla.VehicleControl(brake=1.0))
+                    v1_active = False
+                    print("\nV1 (Audi TT) 已到达轨迹终点。")
+
+            # ==========================
+            # V2 (Citroen C3) 控制逻辑
+            # 正常60 -> x=100慢刹至30 -> 等3s -> 恢复60
+            # ==========================
+            if v2_active and v2.is_alive:
+                if check_and_handle_out_of_bounds(v2, carla_map):
+                    v2_active = False
+                elif v2_traj_idx < len(V2_TRAJECTORY):
+                    v2_loc_current = v2.get_location()
+                    tx, ty, tyaw = V2_TRAJECTORY[v2_traj_idx]
+                    target_loc = carla.Location(x=tx, y=ty, z=v2_loc_current.z)
+
+                    if v2_loc_current.distance(target_loc) < 3.5 and v2_traj_idx < len(V2_TRAJECTORY) - 1:
+                        v2_traj_idx += 1
+
+                    # --- 状态机判断 ---
+                    current_speed_v2 = math.sqrt(v2.get_velocity().x ** 2 + v2.get_velocity().y ** 2) * 3.6
+                    target_speed_v2 = 60.0  # 默认
+
+                    if v2_state == 'NORMAL' and v2_loc_current.x >= 100.0:
+                        print(f"[{sim_time:.1f}s] V2 到达 x=100 (急转弯前)，开始缓慢减速！")
+                        v2_state = 'BRAKING'
+
+                    if v2_state == 'BRAKING':
+                        target_speed_v2 = 30.0
+                        if current_speed_v2 <= 22.0:
+                            print(f"[{sim_time:.1f}s] V2 降速完毕，维持30km/h过弯并等待3秒...")
+                            v2_state = 'WAITING'
+                            v2_wait_start_time = sim_time
+
+                    elif v2_state == 'WAITING':
+                        target_speed_v2 = 30.0
+                        if sim_time - v2_wait_start_time >= 3.0:
+                            print(f"[{sim_time:.1f}s] V2 过弯完毕，缓慢恢复60km/h！")
+                            v2_state = 'RECOVERING'
+
+                    elif v2_state == 'RECOVERING':
+                        target_speed_v2 = 60.0
+
+                    apply_pid_control(v2, pid_v2['lon'], pid_v2['lat'], target_speed_v2, target_loc)
+                else:
+                    v2.apply_control(carla.VehicleControl(brake=1.0))
+                    v2_active = False
+                    print("\nV2 (Citroen C3) 已到达轨迹终点。")
+
+            # 结束判断
+            if not v1_active and not v2_active:
+                print("所有车辆已完成测试。")
+                break
+
+            # 帧率同步控制
+            compute_time = time.time() - start_time
+            if compute_time < dt:
+                time.sleep(dt - compute_time)
+
+    except KeyboardInterrupt:
+        print("\n键盘中断，终止运行。")
+    finally:
+        print("\n清理环境并恢复异步设置...")
+        for actor in actor_list:
+            if actor.is_alive:
+                actor.destroy()
+
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
+        print("清理完毕。")
+
+
+if __name__ == '__main__':
+    main()

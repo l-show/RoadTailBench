@@ -4,7 +4,7 @@ import math
 import numpy as np
 
 # ==========================================
-# 1. 轨迹数据清洗 (Sprinter 货车轨迹)
+# 1. Sprinter truck trajectory
 # ==========================================
 RAW_Sprinter_TRAJECTORY = [
     (3.677, 107.183, -93.454), (3.677, 107.183, -93.454), (3.677, 107.183, -93.454),
@@ -39,7 +39,7 @@ for p in RAW_Sprinter_TRAJECTORY:
         Sprinter_TRAJECTORY.append(p)
 
 # ==========================================
-# 2. 轨迹数据清洗 (HGV 半挂车轨迹)
+# 2. HGV trajectory
 # ==========================================
 RAW_HGV_TRAJECTORY = [
     (-2.186, -49.028, 88.272), (-2.186, -49.028, 88.622), (-2.186, -49.028, 89.042),
@@ -68,7 +68,39 @@ for p in RAW_HGV_TRAJECTORY:
         HGV_TRAJECTORY.append(p)
 
 # ==========================================
-# PID 控制器类
+# 3. Ego Lincoln MKZ trajectory
+# ==========================================
+RAW_EGO_TRAJECTORY =[
+    (-84.976, 7.800, 3.135), (-83.147, 7.900, 3.135), (-80.612, 8.081, 4.467), (-78.121, 8.278, 4.467),
+    (-75.592, 8.453, 3.861), (-73.063, 8.624, 3.861), (-70.575, 8.791, 3.861), (-68.085, 8.959, 3.861),
+    (-65.552, 9.142, 4.225), (-63.057, 9.300, 3.498), (-60.561, 9.453, 3.498), (-57.983, 9.621, 4.104),
+    (-55.449, 9.818, 4.588), (-52.918, 10.037, 5.315), (-50.430, 10.268, 5.315), (-47.902, 10.501, 4.653),
+    (-45.367, 10.693, 3.804), (-42.831, 10.861, 3.804), (-40.334, 10.999, 2.713), (-37.838, 11.141, 3.902),
+    (-35.305, 11.313, 3.902), (-32.813, 11.491, 4.508), (-30.280, 11.693, 4.630), (-27.789, 11.895, 4.630),
+    (-25.255, 12.096, 4.145), (-22.845, 12.270, 4.145), (-22.330, 12.308, 4.145), (-21.832, 12.344, 4.145),
+    (-21.317, 12.381, 4.145), (-20.818, 12.417, 4.145), (-20.320, 12.453, 4.145), (-19.813, 12.490, 4.145),
+    (-19.314, 12.526, 4.145), (-18.816, 12.561, 3.071), (-18.308, 12.569, -1.936), (-17.808, 12.543, -3.277),
+    (-17.309, 12.513, -5.185), (-16.804, 12.456, -7.055), (-16.301, 12.387, -8.165), (-15.357, 12.252, -8.165),
+    (-14.098, 12.077, -5.994), (-12.850, 12.019, 0.355), (-11.926, 12.025, 0.355), (-11.417, 12.028, 0.355),
+    (-10.851, 12.031, 0.355), (-9.600, 12.032, -1.704), (-8.354, 11.945, -6.026), (-7.121, 11.744, -12.319),
+    (-5.897, 11.402, -18.726), (-4.759, 10.891, -29.332), (-3.710, 10.213, -36.586), (-2.754, 9.378, -44.997),
+    (-1.927, 8.441, -49.243), (-1.098, 7.478, -50.194), (-0.356, 6.447, -58.823), (0.240, 5.326, -64.849),
+    (0.724, 4.151, -69.785), (1.137, 2.950, -74.282), (1.449, 1.740, -75.793), (1.707, 0.517, -80.312),
+    (1.898, -0.740, -83.385), (2.017, -1.984, -84.823), (2.192, -3.913, -84.823), (2.414, -7.717, -89.681),
+    (2.435, -11.531, -89.681), (2.456, -15.343, -89.681), (2.477, -19.094, -89.681), (2.498, -22.906, -89.681),
+    (2.519, -26.655, -89.681), (2.552, -30.467, -88.576), (2.645, -34.214, -88.576), (2.740, -38.024, -88.315),
+    (2.850, -41.771, -88.315), (2.971, -45.581, -87.531), (3.152, -49.389, -88.218), (3.169, -53.139, -90.843),
+    (3.113, -56.951, -90.843), (3.051, -60.762, -91.104), (3.004, -63.199, -91.104), (3.004, -63.199, -91.104),
+    (3.004, -63.199, -91.104), (3.004, -63.199, -91.104)
+]
+
+EGO_TRAJECTORY = []
+for p in RAW_EGO_TRAJECTORY:
+    if not EGO_TRAJECTORY or p != EGO_TRAJECTORY[-1]:
+        EGO_TRAJECTORY.append(p)
+
+# ==========================================
+# PID controllers
 # ==========================================
 class PIDLongitudinalController:
     def __init__(self, K_P=1.0, K_I=0.05, K_D=0.0, dt=0.05):
@@ -113,10 +145,10 @@ class PIDLateralController2:
 
 
 # ==========================================
-# 核心路网/轨迹寻路逻辑
+# Trajectory / waypoint helpers
 # ==========================================
 def get_target_from_trajectory(vehicle_loc, trajectory, lookahead_dist=10.0):
-    """ 基于固定 [X, Y, Yaw] 轨迹点的前瞻循迹寻找 """
+    """Find a lookahead target on fixed (x, y, yaw) trajectory points."""
     min_dist, closest_idx = float('inf'), 0
     for i, p in enumerate(trajectory):
         dist = math.sqrt((p[0] - vehicle_loc.x) ** 2 + (p[1] - vehicle_loc.y) ** 2)
@@ -138,8 +170,47 @@ def get_target_from_trajectory(vehicle_loc, trajectory, lookahead_dist=10.0):
     return trajectory[target_idx]
 
 
+def update_speed_towards(current_speed, target_speed, accel_kmh_per_s, dt):
+    step = max(0.0, accel_kmh_per_s) * dt
+    if current_speed < target_speed:
+        return min(current_speed + step, target_speed)
+    if current_speed > target_speed:
+        return max(current_speed - step, target_speed)
+    return current_speed
+
+
+def distance_to_trajectory_end(actor, trajectory):
+    if not actor or not actor.is_alive or not trajectory:
+        return float('inf')
+    loc = actor.get_location()
+    end_x, end_y = trajectory[-1][0], trajectory[-1][1]
+    return math.sqrt((loc.x - end_x) ** 2 + (loc.y - end_y) ** 2)
+
+
+def is_vehicle_out_of_bounds(vehicle, carla_map, threshold_dist=8.0):
+    if not vehicle or not vehicle.is_alive:
+        return False
+    try:
+        loc = vehicle.get_location()
+        waypoint = carla_map.get_waypoint(loc, project_to_road=False, lane_type=carla.LaneType.Any)
+        if waypoint is None:
+            return True
+        return loc.distance(waypoint.transform.location) > threshold_dist
+    except Exception:
+        return False
+
+
+def destroy_scene_actors(actor_list):
+    for actor in list(actor_list):
+        try:
+            if actor and actor.is_alive:
+                actor.destroy()
+        except Exception:
+            pass
+
+
 def get_next_waypoint_by_angle(current_wp, vehicle_transform, distance=5.0, action='straight'):
-    """ 根据夹角动态寻找 Carla Map 锚点 """
+    """Pick the next CARLA waypoint by turn direction."""
     next_wps = current_wp.next(distance)
     if not next_wps:
         return None
@@ -173,7 +244,7 @@ def get_next_waypoint_by_angle(current_wp, vehicle_transform, distance=5.0, acti
 
 
 # ==========================================
-# 主程序
+# Main
 # ==========================================
 def main():
     client = carla.Client('localhost', 2000)
@@ -184,7 +255,7 @@ def main():
     actor_list = []
 
     try:
-        # 天气设置
+        # Weather
         weather = carla.WeatherParameters(
             cloudiness=40.0, precipitation=0.0, precipitation_deposits=0.0,
             wind_intensity=100.0, sun_azimuth_angle=140.0, sun_altitude_angle=60.0,
@@ -198,14 +269,13 @@ def main():
         settings.fixed_delta_seconds = 0.05
         world.apply_settings(settings)
 
-        tm = client.get_trafficmanager(8000)
-        tm.set_synchronous_mode(True)
+        dt = 0.05
 
-        active_pid_vehicles = []  # 记录需要手动控制的 PID 车辆状态
+        active_pid_vehicles = []
 
-        # ================= 1. Sprinter 货车 (使用对应轨迹) =================
+        # ================= 1. Sprinter truck =================
         bp_Sprinter = bp_lib.find('vehicle.mercedes.sprinter')
-        # 初始坐标对齐轨迹的第一个点，防止瞬移抖动
+        # Spawn at trajectory start to avoid initial teleport jitter.
         start_x_s, start_y_s, start_yaw_s = Sprinter_TRAJECTORY[0]
         trans_Sprinter = carla.Transform(carla.Location(x=start_x_s, y=start_y_s, z=1.5), carla.Rotation(yaw=start_yaw_s))
         Sprinter = world.try_spawn_actor(bp_Sprinter, trans_Sprinter)
@@ -215,13 +285,13 @@ def main():
                 'id': 'Sprinter', 'actor': Sprinter,
                 'lon_pid': PIDLongitudinalController(), 'lat_pid': PIDLateralController2(),
                 'target_speed': 60.0, 'mode': 'trajectory',
-                'trajectory': Sprinter_TRAJECTORY  # 绑定专属轨迹
+                'trajectory': Sprinter_TRAJECTORY
             })
-            print("Sprinter 生成成功 (使用给定轨迹循迹, 60km/h)")
+            print("Sprinter spawned successfully (PID trajectory control, 60km/h)")
 
-        # ================= 2. HGV 半挂车头 (使用对应轨迹) =================
+        # ================= 2. HGV tractor =================
         bp_hgv = bp_lib.find('vehicle.carlamotors.european_hgv')
-        # 初始坐标对齐轨迹的第一个点
+        # Spawn at trajectory start.
         start_x_h, start_y_h, start_yaw_h = HGV_TRAJECTORY[0]
         trans_hgv = carla.Transform(carla.Location(x=start_x_h, y=start_y_h, z=1.5), carla.Rotation(yaw=start_yaw_h))
         hgv = world.try_spawn_actor(bp_hgv, trans_hgv)
@@ -231,53 +301,45 @@ def main():
                 'id': 'HGV', 'actor': hgv,
                 'lon_pid': PIDLongitudinalController(), 'lat_pid': PIDLateralController2(),
                 'target_speed': 100.0, 'mode': 'trajectory',
-                'trajectory': HGV_TRAJECTORY  # 绑定专属轨迹
+                'trajectory': HGV_TRAJECTORY
             })
-            print("HGV 生成成功 (使用给定轨迹循迹, 100km/h)")
+            print("HGV spawned successfully (PID trajectory control, 100km/h)")
 
-        # ================= 3. Ego Lincoln MKZ (TM 左转大弯) =================
+        # ================= 3. Ego Lincoln MKZ =================
         bp_lincoln = bp_lib.find('vehicle.lincoln.mkz_2017')
         bp_lincoln.set_attribute('color', '192,192,192')
-        loc_lincoln = carla.Location(x=-55.383, y=9.395, z=1.5)
-        trans_lincoln = carla.Transform(loc_lincoln, carla_map.get_waypoint(loc_lincoln).transform.rotation)
+        if bp_lincoln.has_attribute('role_name'):
+            bp_lincoln.set_attribute('role_name', 'ego')
+        start_x_e, start_y_e, start_yaw_e = EGO_TRAJECTORY[0]
+        trans_lincoln = carla.Transform(
+            carla.Location(x=start_x_e, y=start_y_e, z=1.5),
+            carla.Rotation(yaw=start_yaw_e)
+        )
         ego = world.try_spawn_actor(bp_lincoln, trans_lincoln)
 
         if ego:
             actor_list.append(ego)
-            ego.set_autopilot(True, tm.get_port())
-            tm.vehicle_percentage_speed_difference(ego, -5)  # 维持约 60km/h
+            ego.set_simulate_physics(True)
+            active_pid_vehicles.append({
+                'id': 'Ego', 'actor': ego, 'is_ego': True,
+                'lon_pid': PIDLongitudinalController(), 'lat_pid': PIDLateralController2(),
+                'target_speed': 60.0, 'desired_speed': 60.0, 'command_speed': 60.0,
+                'accel_kmh_per_s': 15.0, 'mode': 'trajectory',
+                'trajectory': EGO_TRAJECTORY,
+                'stage': 'cruise', 'stop_start_time': None,
+            })
+            print("Lincoln MKZ Ego spawned successfully (PID trajectory control, 60km/h)")
 
-            # 设置忽略项
-            tm.ignore_lights_percentage(ego, 100)
-            tm.ignore_signs_percentage(ego, 100)
-            tm.ignore_vehicles_percentage(ego, 100)
-            tm.ignore_walkers_percentage(ego, 100)
-            tm.distance_to_leading_vehicle(ego, 0.0)
-            tm.auto_lane_change(ego, False)
+        print("\nScenario initialized; simulation running...")
 
-            print("正在为 Ego 车辆规划左转路径...")
-            ego_route = []
-            current_wp = carla_map.get_waypoint(loc_lincoln)
-
-            # 生成长达 100 次迭代的锚点（确保通过大路口）
-            for _ in range(100):
-                ego_route.append(current_wp.transform.location)
-                next_wp = get_next_waypoint_by_angle(current_wp, current_wp.transform, distance=2.5, action='left')
-                if next_wp is None:
-                    break
-                current_wp = next_wp
-
-            tm.set_path(ego, ego_route)
-            print("Lincoln MKZ Ego 生成成功 (TM控制左转大弯, 60km/h)")
-
-        print("\n场景初始化完毕，开始仿真运行...")
-
-        # 仿真主循环
+        # Simulation loop
+        sim_time = 0.0
         while True:
             start_time = time.time()
             world.tick()
+            sim_time += dt
 
-            # 逆序遍历，安全删除结束任务的车辆
+            # Iterate backwards so finished actors can be removed safely.
             for v_data in reversed(active_pid_vehicles):
                 vehicle = v_data['actor']
                 if not vehicle.is_alive:
@@ -288,29 +350,84 @@ def main():
                 vel = vehicle.get_velocity()
                 speed = 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
 
+                if is_vehicle_out_of_bounds(vehicle, carla_map, threshold_dist=8.0):
+                    print(f"[{v_data['id']}] vehicle out of bounds; destroying actor.")
+                    vehicle.destroy()
+                    active_pid_vehicles.remove(v_data)
+                    if vehicle in actor_list:
+                        actor_list.remove(vehicle)
+                    if v_data.get('is_ego'):
+                        destroy_scene_actors(actor_list)
+                        return
+                    continue
+
                 target_loc = None
 
                 if v_data['mode'] == 'trajectory':
-                    # 【核心修改点】自动从字典中读取自己专属的轨迹数组
                     target_point = get_target_from_trajectory(tf.location, v_data['trajectory'], lookahead_dist=12.0)
                     if target_point is None:
-                        print(f"[{v_data['id']}] 轨迹执行完毕，销毁车辆。")
-                        vehicle.destroy()
-                        active_pid_vehicles.remove(v_data)
-                        continue
-                    target_loc = target_point  # (X, Y) tuple
+                        if v_data.get('is_ego') and distance_to_trajectory_end(vehicle, v_data['trajectory']) > 5.0:
+                            target_point = v_data['trajectory'][-1]
+                            target_loc = target_point
+                        else:
+                            print(f"[{v_data['id']}] reached trajectory endpoint.")
+                            if v_data.get('is_ego'):
+                                destroy_scene_actors(actor_list)
+                                return
+                            vehicle.destroy()
+                            active_pid_vehicles.remove(v_data)
+                            if vehicle in actor_list:
+                                actor_list.remove(vehicle)
+                            continue
+                    else:
+                        target_loc = target_point
 
                 elif v_data['mode'] == 'waypoint':
                     current_wp = carla_map.get_waypoint(tf.location)
                     target_wp = get_next_waypoint_by_angle(current_wp, tf, distance=12.0, action='straight')
                     if target_wp is None:
-                        print(f"[{v_data['id']}] 行驶至地图尽头，销毁车辆。")
+                        print(f"[{v_data['id']}] reached map end; destroying actor.")
                         vehicle.destroy()
                         active_pid_vehicles.remove(v_data)
+                        if vehicle in actor_list:
+                            actor_list.remove(vehicle)
                         continue
                     target_loc = target_wp.transform.location
 
-                # PID 控制下发
+                # PID command update
+                if v_data.get('is_ego'):
+                    loc = tf.location
+                    stage = v_data['stage']
+                    if stage == 'cruise' and loc.x >= -45.0:
+                        v_data['stage'] = 'slow_30'
+                        v_data['desired_speed'] = 30.0
+                        v_data['accel_kmh_per_s'] = 12.0
+                        print("[Ego] x=-45 trigger: slowing to 30km/h.")
+                    elif stage == 'slow_30' and loc.x >= -25.0:
+                        v_data['stage'] = 'brake_to_stop'
+                        v_data['desired_speed'] = 0.0
+                        v_data['accel_kmh_per_s'] = 35.0
+                        print("[Ego] x=-25 trigger: braking to 0km/h.")
+                    elif stage == 'brake_to_stop' and speed <= 1.0:
+                        v_data['stage'] = 'waiting'
+                        v_data['stop_start_time'] = sim_time
+                        v_data['desired_speed'] = 0.0
+                        print("[Ego] stopped; waiting 6s.")
+                    elif (stage == 'waiting' and v_data['stop_start_time'] is not None and
+                          sim_time - v_data['stop_start_time'] >= 6.0):
+                        v_data['stage'] = 'resume'
+                        v_data['desired_speed'] = 60.0
+                        v_data['accel_kmh_per_s'] = 15.0
+                        print("[Ego] wait complete: resuming 60km/h.")
+
+                    v_data['command_speed'] = update_speed_towards(
+                        v_data['command_speed'],
+                        v_data['desired_speed'],
+                        v_data['accel_kmh_per_s'],
+                        dt
+                    )
+                    v_data['target_speed'] = v_data['command_speed']
+
                 if target_loc is not None:
                     throttle_out = v_data['lon_pid'].run_step(v_data['target_speed'], speed)
                     steer_out = v_data['lat_pid'].run_step(target_loc, tf)
@@ -326,28 +443,24 @@ def main():
 
                     vehicle.apply_control(control)
 
-            # 时间同步锁帧
+            # Keep roughly real-time at 20 Hz.
             compute_time = time.time() - start_time
             if compute_time < 0.05:
                 time.sleep(0.05 - compute_time)
 
     except KeyboardInterrupt:
-        print("\n用户中断运行。")
+        print("\nUser interrupted simulation.")
     except Exception as e:
-        print(f"\n发生异常: {e}")
+        print(f"\nScenario error: {e}")
     finally:
-        print("\n清理场景及恢复 Carla 设置...")
+        print("\nCleaning scene and restoring Carla settings...")
         settings = world.get_settings()
         settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
         world.apply_settings(settings)
-        if 'tm' in locals():
-            tm.set_synchronous_mode(False)
 
-        # 清除活着的车辆
-        for a in actor_list:
-            if a.is_alive:
-                a.destroy()
-        print("清理完成！")
+        destroy_scene_actors(actor_list)
+        print("Cleanup complete.")
 
 
 if __name__ == '__main__':

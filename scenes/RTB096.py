@@ -116,13 +116,7 @@ RAW_EGO_TRAJECTORY = [
     (153.389, 2.154, -0.463),
     (158.55, 2.107, -0.326), (163.549, 2.084, -0.256), (168.633, 2.062, -0.256), (173.8, 2.039, -0.256),
     (178.885, 2.016, -0.256),
-    (183.885, 1.994, -0.256), (189.052, 1.965, -0.326), (194.219, 1.935, -0.326), (199.22, 1.907, -0.326),
-    (204.387, 1.877, -0.326),
-    (209.388, 1.849, -0.326), (214.471, 1.82, -0.326), (219.555, 1.791, -0.326), (224.64, 1.762, -0.326),
-    (229.64, 1.727, -0.897),
-    (234.802, 1.531, -4.179), (239.855, 0.979, -8.349), (244.849, -0.281, -20.562), (249.534, -2.432, -29.714),
-    (253.768, -5.378, -39.304),
-    (257.432, -8.891, -49.158), (258.172, -9.792, -51.703), (258.172, -9.792, -51.703), (258.172, -9.792, -51.703)
+    (183.885, 1.994, -0.256), (189.052, 1.965, -0.326), (194.219, 1.935, -0.326), (199.22, 1.907, -0.326)
 ]
 
 # V2轨迹与Ego相同
@@ -163,6 +157,144 @@ V4_TRAJ = remove_duplicate_waypoints(RAW_V4_TRAJECTORY)
 # ==========================================
 # 主程序
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (199.22, 1.907)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.lincoln.mkz_2020'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -214,6 +346,7 @@ def main():
         # ================= Actor 1：Ego (lincoln.mkz_2020) =================
         bp_ego = bp_lib.find('vehicle.lincoln.mkz_2020')
         bp_ego.set_attribute('color', '255,0,0')
+        bp_ego.set_attribute('role_name', 'ego')
         e_x, e_y, e_yaw = EGO_TRAJ[0]
         e_loc = carla.Location(x=e_x, y=e_y, z=0.5)
         e_loc.z = carla_map.get_waypoint(e_loc).transform.location.z + 0.5
@@ -228,9 +361,9 @@ def main():
         bp_v2 = bp_lib.find('vehicle.lincoln.mkz_2017')
         bp_v2.set_attribute('color', '0,0,255')
         v2_x, v2_y, v2_yaw = V2_TRAJ[0]
-        # 【修改点4】防止V2与Ego出生在同一点导致物理引擎爆炸，将V2沿着偏航角向后偏移 10 米
-        v2_x_offset = v2_x - 10.0 * math.cos(math.radians(v2_yaw))
-        v2_y_offset = v2_y - 10.0 * math.sin(math.radians(v2_yaw))
+        # 【修改点4】防止V2与Ego出生在同一点导致物理引擎爆炸，将V2沿着偏航角向后偏移 20 米
+        v2_x_offset = v2_x - 20.0 * math.cos(math.radians(v2_yaw))
+        v2_y_offset = v2_y - 20.0 * math.sin(math.radians(v2_yaw))
         v2_loc = carla.Location(x=v2_x_offset, y=v2_y_offset, z=0.5)
         v2_loc.z = carla_map.get_waypoint(v2_loc).transform.location.z + 0.5
         v2 = world.try_spawn_actor(bp_v2, carla.Transform(v2_loc, carla.Rotation(yaw=v2_yaw)))
@@ -238,7 +371,7 @@ def main():
             actor_list.append(v2)
             vehicles_state['v2']['actor'] = v2
             vehicles_state['v2']['active'] = True
-            print("生成 V2跟随车 (MKZ 2017) 成功，已向后偏移10米防碰。")
+            print("生成 V2跟随车 (MKZ 2017) 成功，已向后偏移20米防碰。")
 
         # ================= Actor 3：V3 (vespa.zx125 摩托) =================
         bp_v3 = bp_lib.find('vehicle.vespa.zx125')
@@ -267,6 +400,8 @@ def main():
         # 【修改点3】物理引擎预热贴地
         for _ in range(10):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         # 【修改点3】为所有存活的车辆赋予初始速度向量，防止原地起步或者速度突变飞天
         for key, state in vehicles_state.items():
@@ -286,6 +421,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
             active_count = 0
 

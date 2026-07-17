@@ -233,6 +233,150 @@ def check_and_handle_out_of_bounds(vehicle, carla_map, name="Vehicle", threshold
 # ==========================================
 # 3. Main program
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (1.918, -210.145)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.citroen.c3'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_end_scene(local_vars, client, world, reason):
+    print('[RoadTailBench Plus] {}; cleaning all scene actors and ending simulation.'.format(reason))
+    _rtb_opt_cleanup_scene(local_vars, client, world)
+    return True
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -309,6 +453,8 @@ def main():
         print("Scenario loaded, waiting for physics to settle...")
         for _ in range(20):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
         print("Simulation started.")
 
         PED_SPEED_MPS = 5.0 / 3.6
@@ -328,6 +474,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time = world.get_snapshot().timestamp.elapsed_seconds
 
             if walker:
@@ -410,19 +558,23 @@ def main():
 
             if ego_vehicle and ego_vehicle.is_alive:
                 if check_and_handle_out_of_bounds(ego_vehicle, carla_map, "Ego"):
-                    ego_vehicle = None
-                    if moto and moto.is_alive:
-                        print("[Moto] destroyed because Ego was destroyed.")
-                        moto.destroy()
-                        moto = None
+                    _rtb_opt_end_scene(locals(), client, world, 'Ego was destroyed out of bounds')
+                    ego_vehicle = moto = bus = jeep = None
+                    break
                 else:
                     loc = ego_vehicle.get_location()
                     dist_to_end = math.sqrt((loc.x - EGO_PATH[-1][0]) ** 2 + (loc.y - EGO_PATH[-1][1]) ** 2)
                     if dist_to_end < 2.0:
-                        ego_vehicle.apply_control(carla.VehicleControl(brake=1.0, hand_brake=True))
+                        _rtb_opt_end_scene(locals(), client, world, 'Ego reached trajectory endpoint')
+                        ego_vehicle = moto = bus = jeep = None
+                        break
                     else:
                         target_wp = get_target_waypoint(loc, EGO_PATH, lookahead_dist=5.0)
                         apply_pid_control(ego_vehicle, pids['ego']['lon'], pids['ego']['lat'], ego_target_speed, target_wp)
+            elif ego_vehicle is not None:
+                _rtb_opt_end_scene(locals(), client, world, 'Ego is no longer alive')
+                ego_vehicle = moto = bus = jeep = None
+                break
 
             compute_time = time.time() - start_time
             if compute_time < dt:

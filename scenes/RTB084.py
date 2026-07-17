@@ -261,6 +261,10 @@ def main():
         # 车辆 4: 丰田 普锐斯 (TM控制)
         # ==========================================
         bp_prius = bp_lib.find('vehicle.toyota.prius')
+        if bp_prius.has_attribute('role_name'):
+            bp_prius.set_attribute('role_name', 'ego')
+        if bp_prius.has_attribute('color'):
+            bp_prius.set_attribute('color', '154,205,50')
         loc_prius = carla.Location(x=-7.668, y=39.253, z=0.5)
         # 从地图获取该位置的合适偏航角
         prius_wp = world.get_map().get_waypoint(loc_prius)
@@ -278,6 +282,16 @@ def main():
             print("丰田 (Prius) 生成成功，已托管至 TM")
 
         print("\n车辆加载完毕，等待物理稳定...")
+        ego_goal_location = carla.Location(x=143.397, y=52.818, z=0.5)
+        ego_goal_radius_m = 3.0
+
+        def destroy_all_scene_actors(reason):
+            print(reason)
+            live_actors = [actor for actor in actor_list if actor and actor.is_alive]
+            if live_actors:
+                client.apply_batch([carla.command.DestroyActor(actor) for actor in live_actors])
+            actor_list.clear()
+
         for _ in range(20): world.tick()
         print("仿真正式开始...")
 
@@ -285,6 +299,13 @@ def main():
             start_time = time.time()
             world.tick()
             sim_time = world.get_snapshot().timestamp.elapsed_seconds
+
+            if prius and prius.is_alive:
+                prius_loc = prius.get_location()
+                if math.hypot(prius_loc.x - ego_goal_location.x, prius_loc.y - ego_goal_location.y) <= ego_goal_radius_m:
+                    destroy_all_scene_actors("[RTB084] Ego reached goal; cleaning all scene actors and exiting.")
+                    prius = moto = bike = truck = None
+                    break
 
             # ==========================
             # 摩托车寻迹控制 (40 km/h)

@@ -11,17 +11,17 @@
       "ego",
       "hero"
     ],
-    "type_id": "vehicle.harley-davidson.low_rider",
+    "type_id": "vehicle.toyota.prius",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
     "ego",
     "hero"
   ],
-  "ego_type_id": "vehicle.harley-davidson.low_rider",
-  "ego_blueprint": "vehicle.harley-davidson.low_rider",
+  "ego_type_id": "vehicle.toyota.prius",
+  "ego_blueprint": "vehicle.toyota.prius",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "not_static_ego_reference_detected",
+  "reference_trajectory_source": "ego_goal_only",
   "reference_trajectory_format": "x_y",
   "reference_trajectory": [],
   "reference_speed_kmh": 60.0,
@@ -69,12 +69,26 @@
       "adverse_lighting_low_light": 0
     }
   },
-  "notes": [
-    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-    "Scenario timeout remains the termination fallback for this scene."
-  ],
-  "blocking_metadata_issues": [
-    "missing_reference_trajectory",
-    "missing_reference_trajectory_and_ego_end"
-  ]
+  "ego_start": {
+    "location": {
+      "x": -7.668,
+      "y": 39.253
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 0.0,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 143.397,
+      "y": 52.818
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 0.0,
+      "roll": 0.0
+    }
+  }
 }

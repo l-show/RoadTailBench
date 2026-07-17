@@ -1,0 +1,497 @@
+import sys
+import carla
+import time
+import math
+
+# ==========================================
+# 1. 动态引入标准化函数库路径
+# ==========================================
+LIBRARY_PATH = r"G:\RoadTailCode\标准化函数库"
+if LIBRARY_PATH not in sys.path:
+    sys.path.append(LIBRARY_PATH)
+
+# 全局导入标准化函数库
+import RoadTailBenchInitV9 as RTB
+
+# ==========================================
+# 2. 轨迹数据定义 (已去除表头)
+# ==========================================
+STR_V1 = """
+-44.583 -442.947 53.507
+-44.583 -442.947 53.507
+-44.583 -442.947 53.507
+-44.583 -442.947 53.507
+-44.583 -442.947 53.158
+-38.777 -435.218 52.738
+-32.635 -427.113 53.158
+-26.693 -418.865 56.303
+-21.213 -410.3 57.632
+-15.934 -401.612 59.449
+-10.767 -392.853 58.819
+-5.29 -384.275 56.65
+0.288 -375.776 57.454
+5.325 -367.139 62.068
+9.769 -357.998 66.197
+13.452 -348.704 70.36
+16.701 -339.073 73.089
+19.59 -329.499 73.228
+22.545 -319.772 72.179
+25.862 -310.162 70.639
+29.177 -300.727 70.639
+32.37 -291.077 74.137
+34.727 -281.191 79.384
+36.296 -270.979 83.373
+37.097 -260.845 86.663
+37.573 -250.69 88.133
+37.819 -240.526 88.693
+38.086 -230.363 87.573
+38.677 -220.214 85.893
+39.475 -210.079 84.563
+40.582 -199.969 83.441
+41.658 -189.86 84.771
+42.505 -179.728 85.891
+43.051 -169.744 87.991
+43.26 -159.579 89.461
+43.322 -149.413 90.231
+43.248 -139.247 90.651
+43.134 -129.079 90.441
+43.331 -118.915 87.99
+43.768 -108.758 87.29
+44.26 -98.603 87.15
+45.046 -88.635 84.664
+45.991 -78.513 84.664
+46.845 -68.304 86.484
+47.202 -58.145 89.635
+46.976 -47.983 93.452
+46.325 -37.837 93.732
+45.741 -27.687 91.981
+45.917 -17.695 85.393
+46.874 -10.935 77.333
+46.874 -10.935 76.912
+46.874 -10.935 76.912
+46.874 -10.935 76.912
+46.874 -10.935 76.912
+46.874 -10.935 76.912
+"""
+
+STR_V2 = """
+-110.936 -495.421 26.815
+-110.936 -495.421 26.815
+-110.936 -495.421 26.815
+-105.472 -492.565 28.78
+-96.6 -487.6 30.253
+-89.293 -483.338 30.253
+-82.815 -479.56 30.393
+-76.452 -475.365 36.789
+-70.462 -470.647 38.895
+-64.623 -465.745 41.599
+-59.167 -460.602 45.182
+-53.846 -454.965 47.848
+-48.847 -449.207 50.093
+-44.186 -443.329 52.97
+-39.678 -437.179 54.02
+-35.174 -431.029 53.46
+-30.636 -424.905 53.46
+-26.098 -418.781 53.46
+-21.554 -412.661 53.32
+-17.15 -406.59 55.071
+-12.862 -400.135 57.243
+-8.846 -393.802 58.715
+-4.921 -387.265 59.485
+-1.178 -380.622 61.167
+2.422 -373.901 62.709
+5.732 -367.171 64.464
+8.98 -360.272 65.094
+12.185 -353.354 65.374
+15.217 -346.359 67.549
+18.029 -339.406 68.67
+20.749 -332.283 69.72
+23.251 -325.08 72.033
+25.533 -317.805 72.874
+27.704 -310.495 73.993
+29.764 -303.154 74.973
+31.621 -295.759 77.288
+33.218 -288.43 78.128
+34.726 -280.956 79.67
+35.97 -273.434 81.071
+37.101 -266.019 81.56
+38.087 -258.458 83.592
+38.872 -250.874 84.854
+39.431 -243.395 86.255
+39.929 -235.787 86.255
+40.408 -228.302 86.395
+40.873 -220.691 86.885
+41.202 -213.073 88.005
+41.468 -205.453 88.005
+41.73 -197.957 88.005
+41.987 -190.337 87.935
+42.271 -182.718 87.865
+42.555 -175.099 87.865
+42.869 -167.481 87.445
+43.209 -159.864 87.445
+43.539 -152.371 87.655
+43.847 -144.627 87.725
+44.15 -137.008 87.725
+44.452 -129.389 87.725
+44.755 -121.77 87.725
+45.053 -114.275 87.725
+45.355 -106.656 87.725
+45.658 -99.037 87.725
+45.956 -91.543 87.725
+46.263 -83.799 87.725
+46.547 -76.177 88.005
+46.736 -68.554 91.098
+46.027 -60.969 98.801
+44.88 -53.557 98.801
+43.952 -46.116 94.723
+43.614 -38.499 92.084
+43.297 -30.756 92.995
+42.754 -23.151 95.452
+41.991 -15.689 95.873
+41.211 -8.104 95.873
+40.431 -0.519 95.873
+39.632 7.064 96.856
+38.618 14.495 98.398
+37.452 22.03 99.378
+36.197 29.424 100.078
+34.807 36.921 100.989
+33.354 44.279 101.409
+31.773 51.738 102.6
+29.965 59.274 104.425
+28.097 66.538 104.425
+26.162 74.042 104.495
+24.285 81.304 104.495
+22.382 88.689 104.356
+20.501 96.078 104.216
+18.628 103.47 104.216
+16.756 110.861 104.216
+15.098 117.405 104.146
+15.098 117.405 104.146
+15.098 117.405 104.146
+"""
+
+TRAJ_V3 = [(57.142, -41.525), (57.236, -48.857), (57.217, -55.357), (57.196, -61.023), (57.058, -66.355),
+           (56.877, -72.69), (56.732, -76.186), (56.531, -81.682), (56.3, -87.51), (56.131, -91.005),
+           (55.875, -95.992), (55.541, -101.81), (55.224, -107.968), (54.932, -113.961), (54.568, -120.616),
+           (54.178, -128.105), (53.918, -133.098), (53.529, -140.755), (53.197, -148.749), (52.904, -155.41),
+           (52.57, -162.901), (52.253, -170.229), (52.077, -174.392), (51.814, -180.719), (51.489, -188.212),
+           (51.235, -194.04), (51.026, -198.869), (50.654, -205.357), (50.389, -212.52), (50.237, -218.351),
+           (50.037, -224.681), (49.753, -232.342), (49.344, -238.662), (48.783, -245.806), (48.143, -253.111),
+           (47.277, -261.232), (46.359, -268.506), (45.638, -273.115), (44.18, -280.98), (42.905, -287.183),
+           (41.49, -293.868), (39.885, -301.194), (37.953, -308.957), (36.068, -316.042), (34.156, -322.776),
+           (31.897, -329.925), (29.121, -337.071), (26.344, -344.217), (24.757, -348.069), (21.889, -355.179),
+           (18.879, -362.231), (15.694, -369.205), (12.468, -376.162), (8.985, -382.99), (5.858, -388.497),
+           (1.527, -396.006), (-2.548, -402.696), (-7.5, -410.211), (-12.239, -416.862), (-17.374, -424.254),
+           (-22.198, -431.05), (-26.254, -436.957), (-31.371, -443.533), (-36.473, -449.481), (-41.446, -455.534),
+           (-45.494, -460.405), (-49.914, -465.615), (-55.001, -471.124), (-60.202, -476.048), (-65.282, -480.361),
+           (-71.178, -484.985), (-77.184, -488.888), (-83.883, -492.937), (-90.238, -496.586), (-97.048, -500.445),
+           (-98.932, -501.513), (-100.738, -499.333), (-105.832, -503.09), (-107.709, -504.474)]
+
+
+# 提取第一两点的航向角的辅助函数(专门服务于缺少yaw的 V3)
+def calc_start_yaw(traj):
+    return math.degrees(math.atan2(traj[1][1] - traj[0][1], traj[1][0] - traj[0][0]))
+
+
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (46.874, -10.935)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.tesla.model3'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
+def main():
+    client = carla.Client('localhost', 2000)
+    client.set_timeout(10.0)
+    world = client.get_world()
+    carla_map = world.get_map()
+    dt = 0.05
+    sim_time = 0.0
+    actor_list = []
+
+    try:
+        # ==========================================
+        # 1. 环境初始化：开启同步模式与天气设置
+        # ==========================================
+        RTB.enable_synchronous_mode(world, dt=dt)
+        RTB.set_static_weather(world, cloudiness=10.0, precipitation=0.0, precipitation_deposits=60.0,
+                               wind_intensity=5.0, sun_azimuth_angle=80.0, sun_altitude_angle=10.0,
+                               fog_density=00.0, fog_distance=1.0, fog_falloff=0.0, wetness=0.0,
+                               scattering_intensity=1.0, mie_scattering_scale=0.0300, rayleigh_scattering_scale=0.0331)
+
+        # ==========================================
+        # 2. 轨迹解析与彩色可视化
+        # ==========================================
+        # V1和V2自带yaw，使用 parse_string_trajectory 直接解析
+        traj1 = RTB.parse_string_trajectory(STR_V1, min_dist=0.1)
+        traj2 = RTB.parse_string_trajectory(STR_V2, min_dist=0.1)
+        traj3 = RTB.clean_trajectory(TRAJ_V3, min_dist=0.1)
+
+        yaw1 = traj1[0][2]
+        yaw2 = traj2[0][2]
+        yaw3 = calc_start_yaw(traj3)
+
+        # 可视化不同颜色轨迹路线
+        RTB.draw_preset_trajectory(world, traj1, color=carla.Color(255, 255, 0))  # 特斯拉 -> 黄色轨迹
+        RTB.draw_preset_trajectory(world, traj2, color=carla.Color(0, 255, 0))  # 奥迪 -> 绿色轨迹
+        RTB.draw_preset_trajectory(world, traj3, color=carla.Color(255, 0, 0))  # 消防车 -> 红色轨迹
+
+        # ==========================================
+        # 3. 实体生成与灯光控制
+        # ==========================================
+        v1 = RTB.spawn_vehicle(world, 'vehicle.tesla.model3', x=traj1[0][0], y=traj1[0][1], yaw=yaw1, color='255,255,0')
+        v2 = RTB.spawn_vehicle(world, 'vehicle.audi.tt', x=traj2[0][0], y=traj2[0][1], yaw=yaw2)
+        v3 = RTB.spawn_vehicle(world, 'vehicle.carlamotors.firetruck', x=traj3[0][0], y=traj3[0][1], yaw=yaw3)
+
+        if not all([v1, v2, v3]):
+            print("部分车辆生成失败, 请检查坐标是否有遮挡！")
+            return
+
+        actor_list.extend([v1, v2, v3])
+
+        # 开启示宽灯和雾灯
+        for v in [v1, v2, v3]:
+            lm = RTB.VehicleLightManager(v)
+            lm.turn_on(carla.VehicleLightState.Position | carla.VehicleLightState.Fog)
+
+        # ==========================================
+        # 4. 物理预热贴地
+        # ==========================================
+        for _ in range(10): world.tick()
+
+        # ==========================================
+        # 5. 注入初始速度 (利用 RTB 标准库防死锁)
+        # ==========================================
+        RTB.set_vehicle_initial_speed(v1, 110.0, yaw_deg=yaw1)
+        RTB.set_vehicle_initial_speed(v2, 105.0, yaw_deg=yaw2)
+        RTB.set_vehicle_initial_speed(v3, 80.0, yaw_deg=yaw3)
+
+        # ==========================================
+        # 6. 为每一辆车独立实例化 PID 控制器及状态追踪
+        # ==========================================
+        pid_configs = [
+            {'v': v1, 'traj': traj1, 'speed': 110.0, 'idx': 0, 'finished_time': None,
+             'lon': RTB.PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.1, dt=dt, output_clip=(-1.0, 0.8),
+                                                  i_clip=(-2.0, 2.0)),
+             'lat': RTB.PIDLateralController(K_P=1.0, K_I=0.01, K_D=0.1, dt=dt, output_clip=(-0.7, 0.7))},
+
+            {'v': v2, 'traj': traj2, 'speed': 105.0, 'idx': 0, 'finished_time': None,
+             'lon': RTB.PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.1, dt=dt, output_clip=(-1.0, 0.8),
+                                                  i_clip=(-2.0, 2.0)),
+             'lat': RTB.PIDLateralController(K_P=1.0, K_I=0.01, K_D=0.1, dt=dt, output_clip=(-0.7, 0.7))},
+
+            {'v': v3, 'traj': traj3, 'speed': 80.0, 'idx': 0, 'finished_time': None,
+             'lon': RTB.PIDLongitudinalController(K_P=1.0, K_I=0.05, K_D=0.1, dt=dt, output_clip=(-1.0, 0.8),
+                                                  i_clip=(-2.0, 2.0)),
+             'lat': RTB.PIDLateralController(K_P=1.0, K_I=0.01, K_D=0.1, dt=dt, output_clip=(-0.7, 0.7))}
+        ]
+
+        print("仿真开始运行...")
+
+        # ==========================================
+        # 7. 仿真主循环
+        # ==========================================
+        while True:
+            start_time = time.time()
+            world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
+            sim_time += dt
+
+            active_actors = 0
+
+            for config in pid_configs:
+                v = config['v']
+                if not v or not v.is_alive:
+                    continue
+
+                if RTB.check_vehicle_out_of_bounds(v, carla_map, threshold_dist=6.0, auto_destroy=True):
+                    continue
+
+                traj = config['traj']
+                idx = config['idx']
+
+                # ---------------- 【重点需求 1】奥迪(V2) y>80 降速 ----------------
+                if v == v2 and v.get_location().y > 80.0:
+                    config['speed'] = 70.0  # 修改目标速度，PID会自动平滑刹车
+
+                # 若未抵达轨迹终点，正常 PID 循迹
+                if idx < len(traj):
+                    active_actors += 1
+                    target_pt = carla.Location(x=traj[idx][0], y=traj[idx][1], z=v.get_location().z)
+
+                    if v.get_location().distance(target_pt) < 4.5 and idx < len(traj) - 1:
+                        config['idx'] += 1
+
+                    RTB.apply_pid_control(v, config['lon'], config['lat'], config['speed'], target_pt)
+
+                # ---------------- 【重点需求 2】抵达终点后的特定行为 ----------------
+                else:
+                    if config['finished_time'] is None:
+                        config['finished_time'] = sim_time
+
+                    time_since_finished = sim_time - config['finished_time']
+
+                    if v == v1:
+                        # 特斯拉(V1)逻辑: 1秒惯性，随后暴力刹停
+                        if time_since_finished < 0.1:
+                            # 彻底放开油门、刹车和方向盘，让车纯靠物理惯性溜车
+                            v.apply_control(carla.VehicleControl(throttle=0.0, brake=0.0, steer=0.0, hand_brake=False))
+                        else:
+                            # 1秒后，暴力静止 (速度清零 + 拉起手刹)
+                            v.set_target_velocity(carla.Vector3D(0.0, 0.0, 0.0))
+                            v.apply_control(carla.VehicleControl(brake=1.0, steer=0.0, hand_brake=True))
+                    else:
+                        # 其他车辆(V2, V3)默认逻辑: 到了终点直接踩死刹车
+                        v.apply_control(carla.VehicleControl(brake=1.0, hand_brake=True))
+
+            # 当所有车辆到达终点或被销毁时，结束仿真
+            if active_actors == 0:
+                break
+
+            # --- 帧率同步控制补时 (强制 1X 真实时间流逝) ---
+            compute_time = time.time() - start_time
+            if compute_time < dt:
+                time.sleep(dt - compute_time)
+
+    except KeyboardInterrupt:
+        print("用户终止。")
+    finally:
+        # 恢复异步模式并一键安全清理环境
+        RTB.disable_synchronous_mode(world)
+        RTB.cleanup_actors(client, actor_list)
+
+
+if __name__ == '__main__':
+    main()

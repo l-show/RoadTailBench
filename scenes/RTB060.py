@@ -131,22 +131,146 @@ RAW_TRAJ_EGO = """
 -104.938	-79.492	101.552
 -106.435	-69.275	95.028
 -106.797	-58.948	90.867
--106.928	-48.612	90.724
--107.031	-38.446	90.441
--107.11	-28.114	90.441
--107.175	-18.114	90.301
--107.149	-7.783	89.739
--107.051	2.552	89.101
--106.894	12.552	89.101
--106.737	22.551	89.101
--106.665	32.55	90.603
--106.798	42.881	90.743
--106.952	53.213	90.953
--107.007	56.546	90.953
--107.007	56.546	90.953
--107.007	56.546	90.953
 """
 
+
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (-106.797 ,-58.948)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
 
 def main():
     actor_list = []
@@ -238,10 +362,10 @@ def main():
         sm_sedan.add_stage(trigger_type='time', trigger_val=2.0, target_speed=30.0, accel=20.0)  # 急减速
         sm_sedan.add_stage(trigger_type='time', trigger_val=2.0, target_speed=70.0, accel=10.0)  # 缓加速
 
-        # Ego剧本：初始速度 40km/h，在 y=-53 时刹停，静止3s后恢复30km/h，过3s后加速到60km/h
+        # Ego剧本：初始速度 40km/h，在 y=-48 时刹停，静止3s后恢复30km/h，过3s后加速到60km/h
         sm_ego = RTB.MultiStageBehaviorMachine(initial_speed=40.0)
         # 注意: 轨迹中 y 是逐渐变小的，因此判断条件为 y_less
-        sm_ego.add_stage(trigger_type='y_less', trigger_val=-53.0, target_speed=0.0, accel=30.0)  # 抵达坐标急刹停
+        sm_ego.add_stage(trigger_type='y_less', trigger_val=-48.0, target_speed=0.0, accel=30.0)  # 抵达坐标急刹停
         sm_ego.add_stage(trigger_type='time', trigger_val=3.0, target_speed=30.0, accel=10.0)  # 等待3s后起步
         sm_ego.add_stage(trigger_type='time', trigger_val=3.0, target_speed=60.0, accel=15.0)  # 再等3s后加速
 
@@ -281,16 +405,18 @@ def main():
             # 记录本帧开始的时间，用于补齐时钟
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time += dt
 
-            # ---------------- 物理特效：第 3 秒触发狂风，第 6 秒风停飘落 ----------------
-            if sim_time >= 8.0 and not debris_spawned:
+            # ---------------- 物理特效----------------
+            if sim_time >= 12.0 and not debris_spawned:
                 debris_mgr.spawn_debris()
                 debris_spawned = True
 
             if debris_spawned:
-                # 【剧本补充】：被狂风卷上天 3 秒后，风力突然减弱，纸片落回地面
-                if sim_time > 10.0:
+                # 【剧本补充】：被狂风卷上天秒后，风力突然减弱，纸片落回地面
+                if sim_time > 14.0:
                     # 强行将升力改为负数（比重力稍大的下压力）或 0，纸箱失去升力就会受重力影响落下
                     debris_mgr.upward_lift_force = -0.05
                     debris_mgr.base_wind_strength = 0.1  # 水平风变为微风

@@ -101,6 +101,28 @@ def calculate_velocity_vector(magnitude, rotation):
     return carla.Vector3D(magnitude * math.cos(rad), magnitude * math.sin(rad), 0)
 
 
+def cleanup_actors(client, actors):
+    alive_actors = [actor for actor in actors if actor and actor.is_alive]
+    if not alive_actors:
+        return
+    try:
+        client.apply_batch([carla.command.DestroyActor(actor.id) for actor in alive_actors])
+    except Exception:
+        for actor in alive_actors:
+            try:
+                if actor and actor.is_alive:
+                    actor.destroy()
+            except Exception:
+                pass
+
+
+def ego_reached_goal(ego, goal_xy, radius=5.0):
+    if not ego or not ego.is_alive:
+        return False
+    loc = ego.get_location()
+    return math.hypot(loc.x - goal_xy[0], loc.y - goal_xy[1]) <= radius
+
+
 # ================= 原始轨迹数据 =================
 RAW_SPRINTER_TRAJECTORY = [
     (177.508, -1.476, -178), (177.508, -1.476, -178), (177.508, -1.476, -178), (177.508, -1.476, -178.14),
@@ -138,9 +160,7 @@ RAW_EGO_TRAJECTORY = [
     (87.481, -1.696, -179.968), (82.398, -1.696, 179.822), (77.398, -1.665, 179.539), (72.231, -1.635, 179.822),
     (67.065, -1.646, -179.536), (62.065, -1.688, -179.323), (56.898, -1.755, -179.253), (51.814, -1.821, -179.253),
     (46.645, -1.883, -179.679), (41.478, -1.888, 179.758), (36.312, -1.865, 179.545), (31.281, -1.799, 179.189),
-    (26.195, -1.727, 179.189), (21.112, -1.655, 179.189), (16.696, -1.592, 179.189), (14.363, -1.561, 179.259),
-    (9.363, -1.508, 179.895), (4.28, -1.524, -179.755), (-0.887, -1.546, -179.755), (-6.054, -1.568, -179.755),
-    (-11.22, -1.615, -179.399), (-16.303, -1.669, -179.399), (-20.97, -1.718, -179.399)
+    (26.195, -1.727, 179.189), (21.112, -1.655, 179.189)
 ]
 
 SPRINTER_TRAJECTORY = remove_duplicate_points(RAW_SPRINTER_TRAJECTORY)
@@ -194,8 +214,8 @@ def main():
 
         # 使用标准的行人蓝图 (0012 或 0015 通常是小孩/青少年模型)
         bp_child = bp_lib.find('walker.pedestrian.0012')
-        if not bp_child.has_attribute('is_invincible'):
-            bp_child.set_attribute('is_invincible', 'true')  # 防止跌倒或被撞死停止运动
+        if bp_child.has_attribute('is_invincible'):
+            bp_child.set_attribute('is_invincible', 'false')
 
         trans_child = carla.Transform(carla.Location(x=ch_x, y=ch_y, z=ground_z + 1.5), carla.Rotation(yaw=ch_yaw))
         child = world.try_spawn_actor(bp_child, trans_child)
@@ -237,6 +257,10 @@ def main():
 
         # ================= Actor 4: Ego Vehicle =================
         bp_ego = bp_lib.find('vehicle.audi.tt')
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
+        if bp_ego.has_attribute('color'):
+            bp_ego.set_attribute('color', '0,0,255')
         ego_x, ego_y, ego_yaw = EGO_TRAJECTORY[0]
         ego_wp = carla_map.get_waypoint(carla.Location(x=ego_x, y=ego_y, z=0))
         ego_loc = carla.Location(x=ego_x, y=ego_y, z=ego_wp.transform.location.z + 1.0)
@@ -259,6 +283,8 @@ def main():
         sp_idx, ch_idx, ego_idx = 0, 0, 0
         sprinter_state = 'cruising'
         sp_brake_timer = 0.0
+        ego_goal_xy = (EGO_TRAJECTORY[-1][0], EGO_TRAJECTORY[-1][1])
+        ego_goal_hits = 0
 
         print("\n仿真正式开始！")
         while True:
@@ -341,6 +367,16 @@ def main():
             if ego and ego.is_alive:
                 # (此处保留你原有的 Ego 控制逻辑)
                 e_loc = ego.get_location()
+                if ego_reached_goal(ego, ego_goal_xy, radius=5.0):
+                    ego_goal_hits += 1
+                else:
+                    ego_goal_hits = 0
+
+                if ego_goal_hits >= 2:
+                    print("[RTB097] Ego reached trajectory endpoint; destroying all actors and ending.")
+                    cleanup_actors(client, actor_list)
+                    break
+
                 if check_and_handle_out_of_bounds(ego, carla_map):
                     ego.destroy()
                 elif ego_idx < len(EGO_TRAJECTORY):
@@ -350,6 +386,7 @@ def main():
                     apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], 50.0, target_loc)
                 else:
                     ego.apply_control(carla.VehicleControl(brake=1.0))
+                    cleanup_actors(client, actor_list)
                     break
 
                     # 同步帧率计算

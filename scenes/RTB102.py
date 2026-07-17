@@ -50,7 +50,7 @@ KEEP_ACTORS_AFTER_SCRIPT = False
 # =========================================================
 # 1.1 所有车辆独立速度设置
 # =========================================================
-EGO_TARGET_SPEED_KMH = 45.0
+EGO_TARGET_SPEED_KMH = 40.0
 TRUCK1_TARGET_SPEED_KMH = 45.0
 TRUCK2_TARGET_SPEED_KMH = 45.0
 MERGE_TARGET_SPEED_KMH = 45.0
@@ -59,7 +59,7 @@ MERGE_TARGET_SPEED_KMH = 45.0
 MERGE_START_TIME_S = 3.2
 
 # 每辆车速度硬上限，防止 PID 超调
-EGO_MAX_SPEED_KMH = 50.0
+EGO_MAX_SPEED_KMH = 45.0
 TRUCK1_MAX_SPEED_KMH = 50.0
 TRUCK2_MAX_SPEED_KMH = 50.0
 MERGE_MAX_SPEED_KMH = 50.0
@@ -67,6 +67,7 @@ MERGE_MAX_SPEED_KMH = 50.0
 # 按你当前最新位置要求换算出的沿轨迹前移距离
 TRUCK1_ADVANCE_M = 8
 TRUCK2_ADVANCE_M = 18
+BACKGROUND_TRAJ_EXTEND_M = 30.0
 
 
 # =========================================================
@@ -86,10 +87,7 @@ EGO_RAW_TRAJ = [
     (7.420, -53.209, 1.303, 0.006, -88.403, 0.000),
     (8.224, -83.234, 0.783, -1.744, -89.243, 0.000),
     (8.631, -102.476, 0.551, 0.076, -88.963, 0.000),
-    (9.046, -130.472, 0.698, 0.006, -90.642, 0.000),
-    (8.663, -165.461, 0.714, 0.286, -89.102, 0.000),
-    (8.627, -176.835, 0.712, -0.414, -91.061, 0.000),
-    (8.627, -176.835, 0.712, -0.414, -91.061, 0.000),
+    (9.046, -130.472, 0.698, 0.006, -90.642, 0.000)
 ]
 
 MERGE_RAW_TRAJ = [
@@ -113,8 +111,14 @@ MERGE_RAW_TRAJ = [
     (9.341, -115.031, 1.075, 0.972, -90.850, 0.000),
     (9.032, -122.586, 1.184, 0.762, -92.599, 0.000),
     (8.870, -126.145, 1.231, 0.762, -92.599, 0.000),
-    (8.870, -126.145, 1.231, 0.762, -92.599, 0.000),
+    (9.241, -130.099, 1.245, -0.007, -90.327, 0.000),
+    (9.192, -136.349, 1.244, -0.007, -90.465, 0.000),
+    (9.141, -142.598, 1.244, -0.007, -90.465, 0.000),
+    (9.091, -148.848, 1.243, -0.007, -90.465, 0.000),
+    (9.040, -155.098, 1.242, -0.007, -90.465, 0.000),
+    (8.988, -161.429, 1.241, -0.007, -90.465, 0.000),
 ]
+
 
 STATIC_TRUCK_TF = carla.Transform(
     carla.Location(x=22.285, y=-51.274, z=1.0),
@@ -233,6 +237,27 @@ def advance_raw_traj_along_path(raw_traj, advance_m):
         advanced.append(sample_raw_traj_at_s(clean_raw, cum, s + advance_m))
 
     return advanced
+
+
+def extend_raw_traj_forward(raw_traj, extend_m):
+    """
+    Extend a raw trajectory by adding one extra point ahead of its current end.
+    The extension follows the last point's yaw direction and preserves pitch/roll.
+    """
+    if not raw_traj or extend_m <= 0.0:
+        return list(raw_traj)
+
+    clean_raw = []
+    last_xy = None
+    for p in raw_traj:
+        xy = (p[0], p[1])
+        if last_xy is None or math.hypot(xy[0] - last_xy[0], xy[1] - last_xy[1]) > 1e-4:
+            clean_raw.append(p)
+            last_xy = xy
+
+    cum = get_cumulative_distances(clean_raw)
+    extended_end = sample_raw_traj_at_s(clean_raw, cum, cum[-1] + extend_m)
+    return list(raw_traj) + [extended_end]
 
 
 def get_start_tf_from_raw(raw_traj):
@@ -374,6 +399,144 @@ def print_world_sync_state(world):
 # =========================================================
 # 4. 主函数
 # =========================================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (9.046, -130.472)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.tesla.model3'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     actor_list = []
 
@@ -421,11 +584,14 @@ def main():
         # =================================================
         TRUCK1_RAW_TRAJ = advance_raw_traj_along_path(EGO_RAW_TRAJ, TRUCK1_ADVANCE_M)
         TRUCK2_RAW_TRAJ = advance_raw_traj_along_path(EGO_RAW_TRAJ, TRUCK2_ADVANCE_M)
+        TRUCK1_RAW_TRAJ = extend_raw_traj_forward(TRUCK1_RAW_TRAJ, BACKGROUND_TRAJ_EXTEND_M)
+        TRUCK2_RAW_TRAJ = extend_raw_traj_forward(TRUCK2_RAW_TRAJ, BACKGROUND_TRAJ_EXTEND_M)
+        MERGE_RUNTIME_RAW_TRAJ = extend_raw_traj_forward(MERGE_RAW_TRAJ, BACKGROUND_TRAJ_EXTEND_M)
 
         traj_ego = make_dense_traj_from_raw(EGO_RAW_TRAJ, interval=TRAJ_INTERVAL)
         traj_truck1 = make_dense_traj_from_raw(TRUCK1_RAW_TRAJ, interval=TRAJ_INTERVAL)
         traj_truck2 = make_dense_traj_from_raw(TRUCK2_RAW_TRAJ, interval=TRAJ_INTERVAL)
-        traj_merge = make_dense_traj_from_raw(MERGE_RAW_TRAJ, interval=TRAJ_INTERVAL)
+        traj_merge = make_dense_traj_from_raw(MERGE_RUNTIME_RAW_TRAJ, interval=TRAJ_INTERVAL)
 
         EGO_START_TF = get_start_tf_from_raw(EGO_RAW_TRAJ)
         EGO_END_TF = get_end_tf_from_raw(EGO_RAW_TRAJ)
@@ -436,8 +602,8 @@ def main():
         TRUCK2_START_TF = get_start_tf_from_raw(TRUCK2_RAW_TRAJ)
         TRUCK2_END_TF = get_end_tf_from_raw(TRUCK2_RAW_TRAJ)
 
-        MERGE_START_TF = get_start_tf_from_raw(MERGE_RAW_TRAJ)
-        MERGE_END_TF = get_end_tf_from_raw(MERGE_RAW_TRAJ)
+        MERGE_START_TF = get_start_tf_from_raw(MERGE_RUNTIME_RAW_TRAJ)
+        MERGE_END_TF = get_end_tf_from_raw(MERGE_RUNTIME_RAW_TRAJ)
 
         print("[轨迹配置] Ego 点数：", len(traj_ego))
         print("[轨迹配置] Truck1 点数：", len(traj_truck1))
@@ -448,9 +614,7 @@ def main():
         # 4.3 车辆实体安全生成
         # =================================================
         ego_bp = choose_existing_blueprint(bp_lib, [
-            "vehicle.tesla.model3",
-            "vehicle.lincoln.mkz_2020",
-            "vehicle.audi.tt"
+            "vehicle.tesla.model3"
         ])
 
         box_truck_bp = choose_existing_blueprint(bp_lib, [
@@ -604,6 +768,8 @@ def main():
             set_vehicle_lights(static_truck, brake=True)
 
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         RTB.set_vehicle_initial_speed(
             ego,
@@ -635,6 +801,8 @@ def main():
             set_vehicle_lights(static_truck, brake=True)
 
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         print("[场景启动] 所有车辆、独立 PID、灯光、轨迹列表已配置。")
 
@@ -648,6 +816,8 @@ def main():
             start_time = time.time()
 
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time += DT
             frame_count += 1
 

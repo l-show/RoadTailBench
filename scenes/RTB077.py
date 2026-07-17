@@ -237,6 +237,13 @@ def check_and_handle_out_of_bounds(vehicle, carla_map):
     return False
 
 
+def is_near_xy(actor, goal_xy, threshold=5.0):
+    if not actor or not actor.is_alive:
+        return False
+    loc = actor.get_location()
+    return math.hypot(loc.x - goal_xy[0], loc.y - goal_xy[1]) <= threshold
+
+
 # ==========================================
 # 4. 主程序 (Main Loop)
 # ==========================================
@@ -261,6 +268,7 @@ def main():
     dt = 0.05
     actor_list = []
     active_actors = {'ego': False, 'v3': False, 'walker': False}
+    ego_end_xy = (-73.882, -123.361)
 
     leaf_manager = LeafWindManager(world, bp_lib)
 
@@ -295,8 +303,11 @@ def main():
 
         # ================= Actor 3：TM 控制的 Ego (Cybertruck) =================
         bp_ego = bp_lib.find('vehicle.tesla.cybertruck')
-        if bp_ego.has_attribute('color'): bp_ego.set_attribute('color', '255,255,255')  # 白色
-        ego_loc = carla.Location(x=1.638, y=-59.965, z=0.5)
+        if bp_ego.has_attribute('color'):
+            bp_ego.set_attribute('color', '255,255,255')  # 白色
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
+        ego_loc = carla.Location(1.923, -51.492, z=0.5)
         ego_wp = carla_map.get_waypoint(ego_loc)
         ego_loc.z = ego_wp.transform.location.z + 0.5
         ego = world.try_spawn_actor(bp_ego, carla.Transform(ego_loc, ego_wp.transform.rotation))
@@ -378,7 +389,10 @@ def main():
             # Ego 车：TM 控制出界销毁
             # ==========================
             if active_actors['ego'] and ego.is_alive:
-                if check_and_handle_out_of_bounds(ego, carla_map):
+                if is_near_xy(ego, ego_end_xy, threshold=5.0):
+                    print("TM Ego reached scenario endpoint; ending simulation.")
+                    return
+                elif check_and_handle_out_of_bounds(ego, carla_map):
                     print("TM Ego 驶出地图边界，已自动销毁。")
                     active_actors['ego'] = False
 

@@ -165,6 +165,30 @@ RAW_PATH_TRUCK = [
 
 ]
 
+# Ego path: (x, y, yaw_deg). The third value is yaw, not z.
+RAW_PATH_ego_NEW = [
+    (211.651, -12.901, -178.415), (209.813, -12.935, -179.061), (202.351, -13.039, -179.314), (194.767, -13.029, 179.380),
+    (187.289, -12.864, 178.323), (179.568, -12.638, 178.323), (174.244, -12.490, 178.693), (169.289, -12.536, -178.511),
+    (164.202, -12.659, -178.894), (159.145, -12.699, 179.732), (154.133, -12.676, 179.732), (148.969, -12.665, -179.888),
+    (143.872, -12.675, -179.888), (138.825, -12.685, -179.888), (133.748, -12.674, 179.843), (128.699, -12.660, 179.843),
+    (123.587, -12.646, 179.843), (118.570, -12.637, -179.921), (113.512, -12.653, -179.529), (108.380, -12.712, -179.268),
+    (103.362, -12.776, -179.268), (98.332, -12.828, -179.783), (93.285, -12.833, 179.714), (88.159, -12.789, 179.343),
+    (83.111, -12.811, -179.043), (78.037, -12.927, -178.673), (72.926, -13.021, -179.184), (67.862, -13.071, -179.435),
+    (62.810, -13.121, -179.435), (57.768, -13.171, -179.435), (52.640, -13.222, -179.435), (47.629, -13.275, -179.188),
+    (42.475, -13.348, -179.188), (40.375, -13.378, -179.188), (39.860, -13.352, 172.972), (39.358, -13.276, 169.477),
+    (38.870, -13.171, 166.286), (38.370, -13.047, 166.033), (37.887, -12.917, 163.994), (37.399, -12.775, 163.749),
+    (36.910, -12.633, 163.749), (36.430, -12.493, 163.749), (35.953, -12.354, 163.749), (35.464, -12.211, 163.749),
+    (34.976, -12.069, 163.749), (34.487, -11.927, 163.749), (34.007, -11.787, 163.749), (33.519, -11.645, 163.749),
+    (33.031, -11.502, 163.749), (32.551, -11.365, 164.055), (32.054, -11.223, 164.055), (31.565, -11.083, 164.125),
+    (31.073, -10.956, 166.097), (30.577, -10.842, 168.728), (30.077, -10.750, 170.948), (29.574, -10.683, 174.242),
+    (29.075, -10.645, 176.379), (28.576, -10.615, 176.750), (28.060, -10.586, 177.010), (27.560, -10.571, 178.744),
+    (27.052, -10.563, 179.863), (26.544, -10.564, -175.549), (26.047, -10.624, -171.064), (25.552, -10.726, -167.760),
+    (23.289, -11.217, -167.760), (20.788, -11.664, -173.069), (18.276, -11.961, -174.505), (15.742, -12.156, -176.311),
+    (13.249, -12.336, -175.306), (10.718, -12.544, -175.306), (8.209, -12.695, -177.919), (5.650, -12.787, -177.919),
+    (1.250, -12.937, -178.674), (-3.916, -13.017, -179.373), (-8.915, -13.052, -179.806)
+]
+EGO_SPAWN_Z = 1.2
+
 # 基于货车轨迹动态生成 A2 协作变道超车轨迹
 RAW_PATH_A2 = [(210.570, -9.220, 0.8), (179.570, -9.220, 0.8),
     (150.000, -9.220, 0.8), (50.000, -9.220, 0.8)]
@@ -172,7 +196,7 @@ RAW_PATH_A2 = [(210.570, -9.220, 0.8), (179.570, -9.220, 0.8),
 RAW_PATH_A2_DENSE = interpolate_path(RAW_PATH_A2, interval=1.0)
 
 # Ego 轨迹
-RAW_PATH_ego = [
+RAW_PATH_ego_OLD_UNUSED = [
     (200.427, -12.666, 0.648), (197.589, -12.773, 0.361), (195.212, -12.801, 0.304),
     (192.614, -12.852, 0.428), (189.765, -12.931, 0.565), (187.630, -13.011, 0.633),
     (182.868, -13.194, 0.781), (182.162, -13.221, 0.802), (179.122, -13.323, 0.868),
@@ -235,7 +259,20 @@ def clean_and_convert_path(raw_path_points):
 
 PATH_A2_TRANSFORMS = clean_and_convert_path(RAW_PATH_A2_DENSE) # 必须使用 DENSE
 PATH_TRUCK_TRANSFORMS = clean_and_convert_path(RAW_PATH_TRUCK)
-RAW_ego_TRANSFORMS = clean_and_convert_path(RAW_PATH_ego)
+
+
+def convert_ego_path(raw_path_points, spawn_z=EGO_SPAWN_Z):
+    return [
+        carla.Transform(
+            carla.Location(x=p[0], y=p[1], z=spawn_z),
+            carla.Rotation(yaw=p[2])
+        )
+        for p in raw_path_points
+    ]
+
+
+RAW_PATH_ego = RAW_PATH_ego_NEW
+RAW_ego_TRANSFORMS = convert_ego_path(RAW_PATH_ego)
 
 
 # ==========================================
@@ -259,6 +296,7 @@ def main():
 
     bp_lib = world.get_blueprint_library()
     actor_list = []
+    tm = None
 
     try:
         settings = world.get_settings()
@@ -353,6 +391,10 @@ def main():
 
         # --- 3. 生成 Ego 车辆 (修复了复制粘贴导致覆盖 A2 的 bug) ---
         bp_ego = bp_lib.find('vehicle.tesla.model3')
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
+        if bp_ego.has_attribute('color'):
+            bp_ego.set_attribute('color', '255,105,180')
         trans_ego = RAW_ego_TRANSFORMS[0]
         vehicle_ego = world.try_spawn_actor(bp_ego, trans_ego)
         if vehicle_ego:
@@ -366,6 +408,7 @@ def main():
             current_target_speed_ego = target_speed_ego_kmh / 3.6
         else:
             print("Ego 车辆生成失败！")
+            raise RuntimeError("failed to spawn ego vehicle")
 
 
 
@@ -387,6 +430,15 @@ def main():
         BASE_SPEED = 80.0
 
         TRUCK_HALF_LEN, EGO_HALF_LEN = 5.0, 2.5
+        ego_goal_location = RAW_ego_TRANSFORMS[-1].location
+        ego_goal_radius_m = 3.0
+
+        def destroy_all_scene_actors(reason):
+            print(reason)
+            live_actors = [actor for actor in actor_list if actor and actor.is_alive]
+            if live_actors:
+                client.apply_batch([carla.command.DestroyActor(actor) for actor in live_actors])
+            actor_list.clear()
 
         print("\n场景运行：货车延后转向，A2 切换逻辑已重构...")
         # # 将视角绑定到 Ego 车后方以便观察
@@ -402,8 +454,16 @@ def main():
             #         carla.Rotation(pitch=-15.0, yaw=tf.rotation.yaw)
             #     ))
 
+            if not (vehicle_ego and vehicle_ego.is_alive):
+                destroy_all_scene_actors("[RTB082] Ego is no longer alive; cleaning all scene actors and exiting.")
+                break
+
             tf_e = vehicle_ego.get_transform()
             speed_e = math.sqrt(vehicle_ego.get_velocity().x ** 2 + vehicle_ego.get_velocity().y ** 2)
+            if tf_e.location.distance(ego_goal_location) <= ego_goal_radius_m:
+                destroy_all_scene_actors("[RTB082] Ego reached trajectory endpoint; cleaning all scene actors and exiting.")
+                vehicle_ego = vehicle_truck = vehicle_a2 = None
+                break
 
             # --- 1. 消防车 (Truck) 控制：延后 10m 转向 ---
             truck_is_turning = False
@@ -458,6 +518,10 @@ def main():
                 wp_e = get_target_waypoint(tf_e.location, RAW_ego_TRANSFORMS, lookahead_dist=7.0)
                 st_e = lat_controller_ego.run_step(wp_e, tf_e)
                 vehicle_ego.apply_control(carla.VehicleControl(throttle=t_out_e, steer=st_e, brake=b_out_e))
+                if tf_e.location.distance(ego_goal_location) <= ego_goal_radius_m:
+                    destroy_all_scene_actors("[RTB082] Ego reached trajectory endpoint; cleaning all scene actors and exiting.")
+                    vehicle_ego = vehicle_truck = vehicle_a2 = None
+                    break
 
                 # --- 3. A2 车辆控制：修正方向与摆动问题 ---
                 if vehicle_a2 and vehicle_ego:
@@ -530,7 +594,8 @@ def main():
         settings.fixed_delta_seconds = None
         world.apply_settings(settings)
 
-        tm.set_synchronous_mode(False)
+        if tm:
+            tm.set_synchronous_mode(False)
 
         if actor_list:
             client.apply_batch([carla.command.DestroyActor(a) for a in actor_list])

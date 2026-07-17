@@ -344,21 +344,6 @@ RAW_EGO_TEXT = r"""
 130.113 -307.456 -110.982
 128.277 -312.197 -111.942
 126.278 -316.962 -113.038
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
-125.952 -317.729 -113.178
 """
 
 RAW_SLOW_TEXT = r"""
@@ -494,6 +479,144 @@ RAW_SLOW_TEXT = r"""
 """
 
 
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (126.278, -316.962)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     actor_list = []
     client = carla.Client("localhost", 2000)
@@ -516,7 +639,6 @@ def main():
         # 按截图设置天气：Base Preset = ClearNoon
         RTB.set_static_weather(
             world,
-            preset="ClearNoon",
             cloudiness=0.0,
             precipitation=0.0,
             precipitation_deposits=0.0,
@@ -527,10 +649,10 @@ def main():
             fog_distance=0.75,
             fog_falloff=0.10,
             wetness=0.0,
-            scattering_intensity=11.5,
+            scattering_intensity=5.5,
             mie_scattering_scale=0.21,
             rayleigh_scattering_scale=0.07,
-            dust_storm=0.0,
+            dust_storm=0.0
         )
         print("[场景配置] 同步模式已开启；天气已按截图设置为 ClearNoon + 轻雾/低太阳高度。")
 
@@ -599,7 +721,7 @@ def main():
         # ==========================================
         RTB.set_vehicle_initial_speed(car_a2, 90.0, yaw_deg=clean_a2[0][2])
         RTB.set_vehicle_initial_speed(ego, 90.0, yaw_deg=clean_ego[0][2])
-        RTB.set_vehicle_initial_speed(slow, 25.0, yaw_deg=clean_slow[0][2])
+        RTB.set_vehicle_initial_speed(slow, 35.0, yaw_deg=clean_slow[0][2])
 
         # ==========================================
         # 5. 车辆 PID 控制器挂载
@@ -629,7 +751,7 @@ def main():
                 "lon": RTB.PIDLongitudinalController(dt=dt, preset="default_car"),
                 "lat": RTB.PIDLateralController(dt=dt, preset="default_car"),
                 "path": traj_slow,
-                "target_speed": 25.0,
+                "target_speed": 35.0,
                 "last_idx": 0,
                 "finished": False,
             },
@@ -648,10 +770,10 @@ def main():
         # ==========================================
         SPEED_TRIGGER_RADIUS = 2.0
         speed_event_state = {
-            # Ego：经过指定点后减速到 25km/h，4 秒后恢复原速度 90km/h
-            "ego_slowdown_point": (154.465, -39.783),
+            # Ego：经过指定点后减速到 65km/h，4 秒后恢复原速度 90km/h
+            "ego_slowdown_point": (149.442, -15.24),
             "ego_original_speed": 90.0,
-            "ego_slowdown_speed": 15.0,
+            "ego_slowdown_speed": 65.0,
             "ego_resume_delay_s": 6.0,
             "ego_slowdown_triggered": False,
             "ego_resume_triggered": False,
@@ -671,6 +793,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time += dt
 
             # 遍历 actor_list 副本，允许在循环中移除出界车辆

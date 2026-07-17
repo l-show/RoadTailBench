@@ -28,13 +28,21 @@ def main():
         # ==========================================
         # 一、天气系统配置 (利用标准化库或直接赋值)
         # ==========================================
-        weather_params = [5.0, 0.0, 0.0, 10.0, -1.0, 15.0, 2.0, 0.75, 0.1, 0.0, 1.0, 0.03, 0.0331, 0.0]
         weather = carla.WeatherParameters(
-            cloudiness=weather_params[0], precipitation=weather_params[1], precipitation_deposits=weather_params[2],
-            wind_intensity=weather_params[3], sun_azimuth_angle=weather_params[4], sun_altitude_angle=weather_params[5],
-            fog_density=weather_params[6], fog_distance=weather_params[7], fog_falloff=weather_params[8],
-            wetness=weather_params[9], scattering_intensity=weather_params[10], mie_scattering_scale=weather_params[11],
-            rayleigh_scattering_scale=weather_params[12], dust_storm=weather_params[13]
+            cloudiness=5.0,
+            precipitation=0.0,
+            precipitation_deposits=0.0,
+            wind_intensity=10.0,
+            sun_azimuth_angle=-1.0,
+            sun_altitude_angle=15.0,
+            fog_density=2.0,
+            fog_distance=0.75,
+            fog_falloff=0.1,
+            wetness=0.0,
+            scattering_intensity=1.0,
+            mie_scattering_scale=0.03,
+            rayleigh_scattering_scale=0.0331,
+            dust_storm=0.0
         )
         world.set_weather(weather)
         print("[场景配置] 天气系统已设置为定制的 Sunset 状态。")
@@ -74,11 +82,34 @@ def main():
             (143.344, -11.511), (149.315, -16.449), (154.867, -21.672), (160.303, -27.014), (165.656, -32.44),
             (171.016, -37.862), (176.376, -43.285), (181.642, -48.625), (192.262, -59.397), (198.405, -65.628)
         ]
+        raw_traj_ego = [
+            (135.144, -14.556, 150.211), (135.144, -14.556, 150.211), (135.144, -14.556, 150.211), (135.144, -14.556, 150.211),
+            (135.093, -14.527, 150.211), (134.660, -14.279, 150.211), (134.227, -14.031, 150.211), (133.786, -13.779, 150.211),
+            (133.345, -13.526, 150.211), (131.546, -12.496, 150.211), (129.363, -11.280, 151.026), (127.121, -10.084, 152.422),
+            (124.886, -8.963, 153.934), (122.616, -7.917, 156.960), (120.252, -6.970, 158.482), 
+            (119.676, -6.990, 160.349), (119.676, -6.990, 160.349), (119.676, -6.990, 160.349), (119.510, -6.933, 161.144),
+            (119.029, -6.769, 161.144), (118.548, -6.604, 161.144), (117.669, -6.304, 161.144), (115.224, -5.472, 161.571),
+            (112.804, -4.698, 163.185), (110.353, -4.029, 166.584), (107.905, -3.521, 170.069), (105.390, -3.154, 172.301),
+            (102.913, -2.819, 172.301), (100.424, -2.502, 174.191), (97.849, -2.297, 176.288), (95.313, -2.132, 176.288),
+            (92.816, -2.025, 178.374), (90.275, -1.975, 178.910), (87.775, -1.942, 179.673), (85.233, -1.929, 179.891),
+            (82.691, -1.932, -179.721), (80.149, -1.945, -179.721), (77.608, -1.957, -179.721), (75.108, -1.939, 179.473),
+            (72.566, -1.916, 179.473), (70.025, -1.916, -179.689), (67.484, -1.930, -179.689), (64.192, -1.948, -179.689),
+            (60.442, -1.968, -179.689), (56.692, -1.997, -179.362), (52.880, -2.063, -178.488), (49.132, -2.144, -179.235),
+            (45.320, -2.182, -179.703), (41.570, -2.172, 179.751), (37.820, -2.131, 179.095), (34.009, -2.052, 178.768),
+            (30.200, -1.925, 177.980), (26.390, -1.791, 177.980), (22.643, -1.654, 177.652), (18.897, -1.490, 177.324),
+            (15.154, -1.315, 177.543), (11.281, -1.180, 178.759), (7.532, -1.175, -179.690), (3.721, -1.268, -177.486),
+            (-0.026, -1.432, -177.486), (-3.897, -1.603, -177.156), (-7.641, -1.815, -177.137), (-11.451, -1.954, -178.292),
+            (-15.203, -2.013, -179.517), (-18.955, -2.038, -179.847), (-22.767, -2.057, -179.328), (-26.579, -2.102, -179.328),
+            (-30.328, -2.193, -178.075), (-34.135, -2.387, -176.544), (-37.878, -2.606, -176.875), (-41.685, -2.788, -178.603),
+            (-45.434, -2.792, 179.126), (-49.182, -2.685, 178.112), (-52.930, -2.562, 178.112), (-56.741, -2.463, 178.730),
+            (-60.614, -2.343, 177.217), (-61.238, -2.312, 177.152), (-61.238, -2.312, 177.152), (-61.238, -2.312, 177.152)
+        ]
 
         # 去重清洗，防止密集点原地抽搐
         traj_v1 = rtb.clean_trajectory(raw_traj_v1, min_dist=0.5)
         traj_v2 = rtb.clean_trajectory(raw_traj_v2, min_dist=0.5)
         traj_v3 = rtb.clean_trajectory(raw_traj_v3, min_dist=0.5)
+        traj_ego = rtb.clean_trajectory(raw_traj_ego, min_dist=0.5)
 
         # ==========================================
         # 三、车辆生成 (安全生成)
@@ -86,7 +117,8 @@ def main():
         v1 = rtb.spawn_vehicle(world, 'vehicle.audi.tt', traj_v1[0][0], traj_v1[0][1], yaw=-111.457)
         v2 = rtb.spawn_vehicle(world, 'vehicle.chevrolet.impala', traj_v2[0][0], traj_v2[0][1], yaw=155.871)
         v3 = rtb.spawn_vehicle(world, 'vehicle.yamaha.yzf', traj_v3[0][0], traj_v3[0][1], yaw=-4.794)
-        ego = rtb.spawn_vehicle(world, 'vehicle.lincoln.mkz_2020', x=132.364, y=-13.057, role_name="ego")
+        ego = rtb.spawn_vehicle(world, 'vehicle.lincoln.mkz_2020', x=traj_ego[0][0], y=traj_ego[0][1],
+                                yaw=traj_ego[0][2], color='192,192,192', role_name="ego")
 
         for v in [v1, v2, v3, ego]:
             if v: actor_list.append(v)
@@ -112,7 +144,11 @@ def main():
         v3_sm = rtb.MultiStageBehaviorMachine(initial_speed=20.0)
         v3_sm.add_stage(trigger_type='immediate', target_speed=80.0, accel=40.0)
 
-        current_idx_v1, current_idx_v2, current_idx_v3 = 0, 0, 0
+        ego_sm = rtb.MultiStageBehaviorMachine(initial_speed=65.0)
+        ego_sm.add_stage(trigger_type='x_less', trigger_val=47.0, target_speed=30.0, accel=25.0)
+        ego_sm.add_stage(trigger_type='time', trigger_val=2.0, target_speed=65.0, accel=20.0)
+
+        current_idx_v1, current_idx_v2, current_idx_v3, current_idx_ego = 0, 0, 0, 0
         sim_time = 0.0
 
         # ==========================================
@@ -126,7 +162,7 @@ def main():
         if v1: rtb.set_vehicle_initial_speed(v1, 60.0)
         if v2: rtb.set_vehicle_initial_speed(v2, 60.0)
         if v3: rtb.set_vehicle_initial_speed(v3, 20.0)
-        if ego: rtb.set_vehicle_initial_speed(ego, 40.0)
+        if ego: rtb.set_vehicle_initial_speed(ego, 65.0, yaw_deg=traj_ego[0][2])
 
         print("\n仿真正式开始！(无尽模式，按 Ctrl+C 退出)")
 
@@ -176,9 +212,16 @@ def main():
             # ---------------- Ego车 控制 ----------------
             if ego and ego.is_alive:
                 if not rtb.check_vehicle_out_of_bounds(ego, carla_map, auto_destroy=True):
-                    ego_target_wp = rtb.get_random_lane_keeping_waypoint(carla_map, ego.get_location(),
-                                                                         lookahead_dist=8.0)
-                    rtb.apply_pid_control(ego, pid_lon_ego, pid_lat_ego, 70.0, ego_target_wp)
+                    if current_idx_ego >= len(traj_ego) - 2:
+                        print("[RoadTailBench] Ego reached trajectory endpoint; cleaning actors and stopping scenario.")
+                        rtb.cleanup_actors(client, actor_list)
+                        break
+                    else:
+                        target_speed_ego = ego_sm.tick(ego.get_location(), sim_time, dt)
+                        ego_target_wp, current_idx_ego = rtb.get_target_waypoint(ego.get_location(), traj_ego,
+                                                                                 current_idx_ego,
+                                                                                 speed_kmh=target_speed_ego)
+                        rtb.apply_pid_control(ego, pid_lon_ego, pid_lat_ego, target_speed_ego, ego_target_wp)
 
             # ---------------- 硬件时钟补齐 (强制20帧真实时间流逝) ----------------
             compute_time = time.time() - start_time

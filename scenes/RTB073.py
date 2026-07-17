@@ -42,14 +42,7 @@ RAW_IMPALA_PATH_POINTS = [
     (53.92, 30.344, -9.656), (57.695, 29.809, -7.003), (61.421, 29.396, -5.737),
     (65.222, 29.113, -3.081), (69.028, 28.917, -2.941), (72.835, 28.719, -3.011),
     (76.641, 28.519, -3.011), (78.077, 28.444, -3.011), (78.077, 28.444, -3.011),
-    (78.077, 28.444, -3.011), (81.197, 28.27, -3.221), (85.0, 28.056, -3.221),
-    (88.801, 27.842, -3.221), (92.605, 27.628, -3.221), (96.406, 27.414, -3.221),
-    (100.21, 27.191, -3.933), (104.012, 26.925, -4.003), (112.384, 26.339, -4.003),
-    (129.755, 25.149, -3.058), (147.523, 24.34, -2.697), (165.295, 23.498, -2.837),
-    (183.068, 22.617, -2.837), (200.835, 21.695, -4.288), (218.248, 19.981, -7.633),
-    (236.07, 16.925, -10.23), (253.114, 12.988, -15.608), (270.13, 7.673, -18.764),
-    (286.781, 1.415, -22.431), (303.226, -5.374, -22.431), (313.471, -9.603, -22.431),
-    (313.471, -9.603, -22.431), (313.471, -9.603, -22.431)
+    (78.077, 28.444, -3.011), (81.197, 28.27, -3.221), (85.0, 28.056, -3.221)
 ]
 
 # 消防车轨迹去重
@@ -167,6 +160,144 @@ def get_target_waypoint(vehicle_loc, path_points, lookahead_dist=4.0):
 # ==========================================
 # 主程序
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (85.0, 28.056)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.chevrolet.impala'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'impala', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -229,6 +360,9 @@ def main():
 
             # 4. 🌟 生成新增车辆 Impala
             bp_impala = bp_lib.find('vehicle.chevrolet.impala')
+            bp_impala.set_attribute('color', '255,255,255')
+            if bp_impala.has_attribute('role_name'):
+                bp_impala.set_attribute('role_name', 'ego')
             # 提取轨迹第一个点作为初始坐标 (Z轴默认给个0.5防穿模)
             trans_impala = get_transform(x=RAW_IMPALA_PATH_POINTS[0][0], y=RAW_IMPALA_PATH_POINTS[0][1], z=0.5,
                                          yaw=RAW_IMPALA_PATH_POINTS[0][2])
@@ -278,6 +412,8 @@ def main():
             print("等待 1 秒，物理稳定中...")
             for _ in range(20):
                 world.tick()
+                if _rtb_opt_goal_guard(locals(), client, world):
+                    return
                 time.sleep(0.05)
 
             if bike:
@@ -311,6 +447,8 @@ def main():
             while True:
                 start_time = time.time()
                 world.tick()
+                if _rtb_opt_goal_guard(locals(), client, world):
+                    return
 
                 # ==========================================
                 # 消防车 控制流

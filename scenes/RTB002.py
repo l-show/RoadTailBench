@@ -14,6 +14,10 @@ if LIBRARY_PATH not in sys.path:
 # 全局导入标准化函数库
 import RoadTailBenchInitV9 as RTB
 
+
+def _rtb_actor_alive(actor):
+    return bool(actor is not None and getattr(actor, "is_alive", False))
+
 # ==========================================
 # 轨迹数据硬编码区域 (保持原始坐标，格式为 [x, y, yaw])
 # ==========================================
@@ -243,6 +247,10 @@ def main():
                 lights_ego.auto_update_from_control()
 
             # ---------------- 硬件时钟补齐 (强制 1X 真实时间流逝) ----------------
+            if not any(_rtb_actor_alive(actor) for actor in actor_list):
+                print("[RoadTailBench] RTB002check actors all destroyed; ending simulation.")
+                break
+
             compute_time = time.time() - start_time
             if compute_time < dt:
                 time.sleep(dt - compute_time)

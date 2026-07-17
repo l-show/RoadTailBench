@@ -7,7 +7,7 @@ CARLA 0.9.15 RoadTailBench 场景脚本
 
 本版内容：
 1. 完全删除 Ego 的紧急制动、TTC触发、左避让、横向偏移控制。
-2. Ego 只按照给定起点和终点，通过 GlobalRoutePlanner 自动生成路径并固定 50 km/h 行驶。
+2. Ego 使用固定轨迹进行 PID 控制，并按 x 坐标触发 60/30/70/60 km/h 状态机车速。
 3. 对向来车终点：
    Location: x=114.005, y=0.548, z=18.965
    Rotation: pitch=2.754, yaw=17.023, roll=0.000
@@ -83,40 +83,39 @@ ROUTE_RESOLUTION_M = 2.0
 # 2. 全局可调接口：车辆速度
 # ============================================================
 
-HEAVY_TRUCK_SPEED_KMH = 10.0
+HEAVY_TRUCK_SPEED_KMH = 15.0
 HEAVY_TRUCK_MAX_SPEED_KMH = 16.0
 
 ONCOMING_SPEED_KMH = 60.0
 ONCOMING_MAX_SPEED_KMH = 68.0
 
-EGO_SPEED_KMH = 50.0
-EGO_MAX_SPEED_KMH = 58.0
+EGO_CRUISE_SPEED_KMH = 60.0
+EGO_SLOW_SPEED_KMH = 30.0
+EGO_BOOST_SPEED_KMH = 70.0
+EGO_BOOST_DURATION_S = 3.0
+EGO_MAX_SPEED_KMH = 78.0
+EGO_TRAJECTORY_START_Z_HINT = 20.0
+EGO_SPAWN_Z_OFFSET = 0.75
 
 
 # ============================================================
 # 3. 全局可调接口：天气参数
 # ============================================================
 
-WEATHER_PRESET = "ClearNoon"
-
-WEATHER_CLOUDINESS = 100.0
-WEATHER_PRECIPITATION = 0.0
-WEATHER_PUDDLES = 70.0
-WEATHER_WIND = 60.0
-
-WEATHER_SUN_AZIMUTH = 0.0
-WEATHER_SUN_ALTITUDE = 6.0
-
-WEATHER_FOG_DENSITY = 90.0
-WEATHER_FOG_DISTANCE = 50.750
-WEATHER_FOG_FALLOFF = 0.100
-
-WEATHER_WETNESS = 0.0
-
-WEATHER_SCATTERING = 1.500
-WEATHER_MIE = 0.210
-WEATHER_RAYLEIGH = 0.070
-WEATHER_DUST = 0.0
+cloudiness = 45.0
+precipitation = 5.0
+precipitation_deposits = 25.0
+wind_intensity = 20.0
+sun_azimuth_angle = 90.0
+sun_altitude_angle = 80.001
+fog_density = 1
+fog_distance = 1.0
+fog_falloff = 0.1
+wetness = 75.0
+scattering_intensity = 1
+mie_scattering_scale = 0.0300
+rayleigh_scattering_scale = 0.0331
+dust_storm = 0.0
 
 
 # ============================================================
@@ -124,10 +123,7 @@ WEATHER_DUST = 0.0
 # ============================================================
 
 EGO_BP_CANDIDATES = [
-    "vehicle.nissan.patrol",
-    "vehicle.audi.etron",
-    "vehicle.tesla.model3",
-    "vehicle.lincoln.mkz_2020",
+    "vehicle.lincoln.mkz_2020"
 ]
 
 HEAVY_TRUCK_BP_CANDIDATES = [
@@ -137,24 +133,49 @@ HEAVY_TRUCK_BP_CANDIDATES = [
 ONCOMING_BP_CANDIDATES = [
     "vehicle.dodge.charger_2020",
     "vehicle.audi.tt",
-    "vehicle.lincoln.mkz_2020",
-    "vehicle.tesla.model3",
+    "vehicle.tesla.model3"
 ]
 
 
 # ============================================================
-# 5. 全局可调接口：Ego 起终点
+# 5. 全局可调接口：Ego 固定轨迹
 # ============================================================
 
-EGO_START_TF = carla.Transform(
-    carla.Location(x=148.837, y=4.789, z=19.913),
-    carla.Rotation(pitch=2.447, yaw=-166.496, roll=0.000)
-)
-
-EGO_END_TF = carla.Transform(
-    carla.Location(x=-149.286, y=61.583, z=8.560),
-    carla.Rotation(pitch=-4.096, yaw=118.011, roll=0.000)
-)
+EGO_TRAJECTORY = [
+    (165.803, 8.202, -172.011), (164.644, 8.027, -170.647), (163.409, 7.800, -169.265), (162.166, 7.564, -169.005),
+    (160.926, 7.299, -167.290), (159.674, 6.984, -164.576), (158.468, 6.656, -165.414), (156.512, 6.147, -165.414),
+    (154.052, 5.507, -165.414), (150.624, 4.625, -166.259), (146.937, 3.728, -166.739), (143.285, 2.878, -166.978),
+    (139.620, 2.086, -168.416), (135.945, 1.333, -168.416), (132.209, 0.547, -167.556), (128.550, -0.283, -167.216),
+    (124.815, -1.096, -168.174), (121.141, -1.841, -168.773), (117.401, -2.583, -168.773), (113.717, -3.314, -168.773),
+    (109.135, -4.224, -168.773), (104.149, -5.214, -168.773), (99.243, -6.187, -168.773), (94.326, -7.123, -169.373),
+    (89.329, -8.054, -169.372), (84.337, -9.008, -169.132), (79.428, -9.932, -169.371), (74.518, -10.855, -169.131),
+    (69.619, -11.827, -168.651), (64.640, -12.826, -168.651), (59.743, -13.809, -168.721), (54.757, -14.768, -170.140),
+    (49.747, -15.591, -170.859), (44.816, -16.384, -170.859), (39.796, -17.145, -172.588), (34.757, -17.753, -173.220),
+    (29.713, -18.320, -174.181), (24.741, -18.766, -175.349), (19.674, -19.065, -178.167), (14.598, -19.202, -178.939),
+    (9.602, -19.216, 179.214), (4.527, -18.979, 176.361), (-0.462, -18.661, 176.361), (-5.527, -18.263, 174.025),
+    (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831),
+    (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831),
+    (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831), (-6.355, -18.174, 173.831), (-6.603, -18.148, 173.831),
+    (-11.642, -17.500, 171.182), (-16.632, -16.725, 171.182), (-21.652, -15.947, 171.182), (-26.580, -15.123, 169.611),
+    (-31.529, -14.063, 165.385), (-36.398, -12.622, 162.960), (-41.173, -11.158, 162.960), (-46.029, -9.670, 162.960),
+    (-50.813, -8.173, 161.296), (-55.566, -6.378, 157.960), (-60.172, -4.438, 155.891), (-64.702, -2.332, 153.954),
+    (-69.225, -0.023, 152.688), (-73.233, 2.014, 153.361), (-73.233, 2.014, 153.361), (-73.233, 2.014, 153.361),
+    (-73.233, 2.014, 153.361), (-73.233, 2.014, 153.361), (-73.233, 2.014, 153.361), (-74.571, 2.688, 152.941),
+    (-79.026, 5.125, 147.830), (-83.129, 7.976, 142.215), (-87.114, 11.130, 141.514), (-91.098, 14.284, 142.360),
+    (-95.139, 17.219, 146.635), (-99.371, 19.871, 148.259), (-103.692, 22.544, 148.259), (-107.910, 25.224, 145.926),
+    (-112.021, 28.064, 145.224), (-116.093, 30.959, 143.398), (-120.118, 33.996, 141.918), (-123.980, 37.291, 135.735),
+    (-127.428, 40.907, 133.235), (-130.926, 44.475, 134.658), (-134.489, 48.096, 134.374), (-137.939, 51.709, 132.188),
+    (-141.193, 55.500, 129.061), (-144.276, 59.643, 123.383), (-147.054, 63.998, 122.463), (-149.808, 68.364, 121.483),
+    (-152.385, 72.740, 119.085), (-154.744, 77.237, 115.547), (-156.883, 81.753, 115.337), (-158.787, 86.369, 111.016),
+    (-160.606, 91.110, 109.954), (-162.130, 95.867, 106.985), (-163.544, 100.830, 102.660), (-164.590, 105.715, 101.883),
+    (-165.789, 110.563, 106.366), (-167.239, 115.344, 106.997), (-168.724, 120.202, 106.997), (-170.184, 124.980, 106.927),
+    (-171.507, 129.883, 102.470), (-172.365, 134.804, 98.731), (-172.962, 139.763, 97.020), (-173.573, 144.721, 97.020),
+    (-174.270, 149.763, 98.224), (-174.999, 154.705, 98.364), (-175.727, 159.651, 98.224), (-176.408, 164.611, 97.734),
+    (-177.092, 169.646, 97.734), (-177.764, 174.599, 97.734), (-178.451, 179.650, 97.734), (-179.134, 184.771, 97.594),
+    (-179.795, 189.725, 97.594), (-180.467, 194.763, 97.594), (-181.128, 199.735, 97.454), (-181.776, 204.693, 97.454),
+    (-182.436, 209.742, 97.454), (-183.081, 214.785, 96.894), (-183.691, 219.832, 96.894), (-183.801, 220.742, 96.894),
+    (-183.801, 220.742, 96.894), (-183.801, 220.742, 96.894), (-183.801, 220.742, 96.894)
+]
 
 
 # ============================================================
@@ -229,6 +250,9 @@ def validate_user_inputs():
     if len(HEAVY_TRUCK_RAW_TRAJ) < 2:
         raise RuntimeError("HEAVY_TRUCK_RAW_TRAJ 锚点不足。")
 
+    if len(EGO_TRAJECTORY) < 2:
+        raise RuntimeError("EGO_TRAJECTORY 锚点不足。")
+
     if GlobalRoutePlanner is None:
         raise RuntimeError(
             "无法导入 CARLA GlobalRoutePlanner。请检查 CARLA_ROOT 是否正确，"
@@ -259,6 +283,33 @@ def print_world_sync_state(world):
 
 def cleanup_actors(client, actor_list):
     RTB.cleanup_actors(client, actor_list)
+
+
+def cleanup_all_vehicle_actors(client, world, actor_list):
+    vehicles_by_id = {}
+    for actor in actor_list:
+        if actor and actor.is_alive:
+            vehicles_by_id[actor.id] = actor
+
+    try:
+        for actor in world.get_actors().filter("vehicle.*"):
+            if actor and actor.is_alive:
+                vehicles_by_id[actor.id] = actor
+    except Exception as e:
+        print("[RTB104] Failed to enumerate vehicle actors during cleanup:", e)
+
+    if vehicles_by_id:
+        commands = [carla.command.DestroyActor(actor.id) for actor in vehicles_by_id.values()]
+        try:
+            client.apply_batch_sync(commands, True)
+        except Exception:
+            client.apply_batch(commands)
+        try:
+            world.tick()
+        except Exception:
+            pass
+    actor_list.clear()
+    print("[RTB104] Destroyed {} vehicle actors.".format(len(vehicles_by_id)))
 
 
 def warmup_map_cache(world):
@@ -301,8 +352,36 @@ def make_transform_from_raw_point(p):
     )
 
 
+def get_driving_waypoint_at_xy(carla_map, x, y, search_z):
+    loc = carla.Location(x=x, y=y, z=search_z)
+    waypoint = carla_map.get_waypoint(loc, project_to_road=True, lane_type=carla.LaneType.Driving)
+    if waypoint is None:
+        raise RuntimeError("No driving waypoint near ({:.3f}, {:.3f}, z_hint={:.3f})".format(x, y, search_z))
+    return waypoint
+
+
+def make_transform_from_xy_yaw(carla_map, p, search_z=EGO_TRAJECTORY_START_Z_HINT):
+    waypoint = get_driving_waypoint_at_xy(carla_map, p[0], p[1], search_z)
+    z = waypoint.transform.location.z
+    return carla.Transform(
+        carla.Location(x=p[0], y=p[1], z=z),
+        carla.Rotation(yaw=p[2])
+    )
+
+
 def raw_traj_to_xyz(raw_traj):
     return [(p[0], p[1], p[2]) for p in raw_traj]
+
+
+def xy_yaw_traj_to_xyz(raw_traj, carla_map, z_offset=EGO_SPAWN_Z_OFFSET, start_z_hint=EGO_TRAJECTORY_START_Z_HINT):
+    path = []
+    search_z = start_z_hint
+    for x, y, _yaw in raw_traj:
+        waypoint = get_driving_waypoint_at_xy(carla_map, x, y, search_z)
+        search_z = waypoint.transform.location.z
+        z = search_z + z_offset
+        path.append((x, y, z))
+    return path
 
 
 def get_path_end_location(path):
@@ -427,6 +506,19 @@ def build_heavy_truck_path():
     return dense
 
 
+def build_ego_path(carla_map):
+    raw_points = xy_yaw_traj_to_xyz(
+        EGO_TRAJECTORY,
+        carla_map,
+        z_offset=EGO_SPAWN_Z_OFFSET,
+        start_z_hint=EGO_TRAJECTORY_START_Z_HINT
+    )
+    raw_points = RTB.clean_trajectory(raw_points, min_dist=1e-5)
+    dense = RTB.interpolate_trajectory(raw_points, interval=1.0)
+    dense = RTB.clean_trajectory(dense, min_dist=0.5)
+    return dense
+
+
 # ============================================================
 # 10. 车辆循迹控制函数
 # ============================================================
@@ -496,40 +588,38 @@ def follow_path_constant_speed(
 def apply_mountain_fog_weather(world):
     RTB.set_static_weather(
         world,
-        preset=WEATHER_PRESET,
+        cloudiness=cloudiness,
+        precipitation=precipitation,
+        precipitation_deposits=precipitation_deposits,
+        wind_intensity=wind_intensity,
 
-        cloudiness=WEATHER_CLOUDINESS,
-        precipitation=WEATHER_PRECIPITATION,
-        precipitation_deposits=WEATHER_PUDDLES,
-        wind_intensity=WEATHER_WIND,
+        sun_azimuth_angle=sun_azimuth_angle,
+        sun_altitude_angle=sun_altitude_angle,
 
-        sun_azimuth_angle=WEATHER_SUN_AZIMUTH,
-        sun_altitude_angle=WEATHER_SUN_ALTITUDE,
+        fog_density=fog_density,
+        fog_distance=fog_distance,
+        fog_falloff=fog_falloff,
 
-        fog_density=WEATHER_FOG_DENSITY,
-        fog_distance=WEATHER_FOG_DISTANCE,
-        fog_falloff=WEATHER_FOG_FALLOFF,
+        wetness=wetness,
 
-        wetness=WEATHER_WETNESS,
+        scattering_intensity=scattering_intensity,
+        mie_scattering_scale=mie_scattering_scale,
+        rayleigh_scattering_scale=rayleigh_scattering_scale,
 
-        scattering_intensity=WEATHER_SCATTERING,
-        mie_scattering_scale=WEATHER_MIE,
-        rayleigh_scattering_scale=WEATHER_RAYLEIGH,
-
-        dust_storm=WEATHER_DUST
+        dust_storm=dust_storm
     )
 
     print(
         "[天气设置] Clouds={} | Rain={} | Puddles={} | Wind={} | SunAzim={} | SunAlt={} | FogDens={} | FogDist={} | Wetness={}".format(
-            WEATHER_CLOUDINESS,
-            WEATHER_PRECIPITATION,
-            WEATHER_PUDDLES,
-            WEATHER_WIND,
-            WEATHER_SUN_AZIMUTH,
-            WEATHER_SUN_ALTITUDE,
-            WEATHER_FOG_DENSITY,
-            WEATHER_FOG_DISTANCE,
-            WEATHER_WETNESS
+            cloudiness,
+            precipitation,
+            precipitation_deposits,
+            wind_intensity,
+            sun_azimuth_angle,
+            sun_altitude_angle,
+            fog_density,
+            fog_distance,
+            wetness
         )
     )
 
@@ -569,12 +659,7 @@ def main():
         # ====================================================
         heavy_truck_path = build_heavy_truck_path()
 
-        ego_path = build_route_by_global_planner(
-            carla_map=carla_map,
-            start_loc=EGO_START_TF.location,
-            end_loc=EGO_END_TF.location,
-            resolution=ROUTE_RESOLUTION_M
-        )
+        ego_path = build_ego_path(carla_map)
 
         oncoming_path = build_route_by_global_planner(
             carla_map=carla_map,
@@ -586,12 +671,20 @@ def main():
         print("[路径检查] heavy_truck_path points:", len(heavy_truck_path))
         print("[路径检查] ego_path points:", len(ego_path))
         print("[路径检查] oncoming_path points:", len(oncoming_path))
-        print("[控制策略] Ego 仅固定速度循迹，不进行避让、不制动、不横向偏移。")
+        print("[控制策略] Ego 使用固定轨迹 PID 循迹，并按状态机控制目标速度。")
 
         # ====================================================
         # 12.3 生成三辆车
         # ====================================================
         heavy_truck_start_tf = make_transform_from_raw_point(HEAVY_TRUCK_RAW_TRAJ[0])
+        ego_start_tf = make_transform_from_xy_yaw(carla_map, EGO_TRAJECTORY[0], EGO_TRAJECTORY_START_Z_HINT)
+        print(
+            "[RTB104] Ego spawn base z={:.3f}, final z={:.3f}, z_hint={:.3f}".format(
+                ego_start_tf.location.z,
+                ego_start_tf.location.z + EGO_SPAWN_Z_OFFSET,
+                EGO_TRAJECTORY_START_Z_HINT
+            )
+        )
 
         heavy_truck = spawn_vehicle_by_tf(
             world=world,
@@ -608,10 +701,10 @@ def main():
         ego = spawn_vehicle_by_tf(
             world=world,
             candidates=EGO_BP_CANDIDATES,
-            tf=EGO_START_TF,
+            tf=ego_start_tf,
             color="0,80,255",
             role_name="ego",
-            z_offset=0.75
+            z_offset=EGO_SPAWN_Z_OFFSET
         )
         if not ego:
             raise RuntimeError("Ego 生成失败。")
@@ -695,8 +788,8 @@ def main():
 
         RTB.set_vehicle_initial_speed(
             ego,
-            target_speed_kmh=EGO_SPEED_KMH,
-            yaw_deg=EGO_START_TF.rotation.yaw
+            target_speed_kmh=EGO_CRUISE_SPEED_KMH,
+            yaw_deg=ego_start_tf.rotation.yaw
         )
 
         RTB.set_vehicle_initial_speed(
@@ -712,7 +805,7 @@ def main():
         print("[场景启动] 所有元素配置完成。")
         print("[速度设置] 重卡={} km/h | Ego={} km/h | 对向来车={} km/h".format(
             HEAVY_TRUCK_SPEED_KMH,
-            EGO_SPEED_KMH,
+            EGO_CRUISE_SPEED_KMH,
             ONCOMING_SPEED_KMH
         ))
 
@@ -721,6 +814,8 @@ def main():
         # ====================================================
         sim_time = 0.0
         frame_count = 0
+        ego_speed_state = "CRUISE"
+        ego_boost_start_time = None
 
         while sim_time < SCENARIO_DURATION:
             loop_t0 = time.time()
@@ -770,20 +865,43 @@ def main():
                 set_vehicle_lights(oncoming, brake=False, low_beam=True)
 
             # -----------------------------
-            # Ego：固定 50 km/h，沿起终点自动路径行驶
-            # 无避让、无TTC、无制动、无左偏移
+            # Ego: PID follows EGO_TRAJECTORY with speed-state targets.
             # -----------------------------
             if reached_path_end(ego, ego_path, threshold=6.0):
-                soft_hold_vehicle(ego)
-                set_vehicle_lights(ego, brake=True, low_beam=True, fog=True)
+                print("[RTB104] Ego reached trajectory end; destroying all vehicle actors.")
+                cleanup_all_vehicle_actors(client, world, actor_list)
+                break
             else:
+                ego_loc = ego.get_location()
+                if ego_speed_state == "CRUISE" and ego_loc.x <= -6.0:
+                    ego_speed_state = "SLOW"
+                    print("[RTB104] Ego speed state -> SLOW (30 km/h).")
+                if ego_speed_state == "SLOW" and ego_loc.x <= -73.0:
+                    ego_speed_state = "BOOST"
+                    ego_boost_start_time = sim_time
+                    print("[RTB104] Ego speed state -> BOOST (70 km/h).")
+                if (
+                    ego_speed_state == "BOOST"
+                    and ego_boost_start_time is not None
+                    and sim_time - ego_boost_start_time >= EGO_BOOST_DURATION_S
+                ):
+                    ego_speed_state = "RECOVER"
+                    print("[RTB104] Ego speed state -> RECOVER (60 km/h).")
+
+                if ego_speed_state == "SLOW":
+                    ego_target_speed = EGO_SLOW_SPEED_KMH
+                elif ego_speed_state == "BOOST":
+                    ego_target_speed = EGO_BOOST_SPEED_KMH
+                else:
+                    ego_target_speed = EGO_CRUISE_SPEED_KMH
+
                 ego_idx = follow_path_constant_speed(
                     vehicle=ego,
                     path=ego_path,
                     path_index=ego_idx,
                     pid_lon=ego_pid_lon,
                     pid_lat=ego_pid_lat,
-                    target_speed_kmh=EGO_SPEED_KMH,
+                    target_speed_kmh=ego_target_speed,
                     max_speed_kmh=EGO_MAX_SPEED_KMH,
                     min_lookahead=5.0,
                     lookahead_ratio=0.35

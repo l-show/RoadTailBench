@@ -81,15 +81,19 @@ FRONT_MAX_SPEED_KMH = 92.0
 # 1.2 Ego 速度模型
 # ============================================================
 
-EGO_TARGET_SPEED_KMH = 90.0
-EGO_MAX_SPEED_KMH = 92.0
+EGO_TARGET_SPEED_KMH = 80.0
+EGO_MAX_SPEED_KMH = 82.0
+EGO_SLOWDOWN_POINT_XY = (-157.876, -586.092)
+EGO_SLOWDOWN_RADIUS_M = 8.0
+EGO_SLOWDOWN_TARGET_SPEED_KMH = 40.0
 
 # ============================================================
 # 1.3 动态作业车速度
 # ============================================================
 
-WORK_VAN_TARGET_SPEED_KMH = 12.0
-WORK_VAN_MAX_SPEED_KMH = 14.0
+# 作业车速度批注：动态作业车按锚点轨迹匀速 10 km/h 行驶，便于后续直接定位修改。
+WORK_VAN_TARGET_SPEED_KMH = 10.0
+WORK_VAN_MAX_SPEED_KMH = 12.0
 
 # ============================================================
 # 1.4 湿滑低摩擦区域
@@ -296,6 +300,10 @@ def get_speed_kmh(vehicle):
 
 def distance_2d(loc_a, loc_b):
     return math.hypot(loc_a.x - loc_b.x, loc_a.y - loc_b.y)
+
+
+def distance_to_xy(loc, xy):
+    return math.hypot(loc.x - xy[0], loc.y - xy[1])
 
 
 def reached_end(vehicle, end_loc, threshold=6.0):
@@ -783,11 +791,7 @@ def main():
         front_vehicle = safe_spawn_vehicle(
             world=world,
             candidates=[
-                "vehicle.audi.etron",
-                "vehicle.nissan.patrol",
-                "vehicle.lincoln.mkz_2020",
-                "vehicle.tesla.model3",
-                "vehicle.audi.tt"
+                "vehicle.lincoln.mkz_2020"
             ],
             tf=front_start_tf,
             color="245,245,245",
@@ -808,10 +812,7 @@ def main():
         ego = safe_spawn_vehicle(
             world=world,
             candidates=[
-                "vehicle.tesla.model3",
-                "vehicle.lincoln.mkz_2020",
-                "vehicle.audi.tt",
-                "vehicle.dodge.charger_2020"
+                "vehicle.audi.tt"
             ],
             tf=EGO_START_TF,
             color="0,80,255",
@@ -947,6 +948,7 @@ def main():
         # ====================================================
         sim_time = 0.0
         frame_count = 0
+        ego_slowdown_triggered = False
 
         work_van_end_loc = carla.Location(
             x=WORK_VAN_RAW_TRAJ[-1][0],
@@ -968,7 +970,7 @@ def main():
             frame_count += 1
 
             # -----------------------------
-            # 动态作业车：匀速 20km/h，锚点轨迹
+            # 作业车速度批注：动态作业车匀速 10km/h，锚点轨迹
             # -----------------------------
             if reached_end(work_van, work_van_end_loc, threshold=4.5):
                 soft_hold_vehicle(work_van)
@@ -1029,14 +1031,33 @@ def main():
                 print("[场景结束] Ego 已到达终点附近。")
                 break
             else:
+                ego_loc = ego.get_location()
+                if (not ego_slowdown_triggered and
+                        distance_to_xy(ego_loc, EGO_SLOWDOWN_POINT_XY) <= EGO_SLOWDOWN_RADIUS_M):
+                    ego_slowdown_triggered = True
+                    print(
+                        "[Ego速度控制] 到达减速点附近 ({:.3f}, {:.3f})，目标速度切换为 {:.1f} km/h。".format(
+                            EGO_SLOWDOWN_POINT_XY[0],
+                            EGO_SLOWDOWN_POINT_XY[1],
+                            EGO_SLOWDOWN_TARGET_SPEED_KMH
+                        )
+                    )
+
+                ego_target_speed = (
+                    EGO_SLOWDOWN_TARGET_SPEED_KMH
+                    if ego_slowdown_triggered
+                    else EGO_TARGET_SPEED_KMH
+                )
+                ego_max_speed = ego_target_speed + 2.0
+
                 ego_idx, ego_target_wp = safe_follow_path(
                     vehicle=ego,
                     path=ego_path,
                     path_index=ego_idx,
                     pid_lon=ego_pid_lon,
                     pid_lat=ego_pid_lat,
-                    target_speed_kmh=EGO_TARGET_SPEED_KMH,
-                    max_speed_kmh=EGO_MAX_SPEED_KMH,
+                    target_speed_kmh=ego_target_speed,
+                    max_speed_kmh=ego_max_speed,
                     max_throttle=0.55,
                     max_brake=0.90,
                     max_steer=0.45,

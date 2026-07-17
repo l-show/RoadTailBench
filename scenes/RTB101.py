@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-本场景发生在一个黄昏时段的城市郊区无路灯的T形路口，太阳接近落山，低角度红色炫光与路口人工信号灯处于近似同一方向，共同进入主车前向视野，对主车的信号灯识别和道路边界感知造成强烈干扰；路口处铺满大量枫树叶，交叉口内部的道路边界、车道线以及可通行区域轮廓被大面积遮挡，同时主车进口方向的停止线缺失，使车辆难以通过地面标线判断准确的停车位置和路口边界。场景开始时，主车以约 35 km/h 从主路一侧直行驶向路口，前方人工信号灯处于异常状态，红灯、黄灯和绿灯同时点亮；由于黄昏太阳的红色炫光与信号灯方向重叠，红黄绿三色灯光在雾气、湿润路面和枫叶反射作用下形成混杂光晕，使主车更难可靠判断信号含义。当主车进一步接近停止决策区并进入触发区域后，异常信号灯突然从三灯全亮切换为仅绿灯亮，主车在停止线缺失、枫叶遮挡车道线和太阳炫光干扰的共同作用下，将该绿灯误判为直行放行信号，继续沿主路进入交叉口；与此同时，背景车从支路方向以约 35 km/h 释放并驶入路口，随后转向主路方向，其行驶轨迹与主车直行轨迹在枫叶覆盖最密集、低附着风险最高的交叉口中心区域发生时空重叠。由于枫叶覆盖区域被设定为低摩擦路面，主车即使在最后阶段识别到冲突，也可能因制动距离增加和转向响应变差而难以及时避让，最终形成由“黄昏逆光炫光、信号灯异常显示、停止线缺失、车道边界遮挡、低附着枫叶路面以及支路车辆转入冲突”共同诱发的高风险动态长尾场景。
-"""
-
-import sys
+﻿import sys
 import time
 import math
 import carla
@@ -180,7 +175,7 @@ def apply_dusk_weather(world):
 
         # 太阳角度
         sun_azimuth_angle=0.0,
-        sun_altitude_angle=0.0,
+        sun_altitude_angle=-90.0,
 
         # 雾气和湿度
         fog_density=1,
@@ -228,7 +223,7 @@ def build_ego_path():
         (85.000, -1.900, 4.550),
         (70.000, -1.960, 4.250),
 
-        (54.588, -2.018, 3.962),
+        (56.404, -1.678, 3.962),
     ]
 
     dense = RTB.interpolate_trajectory(raw_path, interval=1.0)
@@ -439,6 +434,144 @@ class BackgroundConstantSpeedController:
 # 10. 主函数
 # ============================================================
 
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (56.404, -1.678)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client("localhost", 2000)
     client.set_timeout(10.0)
@@ -469,10 +602,7 @@ def main():
         ego = safe_spawn_vehicle(
             world,
             candidates=[
-                "vehicle.tesla.model3",
-                "vehicle.lincoln.mkz_2020",
-                "vehicle.audi.tt",
-                "vehicle.dodge.charger_2020"
+                "vehicle.audi.tt"
             ],
             x=EGO_SPAWN_LOC.x,
             y=EGO_SPAWN_LOC.y,
@@ -487,10 +617,7 @@ def main():
         bg_vehicle = safe_spawn_vehicle(
             world,
             candidates=[
-                "vehicle.audi.tt",
-                "vehicle.lincoln.mkz_2020",
-                "vehicle.nissan.patrol",
-                "vehicle.dodge.charger_2020"
+                "vehicle.citroen.c3"
             ],
             x=BG_SPAWN_LOC.x,
             y=BG_SPAWN_LOC.y,
@@ -508,25 +635,25 @@ def main():
         actor_list.extend([ego, bg_vehicle])
 
         # ========================================================
-        # 车辆灯光系统
+        # 车辆灯光系统：车灯必须通过 carla.Vehicle.set_light_state 管理。
         # ========================================================
 
-        # 主车灯光：远光灯 + 雾灯
-        ego_lights = RTB.VehicleLightManager(ego)
-        ego_lights.turn_on(
-            carla.VehicleLightState.HighBeam |
-            carla.VehicleLightState.Fog
-        )
-
-        # 背景车 / 专项策划车辆灯光：左转灯 + 近光灯
-        bg_lights = RTB.VehicleLightManager(bg_vehicle)
-        bg_lights.turn_on(
-            carla.VehicleLightState.LeftBlinker |
+        # Ego: 位置灯 + 近光灯常亮。
+        ego_light_state = carla.VehicleLightState(
+            carla.VehicleLightState.Position |
             carla.VehicleLightState.LowBeam
         )
+        ego.set_light_state(ego_light_state)
 
-        print("[车辆灯光] EGO 已开启远光灯 + 雾灯。")
-        print("[车辆灯光] 背景车/专项策划车辆已开启左转灯 + 近光灯。")
+        # 背景车: 位置灯 + 远光灯常亮。
+        bg_light_state = carla.VehicleLightState(
+            carla.VehicleLightState.Position |
+            carla.VehicleLightState.HighBeam
+        )
+        bg_vehicle.set_light_state(bg_light_state)
+
+        print("[车辆灯光] EGO 已通过 Vehicle.set_light_state 开启 Position + LowBeam。")
+        print("[车辆灯光] 背景车已通过 Vehicle.set_light_state 开启 Position + HighBeam。")
 
         # 低摩擦区域，不画 debug box
         friction_actor = RTB.spawn_friction_region(
@@ -596,6 +723,8 @@ def main():
         # 预热几帧
         for _ in range(8):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             time.sleep(DT)
 
         print("[场景启动] 黄昏版本启动。")
@@ -613,6 +742,8 @@ def main():
         while True:
             loop_t0 = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
             sim_time += DT
 
             ego_loc = ego.get_location()

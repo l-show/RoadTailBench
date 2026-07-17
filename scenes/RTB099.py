@@ -138,9 +138,7 @@ RAW_EGO_TRAJECTORY = [
     (34.872, -56.366, -49.24), (37.387, -59.297, -49.453), (39.92, -62.211, -48.386), (42.484, -65.098, -48.246),
     (45.016, -67.929, -48.176), (47.538, -70.769, -48.671), (50.046, -73.622, -48.671), (52.595, -76.521, -48.671),
     (55.145, -79.421, -48.671), (57.613, -82.226, -48.671), (60.08, -85.032, -48.671), (63.849, -89.318, -48.671),
-    (67.961, -93.994, -48.741), (72.185, -98.844, -49.021), (76.397, -103.702, -49.234), (80.455, -108.419, -49.234),
-    (84.533, -113.148, -49.234), (88.626, -117.835, -48.741), (91.636, -121.265, -48.741), (91.636, -121.265, -48.741),
-    (91.636, -121.265, -48.741), (91.636, -121.265, -48.741)
+    (67.961, -93.994, -48.741), (72.185, -98.844, -49.021)
 ]
 
 # 预处理轨迹去除原数据中的连续重复点
@@ -151,6 +149,144 @@ EGO_TRAJECTORY = preprocess_trajectory(RAW_EGO_TRAJECTORY)
 # ==========================================
 # 主程序
 # ==========================================
+
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (72.185, -98.844)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
 def main():
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
@@ -207,6 +343,10 @@ def main():
 
         # ================= Actor 2：Ego车 (Audi TT) =================
         bp_ego = bp_lib.find('vehicle.audi.tt')
+        if bp_ego.has_attribute('role_name'):
+            bp_ego.set_attribute('role_name', 'ego')
+        if bp_ego.has_attribute('color'):
+            bp_ego.set_attribute('color', '0,255,255')
         ego_start_x, ego_start_y, ego_start_yaw = EGO_TRAJECTORY[0]
         ego_loc = carla.Location(x=ego_start_x, y=ego_start_y, z=0.5)
         ego_loc.z = carla_map.get_waypoint(ego_loc).transform.location.z + 0.5
@@ -220,6 +360,8 @@ def main():
         # 【防飞天机制】先进行 10 帧物理预热，确保车辆落地稳定
         for _ in range(10):
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
         # 【速度修改点】稳定后赋予物理初始速度 (避免从0加速引起瞬移或打滑)
         if v1_active:
@@ -247,6 +389,8 @@ def main():
         while True:
             start_time = time.time()
             world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
 
             # ==========================
             # V1 车辆 (Sprinter) 控制
@@ -261,8 +405,8 @@ def main():
                     if v1.get_location().distance(target_loc) < 3.5 and v1_traj_idx < len(V1_TRAJECTORY) - 1:
                         v1_traj_idx += 1
 
-                    # V1 保持目标速度 60 km/h
-                    apply_pid_control(v1, pid_v1['lon'], pid_v1['lat'], 60.0, target_loc)
+                    # V1 保持目标速度 40 km/h
+                    apply_pid_control(v1, pid_v1['lon'], pid_v1['lat'], 40.0, target_loc)
                 else:
                     v1.apply_control(carla.VehicleControl(brake=1.0))
                     v1_active = False
@@ -282,15 +426,15 @@ def main():
                     if current_loc.distance(target_loc) < 3.5 and ego_traj_idx < len(EGO_TRAJECTORY) - 1:
                         ego_traj_idx += 1
 
-                    # 【速度动态逻辑】初始65，Y=25减速到20，Y=0加速到60
+                    # 【速度动态逻辑】初始45，Y=25减速到20，Y=0加速到40
                     # 由于车辆是按轨迹行驶，通过判断当前坐标Y来决定PID的目标速度
                     ego_y = current_loc.y
                     if ego_y <= 0.0:
-                        ego_target_speed = 60.0
+                        ego_target_speed = 40.0
                     elif ego_y <= 25.0:
                         ego_target_speed = 20.0
                     else:
-                        ego_target_speed = 65.0
+                        ego_target_speed = 45.0
 
                     apply_pid_control(ego, pid_ego['lon'], pid_ego['lat'], ego_target_speed, target_loc)
                 else:
