@@ -1,101 +1,101 @@
-scenario_id,has_ego_actor,has_role_name_ego,has_static_ego_trajectory,ego_actor_names,reference_trajectory_points,reference_trajectory_source,needs_scene_edit_reason,blocking_metadata_issues
-RTB001,TRUE,TRUE,FALSE,['ego'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB002,TRUE,FALSE,FALSE,['c3_ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB003,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB004,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB005,TRUE,TRUE,FALSE,['ego_vehicle'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB006,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB007,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB008,TRUE,FALSE,FALSE,['ego_vehicle'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB009,TRUE,FALSE,TRUE,['ego'],57,EGO_TRAJECTORY_DATA,['ego_actor_missing_role_name'],[]
-RTB010,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB016,TRUE,FALSE,TRUE,['ego'],45,EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB017,FALSE,FALSE,TRUE,[],75,EGO_TRAJECTORY,['no_clear_ego_actor_detected'],[]
-RTB018,FALSE,FALSE,TRUE,[],80,TRAJ_EGO,['no_clear_ego_actor_detected'],[]
-RTB019,TRUE,TRUE,TRUE,"['ego_vehicle', 'npc_vehicle']",23,EGO_TRAJECTORY,[],[]
-RTB020,TRUE,FALSE,TRUE,['ego'],31,EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB026,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB027,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB028,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB029,TRUE,FALSE,TRUE,['ego'],28,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB030,TRUE,FALSE,TRUE,['ego'],248,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB031,TRUE,FALSE,TRUE,['ego'],87,RAW_TRAJ_EGO,['ego_actor_missing_role_name'],[]
-RTB032,TRUE,TRUE,TRUE,['v3_ego'],53,RAW_TRAJ_V3_EGO,[],[]
-RTB033,TRUE,TRUE,TRUE,['ego'],95,TRAJ_STR_EGO,[],[]
-RTB034,TRUE,TRUE,TRUE,['ego'],58,TRAJ_STR_EGO,[],[]
-RTB035,TRUE,TRUE,TRUE,['ego_vehicle'],165,EGO_TRAJ_STR,[],[]
-RTB041,TRUE,TRUE,TRUE,['ego'],59,RAW_TRAJ_EGO,[],[]
-RTB042,TRUE,TRUE,TRUE,['ego'],74,raw_traj_ego,[],[]
-RTB043,TRUE,TRUE,TRUE,['ego'],78,RAW_TRAJ_EGO,[],[]
-RTB044,TRUE,TRUE,TRUE,['ego_vehicle'],73,RAW_TRAJ_EGO,[],[]
-RTB045,TRUE,TRUE,TRUE,['ego'],72,RAW_TRAJ_EGO,[],[]
-RTB046,TRUE,TRUE,TRUE,['ego'],48,RAW_TRAJ_EGO,[],[]
-RTB047,TRUE,TRUE,TRUE,['ego'],27,TRAJ_EGO_STR,[],[]
-RTB048,TRUE,TRUE,TRUE,['ego'],47,RAW_TRAJ_EGO,[],[]
-RTB049,TRUE,TRUE,TRUE,['ego'],18,TRAJ_STR_EGO,[],[]
-RTB050,TRUE,TRUE,TRUE,['ego'],117,TRAJ_STR_EGO,[],[]
-RTB051,TRUE,TRUE,TRUE,['ego'],74,RAW_TRAJ_EGO,[],[]
-RTB052,TRUE,TRUE,TRUE,['ego_vehicle'],32,raw_traj_ego,[],[]
-RTB053,TRUE,TRUE,TRUE,['ego'],56,TRAJ_EGO_STR,[],[]
-RTB054,TRUE,TRUE,TRUE,['ego_vehicle'],60,RAW_TRAJ_EGO,[],[]
-RTB055,TRUE,TRUE,TRUE,['ego'],40,EGO_TRAJ_STR,[],[]
-RTB056,TRUE,TRUE,FALSE,['ego'],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB057,TRUE,FALSE,TRUE,['ego'],40,raw_traj_ego,['ego_actor_missing_role_name'],[]
-RTB058,TRUE,TRUE,TRUE,['ego'],55,RAW_TRAJ_EGO,[],[]
-RTB059,TRUE,TRUE,TRUE,['ego'],67,RAW_EGO,[],[]
-RTB060,TRUE,TRUE,TRUE,['ego'],45,RAW_TRAJ_EGO,[],[]
-RTB061,TRUE,TRUE,TRUE,[],56,TRAJ_STR_EGO,[],[]
-RTB062,TRUE,TRUE,TRUE,['ego'],56,RAW_TRAJ_EGO,[],[]
-RTB063,TRUE,TRUE,TRUE,['vehicle_ego'],55,RAW_TRAJ_EGO,[],[]
-RTB064,TRUE,TRUE,TRUE,['v2_ego'],50,RAW_TRAJ_EGO,[],[]
-RTB065,TRUE,TRUE,TRUE,['ego'],47,RAW_EGO_TRAJ,[],[]
-RTB066,TRUE,TRUE,TRUE,['ego'],54,RAW_TRAJ_EGO,[],[]
-RTB067,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB068,TRUE,TRUE,TRUE,['ego'],59,TRAJ_EGO_RAW,[],[]
-RTB069,TRUE,TRUE,TRUE,['ego'],93,RAW_EGO,[],[]
-RTB070,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB071,TRUE,TRUE,TRUE,['vehicle_ego'],73,TRAJ_STR_EGO,[],[]
-RTB072,TRUE,TRUE,TRUE,['ego'],54,TRAJ_EGO_STR,[],[]
-RTB073,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB074,TRUE,TRUE,TRUE,['ego'],42,EGO_TRAJ_STR,[],[]
-RTB075,TRUE,TRUE,TRUE,['ego'],111,RAW_EGO_TEXT,[],[]
-RTB076,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB077,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB078,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB079,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB080,TRUE,FALSE,FALSE,['ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB081,TRUE,TRUE,TRUE,['ego'],33,STR_EGO_TT,[],[]
-RTB082,TRUE,FALSE,TRUE,['vehicle_ego'],58,RAW_PATH_ego,['ego_actor_missing_role_name'],[]
-RTB083,TRUE,FALSE,FALSE,['vehicle_ego'],0,not_static_ego_reference_detected,"['ego_actor_missing_role_name', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB084,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB085,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB096,TRUE,FALSE,TRUE,['ego'],49,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB097,TRUE,FALSE,TRUE,['ego'],42,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB098,TRUE,FALSE,TRUE,['ego'],39,RAW_EGO_TRAJ,['ego_actor_missing_role_name'],[]
-RTB099,TRUE,FALSE,TRUE,['ego'],63,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB100,TRUE,FALSE,TRUE,['v6_ego'],51,RAW_V6_EGO_TRAJ,['ego_actor_missing_role_name'],[]
-RTB101,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB102,TRUE,TRUE,TRUE,['ego'],13,EGO_RAW_TRAJ,[],[]
-RTB103,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB104,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB105,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB106,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB107,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB108,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB109,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB110,TRUE,TRUE,FALSE,[],0,not_static_ego_reference_detected,['missing_static_ego_reference_trajectory'],"['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB111,TRUE,TRUE,TRUE,['ego'],48,EGO_TRAJ_STR,[],[]
-RTB112,TRUE,TRUE,TRUE,['ego'],108,EGO_TRAJ_STR,[],[]
-RTB113,TRUE,TRUE,TRUE,['ego'],58,STR_EGO,[],[]
-RTB114,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB115,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB116,TRUE,TRUE,TRUE,['ego'],56,RAW_TRAJ_EGO,[],[]
-RTB117,TRUE,TRUE,TRUE,['ego'],33,RAW_TRAJ_EGO,[],[]
-RTB118,TRUE,TRUE,TRUE,['ego_vehicle'],31,EGO_TRAJ_STR,[],[]
-RTB119,TRUE,TRUE,TRUE,['ego'],50,raw_traj_ego_str,[],[]
-RTB120,TRUE,TRUE,TRUE,['ego'],82,RAW_TRAJ_EGO,[],[]
-RTB121,TRUE,FALSE,TRUE,['ego'],46,RAW_EGO_TRAJ,['ego_actor_missing_role_name'],[]
-RTB122,TRUE,FALSE,TRUE,['ego'],98,RAW_EGO_TRAJECTORY,['ego_actor_missing_role_name'],[]
-RTB123,FALSE,FALSE,FALSE,[],0,not_static_ego_reference_detected,"['no_clear_ego_actor_detected', 'missing_static_ego_reference_trajectory']","['missing_reference_trajectory', 'missing_reference_trajectory_and_ego_end']"
-RTB124,TRUE,FALSE,TRUE,['ego'],85,RAW_EGO_TRAJ,['ego_actor_missing_role_name'],[]
-RTB125,FALSE,FALSE,TRUE,[],71,TRAJ_3_EGO,['no_clear_ego_actor_detected'],[]
+scenario_id,scenario_index,ego_model,scene_type,estimated_vehicles,estimated_pedestrians,reference_trajectory_points,trajectory_length_m,speed_limit_kmh,suggested_triggered_speed_kmh,risk_radius_m,hazard_types,ego_actions
+RTB001,1,vehicle.citroen.c3,高速场景,3,0,83,169.68,100.0,80.0,10.0,traffic_signs_markings/speed_control_facilities,Keeping
+RTB002,2,vehicle.citroen.c3,高速场景,3,0,28,158.172,100.0,80.0,10.0,traffic_signs_markings/speed_control_facilities/adverse_weather,Keeping
+RTB003,3,vehicle.citroen.c3,高速场景,3,0,45,194.992,100.0,80.0,10.0,traffic_signs_markings/speed_control_facilities/adverse_weather,Keeping
+RTB004,4,vehicle.audi.tt,高速场景,2,1,69,209.927,100.0,40.0,10.0,traffic_signs_markings/speed_control_facilities,Keeping
+RTB005,5,vehicle.chevrolet.impala,高速场景,2,0,100,207.408,100.0,25.0,10.0,traffic_signs_markings/speed_control_facilities/clearance_intrusion/adverse_weather,Following
+RTB006,6,vehicle.audi.tt,郊区场景,4,0,75,232.017,60.0,30.0,10.0,traffic_signs_markings/road_intersection/limited_sight_distance,Yielding/Braking
+RTB007,7,vehicle.jeep.wrangler_rubicon,郊区场景,5,0,60,289.578,70.0,30.0,10.0,traffic_signs_markings/road_intersection/limited_sight_distance,Yielding
+RTB008,8,vehicle.citroen.c3,郊区场景,3,1,70,245.898,60.0,30.0,5.0,traffic_signs_markings/separation_protection/limited_sight_distance/adverse_weather,Overtaking/Yielding
+RTB009,9,vehicle.mercedes.coupe_2020,高速场景,3,0,63,148.235,100.0,30.0,10.0,traffic_signs_markings/speed_control_facilities/road_intersection/clearance_intrusion/adverse_weather,Keeping
+RTB010,10,vehicle.lincoln.mkz_2020,郊区场景,4,0,71,132.868,40.0,10.0,5.0,traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion,Overtaking/Crossing
+RTB016,11,vehicle.audi.tt,郊区场景,5,0,49,276.706,60.0,60.0,20.0,traffic_signs_markings/road_intersection/clearance_intrusion,Crossing
+RTB017,12,vehicle.audi.tt,城市场景,8,0,83,191.851,60.0,30.0,20.0,lighting_facilities/road_intersection/adverse_weather,Yielding/Crossing
+RTB018,13,vehicle.audi.tt,城市场景,3,1,61,176.128,60.0,60.0,10.0,road_intersection/limited_sight_distance,Yielding/Crossing
+RTB019,14,vehicle.chevrolet.impala,城市场景,2,0,22,181.989,60.0,30.0,5.0,road_intersection/limited_sight_distance/clearance_intrusion,Crossing/Keeping
+RTB020,15,vehicle.lincoln.mkz_2020,郊区场景,2,0,29,191.279,60.0,20.0,10.0,traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion,Yielding/Crossing
+RTB026,16,vehicle.chevrolet.impala,郊区场景,2,1,116,277.336,60.0,20.0,20.0,road_intersection/road_surface_condition/clearance_intrusion/adverse_weather,Overtaking/Yielding
+RTB027,17,vehicle.audi.tt,郊区场景,2,0,73,194.444,60.0,20.0,10.0,road_intersection/road_surface_condition/adverse_weather,Keeping
+RTB028,18,vehicle.citroen.c3,高速场景,2,0,158,539.273,80.0,20.0,20.0,road_surface_condition/road_alignment/limited_sight_distance/adverse_weather,Overtaking/Keeping
+RTB029,19,vehicle.bmw.grandtourer,城市场景,3,1,26,211.341,60.0,30.0,5.0,road_intersection/limited_sight_distance,Overtaking/Crossing
+RTB030,20,vehicle.lincoln.mkz_2017,山区场景,2,0,184,419.462,30.0,5.0,5.0,separation_protection/road_alignment/limited_sight_distance,Yielding/Keeping
+RTB031,21,vehicle.audi.tt,郊区场景,4,1,85,318.847,80.0,30.0,10.0,traffic_signs_markings,Overtaking/Braking
+RTB032,22,vehicle.audi.tt,城市场景,4,0,50,349.723,60.0,30.0,10.0,road_intersection/clearance_intrusion,Crossing/Keeping
+RTB033,23,vehicle.audi.tt,城市场景,3,1,105,275.032,60.0,20.0,5.0,road_intersection/limited_sight_distance,Yielding/Crossing
+RTB034,24,vehicle.audi.tt,高速场景,4,0,53,238.603,100.0,30.0,20.0,traffic_signs_markings/clearance_intrusion,Following/Braking
+RTB035,25,vehicle.audi.tt,山区场景,2,1,198,618.361,60.0,20.0,10.0,traffic_signs_markings/road_alignment/clearance_intrusion/adverse_weather,Overtaking/Yielding
+RTB041,26,vehicle.chevrolet.impala,郊区场景,3,1,77,310.207,60.0,30.0,10.0,separation_protection/clearance_intrusion,Yielding/Braking
+RTB042,27,vehicle.chevrolet.impala,高速场景,3,0,83,314.247,80.0,30.0,10.0,traffic_signs_markings/road_intersection/clearance_intrusion,Merging
+RTB043,28,vehicle.audi.tt,山区场景,4,0,78,384.261,60.0,20.0,10.0,traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather,Merging/Keeping
+RTB044,29,vehicle.audi.tt,郊区场景,2,0,74,353.288,30.0,0.0,5.0,separation_protection/road_alignment/limited_sight_distance,Yielding/Keeping
+RTB045,30,vehicle.chevrolet.impala,城市场景,3,1,73,363.622,60.0,20.0,5.0,road_intersection/limited_sight_distance,Yielding/Crossing
+RTB046,31,vehicle.audi.tt,郊区场景,3,0,49,222.703,60.0,20.0,10.0,traffic_signs_markings/road_intersection/limited_sight_distance,Yielding/Crossing
+RTB047,32,vehicle.audi.tt,郊区场景,3,0,32,190.301,60.0,20.0,10.0,road_intersection/road_alignment/limited_sight_distance,Yielding/Keeping
+RTB048,33,vehicle.audi.tt,城市场景,3,1,48,176.814,60.0,25.0,10.0,road_intersection/road_surface_condition/clearance_intrusion,Yielding/Braking
+RTB049,34,vehicle.audi.tt,高速场景,4,0,18,239.326,100.0,30.0,20.0,traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather,Overtaking
+RTB050,35,vehicle.audi.tt,郊区场景,3,0,101,212.043,60.0,30.0,20.0,road_surface_condition/road_alignment/limited_sight_distance/adverse_weather,Yielding/Keeping
+RTB051,36,vehicle.audi.tt,郊区场景,3,0,70,245.15,60.0,0.0,5.0,traffic_signs_markings/road_intersection/limited_sight_distance,Yielding/Braking
+RTB052,37,vehicle.audi.tt,郊区场景,2,0,33,283.458,60.0,30.0,5.0,separation_protection/road_surface_condition/road_alignment/limited_sight_distance/clearance_intrusion,Overtaking/Keeping
+RTB053,38,vehicle.audi.tt,高速场景,3,0,49,217.512,100.0,30.0,20.0,road_alignment/limited_sight_distance/clearance_intrusion,Overtaking/Following
+RTB054,39,vehicle.audi.tt,郊区场景,2,0,64,187.314,60.0,30.0,5.0,traffic_signs_markings/separation_protection/road_alignment/limited_sight_distance/clearance_intrusion,Yielding/Braking
+RTB055,40,vehicle.audi.tt,城市场景,3,1,48,190.139,60.0,10.0,10.0,limited_sight_distance/clearance_intrusion,Yielding/Merging/Braking
+RTB056,41,vehicle.lincoln.mkz_2020,城市场景,4,0,79,198.885,60.0,30.0,15.0,traffic_signs_markings/road_intersection/adverse_weather,Yielding/Keeping
+RTB057,42,vehicle.audi.tt,城市场景,3,1,36,340.56,60.0,20.0,5.0,,
+RTB058,43,vehicle.audi.tt,城市场景,3,0,44,272.678,60.0,30.0,20.0,road_intersection/limited_sight_distance/adverse_weather,Yielding/Merging/Crossing
+RTB059,44,vehicle.audi.tt,郊区场景,4,0,70,285.857,60.0,0.0,30.0,separation_protection/road_intersection/clearance_intrusion,Overtaking/Yielding/Merging
+RTB060,45,vehicle.audi.tt,城市场景,3,1,42,234.536,60.0,0.0,10.0,traffic_signs_markings/road_intersection/clearance_intrusion,Overtaking/Yielding/Crossing
+RTB061,46,vehicle.audi.tt,郊区场景,3,0,62,161.55,60.0,10.0,20.0,traffic_signs_markings/separation_protection/road_alignment/limited_sight_distance,Yielding/Braking
+RTB062,47,vehicle.audi.tt,郊区场景,3,1,53,171.968,60.0,20.0,15.0,traffic_signs_markings/separation_protection/road_alignment/limited_sight_distance/clearance_intrusion,Following/Keeping
+RTB063,48,vehicle.audi.tt,郊区场景,3,1,53,189.862,60.0,50.0,20.0,road_alignment/limited_sight_distance/clearance_intrusion,Overtaking/Following/Yielding
+RTB064,49,vehicle.audi.tt,郊区场景,3,0,44,179.799,60.0,20.0,20.0,traffic_signs_markings/road_alignment/limited_sight_distance/clearance_intrusion,Following/Keeping
+RTB065,50,vehicle.audi.tt,城市场景,3,1,47,200.85,60.0,20.0,20.0,road_intersection/limited_sight_distance/clearance_intrusion/adverse_weather,Yielding/Crossing
+RTB066,51,vehicle.audi.tt,城市场景,4,0,50,193.343,60.0,30.0,20.0,traffic_signs_markings/speed_control_facilities/road_intersection,Following/Yielding/Crossing
+RTB067,52,vehicle.audi.tt,城市场景,4,0,68,266.747,60.0,30.0,40.0,,
+RTB068,53,vehicle.audi.tt,山区场景,4,0,59,822.369,60.0,25.0,40.0,road_surface_condition/road_alignment/limited_sight_distance/adverse_weather,Overtaking/Following/Merging/Keeping
+RTB069,54,vehicle.audi.tt,山区场景,3,0,106,353.306,60.0,30.0,40.0,traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather,Following/Keeping
+RTB070,55,vehicle.audi.tt,郊区场景,6,0,137,286.861,60.0,0.0,40.0,lighting_facilities/road_alignment/limited_sight_distance/clearance_intrusion,Overtaking/Yielding/Braking
+RTB071,56,vehicle.audi.tt,郊区场景,4,0,74,218.623,60.0,20.0,20.0,speed_control_facilities/road_intersection/limited_sight_distance,Yielding/Crossing
+RTB072,57,vehicle.audi.tt,郊区场景,4,0,39,147.156,60.0,30.0,20.0,speed_control_facilities/road_intersection/limited_sight_distance/adverse_weather,Yielding/Crossing/Braking
+RTB073,58,vehicle.chevrolet.impala,城市场景,4,1,54,221.672,60.0,30.0,10.0,speed_control_facilities/road_intersection/adverse_weather,Yielding/Crossing
+RTB074,59,vehicle.chevrolet.impala,山区场景,3,0,54,231.807,60.0,20.0,20.0,traffic_signs_markings/separation_protection/speed_control_facilities/road_intersection/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather,Following/Yielding/Keeping
+RTB075,60,vehicle.audi.tt,高速场景,3,0,111,447.181,100.0,65.0,20.0,traffic_signs_markings/road_intersection/limited_sight_distance/adverse_weather,Following/Yielding
+RTB076,61,vehicle.lincoln.mkz_2017,郊区场景,3,0,82,156.981,30.0,0.0,20.0,traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion,Yielding/Crossing
+RTB077,62,vehicle.tesla.cybertruck,城市场景,3,1,59,141.387,60.0,10.0,10.0,traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion,Yielding/Crossing/Keeping
+RTB078,63,vehicle.audi.*,山区场景,4,0,90,203.666,40.0,20.0,40.0,traffic_signs_markings/road_intersection/road_alignment/limited_sight_distance/adverse_weather,Following/Yielding/Crossing
+RTB079,64,vehicle.citroen.c3,高速场景,3,0,141,256.311,100.0,40.0,60.0,separation_protection/road_intersection/clearance_intrusion,Following/Merging
+RTB080,65,vehicle.lincoln.mkz_2020,郊区场景,4,0,123,175.723,60.0,20.0,10.0,traffic_signs_markings/road_intersection/clearance_intrusion,Yielding/Merging/Crossing
+RTB081,66,vehicle.audi.tt,郊区场景,4,0,55,177.457,60.0,20.0,15.0,traffic_signs_markings/road_intersection/road_surface_condition/clearance_intrusion,Yielding/Crossing/Keeping
+RTB082,67,vehicle.tesla.model3,城市场景,3,0,75,221.093,80.0,20.0,5.0,separation_protection/limited_sight_distance/clearance_intrusion/adverse_weather,Overtaking/Following/Braking
+RTB083,68,vehicle.tesla.model3,郊区场景,2,0,78,206.278,60.0,10.0,5.0,separation_protection/lighting_facilities/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather,Overtaking/Braking/Keeping
+RTB084,69,vehicle.toyota.prius,城市场景,4,0,80,159.6,80.0,20.0,5.0,separation_protection/limited_sight_distance/clearance_intrusion,Yielding/Braking/Keeping
+RTB085,70,vehicle.audi.tt,山区场景,2,0,110,115.025,40.0,10.0,10.0,traffic_signs_markings/separation_protection/road_intersection/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather,Yielding/Merging/Braking
+RTB096,71,vehicle.lincoln.mkz_2020,城市场景,4,0,39,174.035,60.0,20.0,15.0,road_intersection/limited_sight_distance,Crossing/Braking/Keeping
+RTB097,72,vehicle.audi.tt,城市场景,2,1,34,158.283,60.0,20.0,10.0,road_intersection/road_alignment/limited_sight_distance/clearance_intrusion,Yielding/Crossing/Keeping
+RTB098,73,vehicle.chevrolet.impala,城市场景,2,1,45,188.166,60.0,5.0,20.0,road_intersection/limited_sight_distance/clearance_intrusion,Yielding/Crossing/Braking
+RTB099,74,vehicle.audi.tt,山区场景,2,0,62,221.545,40.0,25.0,5.0,separation_protection/road_surface_condition/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather,Overtaking/Yielding/Keeping
+RTB100,75,vehicle.lincoln.mkz_2020,城市场景,6,0,69,255.044,50.0,20.0,40.0,traffic_signs_markings/road_intersection,Overtaking/Merging/Crossing
+RTB101,76,vehicle.tesla.model3,郊区场景,2,0,64,113.974,60.0,30.0,20.0,road_intersection/road_surface_condition/limited_sight_distance/clearance_intrusion,Yielding/Crossing
+RTB102,77,vehicle.tesla.model3,城市场景,4,0,13,206.126,50.0,30.0,20.0,lighting_facilities/road_intersection,Following/Yielding
+RTB103,78,vehicle.audi.tt,高速场景,3,0,80,321.38,100.0,40.0,20.0,traffic_signs_markings/road_intersection/clearance_intrusion,Overtaking/Following/Merging
+RTB104,79,vehicle.lincoln.mkz_2020,山区场景,3,0,131,504.872,60.0,30.0,20.0,separation_protection/road_surface_condition/road_alignment,Overtaking/Following/Yielding
+RTB105,80,vehicle.lincoln.mkz_2020,城市场景,3,8,56,279.484,60.0,30.0,10.0,road_intersection/limited_sight_distance,Yielding/Crossing
+RTB106,81,vehicle.tesla.model3,郊区场景,3,1,125,249.354,40.0,20.0,10.0,traffic_signs_markings/road_intersection,Following/Yielding/Merging
+RTB107,82,vehicle.tesla.model3,郊区场景,3,1,93,320.501,80.0,60.0,20.0,road_alignment/limited_sight_distance/clearance_intrusion,Overtaking/Following/Braking
+RTB108,83,vehicle.lincoln.mkz_2020,郊区场景,2,1,68,185.499,60.0,40.0,10.0,road_alignment/limited_sight_distance/clearance_intrusion,Overtaking/Following/Braking
+RTB109,84,vehicle.lincoln.mkz_2020,城市场景,3,8,60,240.239,60.0,20.0,10.0,traffic_signs_markings/road_surface_condition/adverse_weather,Overtaking/Following/Merging
+RTB110,85,vehicle.tesla.model3,高速场景,3,0,94,563.983,120.0,80.0,20.0,traffic_signs_markings/road_intersection/clearance_intrusion,Yielding/Keeping
+RTB111,86,vehicle.chevrolet.impala,郊区场景,2,0,52,250.775,30.0,30.0,20.0,traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion,Yielding/Braking/Keeping
+RTB112,87,vehicle.chevrolet.impala,山区场景,3,0,121,371.382,60.0,30.0,20.0,separation_protection/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather,Following/Yielding/Braking
+RTB113,88,vehicle.audi.tt,城市场景,3,1,67,292.539,60.0,10.0,10.0,road_intersection/limited_sight_distance/clearance_intrusion/adverse_weather,Yielding/Crossing
+RTB114,89,vehicle.tesla.model3,郊区场景,2,0,42,233.703,60.0,0.0,10.0,traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather,Yielding/Braking/Keeping
+RTB115,90,vehicle.audi.tt,郊区场景,3,0,93,670.016,60.0,40.0,10.0,separation_protection/limited_sight_distance/clearance_intrusion/adverse_weather,Overtaking/Following/Braking
+RTB116,91,vehicle.audi.tt,郊区场景,4,0,140,510.855,60.0,10.0,20.0,separation_protection/lighting_facilities/road_intersection,Overtaking/Following/Braking
+RTB117,92,vehicle.audi.tt,高速场景,4,0,79,258.079,100.0,40.0,40.0,road_alignment/clearance_intrusion,Overtaking/Following/Braking
+RTB118,93,vehicle.audi.tt,城市场景,2,1,35,247.647,60.0,10.0,5.0,separation_protection/limited_sight_distance/clearance_intrusion,Yielding/Braking
+RTB119,94,vehicle.chevrolet.impala,郊区场景,2,0,48,212.354,40.0,40.0,10.0,traffic_signs_markings/lighting_facilities/clearance_intrusion,Overtaking/Yielding/Keeping
+RTB120,95,vehicle.chevrolet.impala,山区场景,3,0,82,454.409,60.0,20.0,30.0,road_surface_condition/road_alignment/clearance_intrusion,Overtaking/Merging/Braking
+RTB121,96,vehicle.chevrolet.impala,郊区场景,2,3,51,351.772,30.0,30.0,5.0,road_alignment/limited_sight_distance/clearance_intrusion,Yielding/Keeping
+RTB122,97,vehicle.audi.tt,山区场景,2,0,69,329.524,40.0,30.0,5.0,traffic_signs_markings/separation_protection/clearance_intrusion,Overtaking/Following/Braking/Keeping
+RTB123,98,vehicle.audi.tt,山区场景,2,0,116,270.259,30.0,15.0,20.0,road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather,Overtaking/Yielding/Braking/Keeping
+RTB124,99,vehicle.audi.tt,城市场景,4,1,48,391.274,60.0,30.0,40.0,lighting_facilities/road_intersection/road_alignment/limited_sight_distance,Following/Yielding/Crossing
+RTB125,100,vehicle.audi.tt,郊区场景,4,0,52,288.949,60.0,60.0,20.0,separation_protection/road_alignment,Following/Yielding/Keeping

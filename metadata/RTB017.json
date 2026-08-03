@@ -1,33 +1,75 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB017",
+  "scenario_index": 12,
   "town": "RTB017",
-  "description": "Ego车辆（自动驾驶L3模式）在接近一个几何结构复杂、规模超大的城市五岔路口时，因远端信号灯被大型车辆部分遮挡、恶劣光照（傍晚逆光）以及高精地图信息偏差等多重因素叠加，未能及时准确识别红色信号灯(高层商场绿色广告灯与红色信号灯冲突)，导致车辆以较高速度闯入路口，与侧向提前启动的车辆形成碰撞冲突。",
-  "scenario_family_id": "LX167",
-  "scene_type": "城市场景 (Urban Scenes)",
-  "source_hazards": "路段交叉[渠化不合理 + 信号设施缺失]",
+  "estimated_vehicles": 8,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.audi.tt",
+  "ego_color": "255,165,0",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
     "type_id": "vehicle.audi.tt",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
   "ego_type_id": "vehicle.audi.tt",
   "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "EGO_TRAJECTORY",
+  "ego_start": {
+    "location": {
+      "x": 50.421,
+      "y": -42.438
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 148.869,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": -127.639,
+      "y": -37.821
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -162.125,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [
     [
       50.421,
       -42.438,
       148.869
+    ],
+    [
+      50.421,
+      -42.438,
+      148.869
+    ],
+    [
+      50.421,
+      -42.438,
+      148.869
+    ],
+    [
+      50.421,
+      -42.438,
+      148.659
+    ],
+    [
+      50.421,
+      -42.438,
+      149.008
     ],
     [
       48.281,
@@ -47,6 +89,16 @@
     [
       38.743,
       -35.348,
+      148.444
+    ],
+    [
+      38.743,
+      -35.348,
+      148.444
+    ],
+    [
+      38.672,
+      -35.305,
       148.444
     ],
     [
@@ -398,87 +450,114 @@
       -127.401,
       -37.744,
       -162.125
+    ],
+    [
+      -127.639,
+      -37.821,
+      -162.125
+    ],
+    [
+      -127.639,
+      -37.821,
+      -162.125
     ]
   ],
-  "reference_speed_kmh": 60.0,
+  "reference_trajectory_points": 83,
+  "trajectory_length_m": 191.851,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    -13.696,
+    4.087
+  ],
+  "risk_radius_m": 20.0,
+  "scene_type": "城市场景",
   "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 30.0,
+  "suggested_triggered_speed_kmh": 30.0,
+  "hazard_labels": [
+    "照明设施",
+    "道路交叉",
+    "恶劣天气"
   ],
-  "ability_tags": [
-    "A",
-    "B"
+  "ego_actions": [
+    "Crossing",
+    "Yielding"
   ],
+  "weather_summary": "cloudiness=60.0, precipitation=75.0, precipitation_deposits=75.0,\n        wind_intensity=30.0, sun_azimuth_angle=-1.0, sun_altitude_angle=-90.0,\n        fog_density=60.0, fog_distance=0.75, fog_falloff=0.10, wetness=80.0,\n        scattering_intensity=1.0, mie_scattering_scale=0.0300, rayleigh_scattering_scale=0.0331",
+  "weather_parameters": {
+    "cloudiness": 60.0,
+    "precipitation": 75.0,
+    "precipitation_deposits": 75.0,
+    "wind_intensity": 30.0,
+    "sun_azimuth_angle": -1.0,
+    "sun_altitude_angle": -90.0,
+    "fog_density": 60.0,
+    "fog_distance": 0.75,
+    "fog_falloff": 0.1,
+    "wetness": 80.0,
+    "scattering_intensity": 1.0,
+    "mie_scattering_scale": 0.03,
+    "rayleigh_scattering_scale": 0.0331
+  },
   "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 1,
-      "yielding": 1,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 1,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ]
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 1,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
-    }
-  },
-  "ego_start": {
-    "location": {
-      "x": 50.421,
-      "y": -42.438
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": 148.869,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": -127.401,
-      "y": -37.744
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -162.125,
-      "roll": 0.0
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
     }
   },
   "hazards": [
     {
       "id": "rtb017_primary_hazard",
-      "type": "emergency_avoidance",
+      "type": "lighting_facilities",
       "center": [
-        -36.653,
-        -13.267
+        -13.696,
+        4.087
       ],
-      "radius_m": 10.0,
-      "perception_radius_m": 40.0,
-      "reference_speed_kmh": 40.0,
-      "expected_behavior": "slow_or_avoid"
+      "radius_m": 20.0,
+      "reference_speed_kmh": 30.0
     }
   ]
 }

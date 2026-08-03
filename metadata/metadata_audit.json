@@ -1,1489 +1,1502 @@
 [
   {
     "scenario_id": "RTB001",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 1,
+    "ego_model": "vehicle.citroen.c3",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 83,
+    "trajectory_length_m": 169.68,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 80.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities",
+    "ego_actions": "Keeping"
   },
   {
     "scenario_id": "RTB002",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "c3_ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 2,
+    "ego_model": "vehicle.citroen.c3",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 28,
+    "trajectory_length_m": 158.172,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 80.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities/adverse_weather",
+    "ego_actions": "Keeping"
   },
   {
     "scenario_id": "RTB003",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 3,
+    "ego_model": "vehicle.citroen.c3",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 45,
+    "trajectory_length_m": 194.992,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 80.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities/adverse_weather",
+    "ego_actions": "Keeping"
   },
   {
     "scenario_id": "RTB004",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 4,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 69,
+    "trajectory_length_m": 209.927,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities",
+    "ego_actions": "Keeping"
   },
   {
     "scenario_id": "RTB005",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 5,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 100,
+    "trajectory_length_m": 207.408,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 25.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities/clearance_intrusion/adverse_weather",
+    "ego_actions": "Following"
   },
   {
     "scenario_id": "RTB006",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 6,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 75,
+    "trajectory_length_m": 232.017,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB007",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 7,
+    "ego_model": "vehicle.jeep.wrangler_rubicon",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 5,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 60,
+    "trajectory_length_m": 289.578,
+    "speed_limit_kmh": 70.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding"
   },
   {
     "scenario_id": "RTB008",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 8,
+    "ego_model": "vehicle.citroen.c3",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 70,
+    "trajectory_length_m": 245.898,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/limited_sight_distance/adverse_weather",
+    "ego_actions": "Overtaking/Yielding"
   },
   {
     "scenario_id": "RTB009",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 57,
-    "reference_trajectory_source": "EGO_TRAJECTORY_DATA",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 9,
+    "ego_model": "vehicle.mercedes.coupe_2020",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 63,
+    "trajectory_length_m": 148.235,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities/road_intersection/clearance_intrusion/adverse_weather",
+    "ego_actions": "Keeping"
   },
   {
     "scenario_id": "RTB010",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 10,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 71,
+    "trajectory_length_m": 132.868,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Crossing"
   },
   {
     "scenario_id": "RTB016",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 45,
-    "reference_trajectory_source": "EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 11,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 5,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 49,
+    "trajectory_length_m": 276.706,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 60.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/clearance_intrusion",
+    "ego_actions": "Crossing"
   },
   {
     "scenario_id": "RTB017",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 75,
-    "reference_trajectory_source": "EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 12,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 8,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 83,
+    "trajectory_length_m": 191.851,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "lighting_facilities/road_intersection/adverse_weather",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB018",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 80,
-    "reference_trajectory_source": "TRAJ_EGO",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 13,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 61,
+    "trajectory_length_m": 176.128,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 60.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB019",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego_vehicle",
-      "npc_vehicle"
-    ],
-    "reference_trajectory_points": 23,
-    "reference_trajectory_source": "EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 14,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 22,
+    "trajectory_length_m": 181.989,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Crossing/Keeping"
   },
   {
     "scenario_id": "RTB020",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 31,
-    "reference_trajectory_source": "EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 15,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 29,
+    "trajectory_length_m": 191.279,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB026",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 16,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 116,
+    "trajectory_length_m": 277.336,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_intersection/road_surface_condition/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Yielding"
   },
   {
     "scenario_id": "RTB027",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 17,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 73,
+    "trajectory_length_m": 194.444,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/road_surface_condition/adverse_weather",
+    "ego_actions": "Keeping"
   },
   {
     "scenario_id": "RTB028",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 18,
+    "ego_model": "vehicle.citroen.c3",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 158,
+    "trajectory_length_m": 539.273,
+    "speed_limit_kmh": 80.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_surface_condition/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Overtaking/Keeping"
   },
   {
     "scenario_id": "RTB029",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 28,
-    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 19,
+    "ego_model": "vehicle.bmw.grandtourer",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 26,
+    "trajectory_length_m": 211.341,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "road_intersection/limited_sight_distance",
+    "ego_actions": "Overtaking/Crossing"
   },
   {
     "scenario_id": "RTB030",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 248,
-    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 20,
+    "ego_model": "vehicle.lincoln.mkz_2017",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 184,
+    "trajectory_length_m": 419.462,
+    "speed_limit_kmh": 30.0,
+    "suggested_triggered_speed_kmh": 5.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/road_alignment/limited_sight_distance",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB031",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 87,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 21,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 85,
+    "trajectory_length_m": 318.847,
+    "speed_limit_kmh": 80.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings",
+    "ego_actions": "Overtaking/Braking"
   },
   {
     "scenario_id": "RTB032",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "v3_ego"
-    ],
-    "reference_trajectory_points": 53,
-    "reference_trajectory_source": "RAW_TRAJ_V3_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 22,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 50,
+    "trajectory_length_m": 349.723,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/clearance_intrusion",
+    "ego_actions": "Crossing/Keeping"
   },
   {
     "scenario_id": "RTB033",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 95,
-    "reference_trajectory_source": "TRAJ_STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 23,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 105,
+    "trajectory_length_m": 275.032,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB034",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 58,
-    "reference_trajectory_source": "TRAJ_STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 24,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 53,
+    "trajectory_length_m": 238.603,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/clearance_intrusion",
+    "ego_actions": "Following/Braking"
   },
   {
     "scenario_id": "RTB035",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 165,
-    "reference_trajectory_source": "EGO_TRAJ_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 25,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 198,
+    "trajectory_length_m": 618.361,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_alignment/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Yielding"
   },
   {
     "scenario_id": "RTB041",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 59,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 26,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 77,
+    "trajectory_length_m": 310.207,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "separation_protection/clearance_intrusion",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB042",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 74,
-    "reference_trajectory_source": "raw_traj_ego",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 27,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 83,
+    "trajectory_length_m": 314.247,
+    "speed_limit_kmh": 80.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/clearance_intrusion",
+    "ego_actions": "Merging"
   },
   {
     "scenario_id": "RTB043",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 28,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
     "reference_trajectory_points": 78,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 384.261,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Merging/Keeping"
   },
   {
     "scenario_id": "RTB044",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 73,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 29,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 74,
+    "trajectory_length_m": 353.288,
+    "speed_limit_kmh": 30.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/road_alignment/limited_sight_distance",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB045",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 72,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 30,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 73,
+    "trajectory_length_m": 363.622,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB046",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 48,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 31,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 49,
+    "trajectory_length_m": 222.703,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB047",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 27,
-    "reference_trajectory_source": "TRAJ_EGO_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 32,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 32,
+    "trajectory_length_m": 190.301,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/road_alignment/limited_sight_distance",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB048",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 47,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 33,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 48,
+    "trajectory_length_m": 176.814,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 25.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/road_surface_condition/clearance_intrusion",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB049",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 34,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
     "reference_trajectory_points": 18,
-    "reference_trajectory_source": "TRAJ_STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 239.326,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Overtaking"
   },
   {
     "scenario_id": "RTB050",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 117,
-    "reference_trajectory_source": "TRAJ_STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 35,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 101,
+    "trajectory_length_m": 212.043,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_surface_condition/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB051",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 74,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 36,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 70,
+    "trajectory_length_m": 245.15,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB052",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 32,
-    "reference_trajectory_source": "raw_traj_ego",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 37,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 33,
+    "trajectory_length_m": 283.458,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/road_surface_condition/road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Keeping"
   },
   {
     "scenario_id": "RTB053",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 56,
-    "reference_trajectory_source": "TRAJ_EGO_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 38,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 49,
+    "trajectory_length_m": 217.512,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Following"
   },
   {
     "scenario_id": "RTB054",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 60,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 39,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 64,
+    "trajectory_length_m": 187.314,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB055",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 40,
-    "reference_trajectory_source": "EGO_TRAJ_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 40,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 48,
+    "trajectory_length_m": 190.139,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Merging/Braking"
   },
   {
     "scenario_id": "RTB056",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 41,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 79,
+    "trajectory_length_m": 198.885,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 15.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/adverse_weather",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB057",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 40,
-    "reference_trajectory_source": "raw_traj_ego",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 42,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 36,
+    "trajectory_length_m": 340.56,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "",
+    "ego_actions": ""
   },
   {
     "scenario_id": "RTB058",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 55,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 43,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 44,
+    "trajectory_length_m": 272.678,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_intersection/limited_sight_distance/adverse_weather",
+    "ego_actions": "Yielding/Merging/Crossing"
   },
   {
     "scenario_id": "RTB059",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 67,
-    "reference_trajectory_source": "RAW_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 44,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 70,
+    "trajectory_length_m": 285.857,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 30.0,
+    "hazard_types": "separation_protection/road_intersection/clearance_intrusion",
+    "ego_actions": "Overtaking/Yielding/Merging"
   },
   {
     "scenario_id": "RTB060",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 45,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 45,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 42,
+    "trajectory_length_m": 234.536,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/clearance_intrusion",
+    "ego_actions": "Overtaking/Yielding/Crossing"
   },
   {
     "scenario_id": "RTB061",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 56,
-    "reference_trajectory_source": "TRAJ_STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 46,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 62,
+    "trajectory_length_m": 161.55,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/road_alignment/limited_sight_distance",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB062",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 56,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 47,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 53,
+    "trajectory_length_m": 171.968,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 15.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Following/Keeping"
   },
   {
     "scenario_id": "RTB063",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "vehicle_ego"
-    ],
-    "reference_trajectory_points": 55,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 48,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 53,
+    "trajectory_length_m": 189.862,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 50.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Following/Yielding"
   },
   {
     "scenario_id": "RTB064",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "v2_ego"
-    ],
-    "reference_trajectory_points": 50,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 49,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 44,
+    "trajectory_length_m": 179.799,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Following/Keeping"
   },
   {
     "scenario_id": "RTB065",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 50,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
     "reference_trajectory_points": 47,
-    "reference_trajectory_source": "RAW_EGO_TRAJ",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 200.85,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_intersection/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB066",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 54,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 51,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 50,
+    "trajectory_length_m": 193.343,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/speed_control_facilities/road_intersection",
+    "ego_actions": "Following/Yielding/Crossing"
   },
   {
     "scenario_id": "RTB067",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 52,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 68,
+    "trajectory_length_m": 266.747,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "",
+    "ego_actions": ""
   },
   {
     "scenario_id": "RTB068",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 53,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
     "reference_trajectory_points": 59,
-    "reference_trajectory_source": "TRAJ_EGO_RAW",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 822.369,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 25.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "road_surface_condition/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Overtaking/Following/Merging/Keeping"
   },
   {
     "scenario_id": "RTB069",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 93,
-    "reference_trajectory_source": "RAW_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 54,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 106,
+    "trajectory_length_m": 353.306,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Following/Keeping"
   },
   {
     "scenario_id": "RTB070",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 55,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 6,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 137,
+    "trajectory_length_m": 286.861,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "lighting_facilities/road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Yielding/Braking"
   },
   {
     "scenario_id": "RTB071",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "vehicle_ego"
-    ],
-    "reference_trajectory_points": 73,
-    "reference_trajectory_source": "TRAJ_STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 56,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 74,
+    "trajectory_length_m": 218.623,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "speed_control_facilities/road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB072",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 54,
-    "reference_trajectory_source": "TRAJ_EGO_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 57,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 39,
+    "trajectory_length_m": 147.156,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "speed_control_facilities/road_intersection/limited_sight_distance/adverse_weather",
+    "ego_actions": "Yielding/Crossing/Braking"
   },
   {
     "scenario_id": "RTB073",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 58,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 54,
+    "trajectory_length_m": 221.672,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "speed_control_facilities/road_intersection/adverse_weather",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB074",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 42,
-    "reference_trajectory_source": "EGO_TRAJ_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 59,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 54,
+    "trajectory_length_m": 231.807,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/speed_control_facilities/road_intersection/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Following/Yielding/Keeping"
   },
   {
     "scenario_id": "RTB075",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 60,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
     "reference_trajectory_points": 111,
-    "reference_trajectory_source": "RAW_EGO_TEXT",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 447.181,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 65.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance/adverse_weather",
+    "ego_actions": "Following/Yielding"
   },
   {
     "scenario_id": "RTB076",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 61,
+    "ego_model": "vehicle.lincoln.mkz_2017",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 82,
+    "trajectory_length_m": 156.981,
+    "speed_limit_kmh": 30.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB077",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 62,
+    "ego_model": "vehicle.tesla.cybertruck",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 59,
+    "trajectory_length_m": 141.387,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing/Keeping"
   },
   {
     "scenario_id": "RTB078",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 63,
+    "ego_model": "vehicle.audi.*",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 90,
+    "trajectory_length_m": 203.666,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Following/Yielding/Crossing"
   },
   {
     "scenario_id": "RTB079",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 64,
+    "ego_model": "vehicle.citroen.c3",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 141,
+    "trajectory_length_m": 256.311,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 60.0,
+    "hazard_types": "separation_protection/road_intersection/clearance_intrusion",
+    "ego_actions": "Following/Merging"
   },
   {
     "scenario_id": "RTB080",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 65,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 123,
+    "trajectory_length_m": 175.723,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/clearance_intrusion",
+    "ego_actions": "Yielding/Merging/Crossing"
   },
   {
     "scenario_id": "RTB081",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 33,
-    "reference_trajectory_source": "STR_EGO_TT",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 66,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 55,
+    "trajectory_length_m": 177.457,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 15.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/road_surface_condition/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing/Keeping"
   },
   {
     "scenario_id": "RTB082",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "vehicle_ego"
-    ],
-    "reference_trajectory_points": 58,
-    "reference_trajectory_source": "RAW_PATH_ego",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 67,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 75,
+    "trajectory_length_m": 221.093,
+    "speed_limit_kmh": 80.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Following/Braking"
   },
   {
     "scenario_id": "RTB083",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [
-      "vehicle_ego"
-    ],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 68,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 78,
+    "trajectory_length_m": 206.278,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/lighting_facilities/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Braking/Keeping"
   },
   {
     "scenario_id": "RTB084",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 69,
+    "ego_model": "vehicle.toyota.prius",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 80,
+    "trajectory_length_m": 159.6,
+    "speed_limit_kmh": 80.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Braking/Keeping"
   },
   {
     "scenario_id": "RTB085",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 70,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 110,
+    "trajectory_length_m": 115.025,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/road_intersection/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Yielding/Merging/Braking"
   },
   {
     "scenario_id": "RTB096",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 49,
-    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 71,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 39,
+    "trajectory_length_m": 174.035,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 15.0,
+    "hazard_types": "road_intersection/limited_sight_distance",
+    "ego_actions": "Crossing/Braking/Keeping"
   },
   {
     "scenario_id": "RTB097",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 42,
-    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 72,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 34,
+    "trajectory_length_m": 158.283,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing/Keeping"
   },
   {
     "scenario_id": "RTB098",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 39,
-    "reference_trajectory_source": "RAW_EGO_TRAJ",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 73,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 45,
+    "trajectory_length_m": 188.166,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 5.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing/Braking"
   },
   {
     "scenario_id": "RTB099",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 63,
-    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 74,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 62,
+    "trajectory_length_m": 221.545,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 25.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/road_surface_condition/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Yielding/Keeping"
   },
   {
     "scenario_id": "RTB100",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "v6_ego"
-    ],
-    "reference_trajectory_points": 51,
-    "reference_trajectory_source": "RAW_V6_EGO_TRAJ",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 75,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 6,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 69,
+    "trajectory_length_m": 255.044,
+    "speed_limit_kmh": 50.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "traffic_signs_markings/road_intersection",
+    "ego_actions": "Overtaking/Merging/Crossing"
   },
   {
     "scenario_id": "RTB101",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 76,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 64,
+    "trajectory_length_m": 113.974,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_intersection/road_surface_condition/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB102",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 77,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
     "reference_trajectory_points": 13,
-    "reference_trajectory_source": "EGO_RAW_TRAJ",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 206.126,
+    "speed_limit_kmh": 50.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "lighting_facilities/road_intersection",
+    "ego_actions": "Following/Yielding"
   },
   {
     "scenario_id": "RTB103",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 78,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 80,
+    "trajectory_length_m": 321.38,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/clearance_intrusion",
+    "ego_actions": "Overtaking/Following/Merging"
   },
   {
     "scenario_id": "RTB104",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 79,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 131,
+    "trajectory_length_m": 504.872,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "separation_protection/road_surface_condition/road_alignment",
+    "ego_actions": "Overtaking/Following/Yielding"
   },
   {
     "scenario_id": "RTB105",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 80,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 8,
+    "reference_trajectory_points": 56,
+    "trajectory_length_m": 279.484,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/limited_sight_distance",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB106",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 81,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 125,
+    "trajectory_length_m": 249.354,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_intersection",
+    "ego_actions": "Following/Yielding/Merging"
   },
   {
     "scenario_id": "RTB107",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 82,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 93,
+    "trajectory_length_m": 320.501,
+    "speed_limit_kmh": 80.0,
+    "suggested_triggered_speed_kmh": 60.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Following/Braking"
   },
   {
     "scenario_id": "RTB108",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 83,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 68,
+    "trajectory_length_m": 185.499,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Overtaking/Following/Braking"
   },
   {
     "scenario_id": "RTB109",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 84,
+    "ego_model": "vehicle.lincoln.mkz_2020",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 8,
+    "reference_trajectory_points": 60,
+    "trajectory_length_m": 240.239,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_surface_condition/adverse_weather",
+    "ego_actions": "Overtaking/Following/Merging"
   },
   {
     "scenario_id": "RTB110",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 85,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 94,
+    "trajectory_length_m": 563.983,
+    "speed_limit_kmh": 120.0,
+    "suggested_triggered_speed_kmh": 80.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/clearance_intrusion",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB111",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 48,
-    "reference_trajectory_source": "EGO_TRAJ_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 86,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 52,
+    "trajectory_length_m": 250.775,
+    "speed_limit_kmh": 30.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "traffic_signs_markings/road_intersection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Braking/Keeping"
   },
   {
     "scenario_id": "RTB112",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 108,
-    "reference_trajectory_source": "EGO_TRAJ_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 87,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 121,
+    "trajectory_length_m": 371.382,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "separation_protection/road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Following/Yielding/Braking"
   },
   {
     "scenario_id": "RTB113",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 58,
-    "reference_trajectory_source": "STR_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 88,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 67,
+    "trajectory_length_m": 292.539,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "road_intersection/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Yielding/Crossing"
   },
   {
     "scenario_id": "RTB114",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 89,
+    "ego_model": "vehicle.tesla.model3",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 42,
+    "trajectory_length_m": 233.703,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 0.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/road_alignment/limited_sight_distance/adverse_weather",
+    "ego_actions": "Yielding/Braking/Keeping"
   },
   {
     "scenario_id": "RTB115",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 90,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 93,
+    "trajectory_length_m": 670.016,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "separation_protection/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Following/Braking"
   },
   {
     "scenario_id": "RTB116",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 56,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 91,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 140,
+    "trajectory_length_m": 510.855,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "separation_protection/lighting_facilities/road_intersection",
+    "ego_actions": "Overtaking/Following/Braking"
   },
   {
     "scenario_id": "RTB117",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 33,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 92,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "高速场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 79,
+    "trajectory_length_m": 258.079,
+    "speed_limit_kmh": 100.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "road_alignment/clearance_intrusion",
+    "ego_actions": "Overtaking/Following/Braking"
   },
   {
     "scenario_id": "RTB118",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego_vehicle"
-    ],
-    "reference_trajectory_points": 31,
-    "reference_trajectory_source": "EGO_TRAJ_STR",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 93,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 35,
+    "trajectory_length_m": 247.647,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 10.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "separation_protection/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Braking"
   },
   {
     "scenario_id": "RTB119",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 50,
-    "reference_trajectory_source": "raw_traj_ego_str",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "scenario_index": 94,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 48,
+    "trajectory_length_m": 212.354,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 40.0,
+    "risk_radius_m": 10.0,
+    "hazard_types": "traffic_signs_markings/lighting_facilities/clearance_intrusion",
+    "ego_actions": "Overtaking/Yielding/Keeping"
   },
   {
     "scenario_id": "RTB120",
-    "has_ego_actor": true,
-    "has_role_name_ego": true,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
+    "scenario_index": 95,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 3,
+    "estimated_pedestrians": 0,
     "reference_trajectory_points": 82,
-    "reference_trajectory_source": "RAW_TRAJ_EGO",
-    "needs_scene_edit_reason": [],
-    "blocking_metadata_issues": []
+    "trajectory_length_m": 454.409,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 20.0,
+    "risk_radius_m": 30.0,
+    "hazard_types": "road_surface_condition/road_alignment/clearance_intrusion",
+    "ego_actions": "Overtaking/Merging/Braking"
   },
   {
     "scenario_id": "RTB121",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 46,
-    "reference_trajectory_source": "RAW_EGO_TRAJ",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 96,
+    "ego_model": "vehicle.chevrolet.impala",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 3,
+    "reference_trajectory_points": 51,
+    "trajectory_length_m": 351.772,
+    "speed_limit_kmh": 30.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "road_alignment/limited_sight_distance/clearance_intrusion",
+    "ego_actions": "Yielding/Keeping"
   },
   {
     "scenario_id": "RTB122",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 98,
-    "reference_trajectory_source": "RAW_EGO_TRAJECTORY",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 97,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 69,
+    "trajectory_length_m": 329.524,
+    "speed_limit_kmh": 40.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 5.0,
+    "hazard_types": "traffic_signs_markings/separation_protection/clearance_intrusion",
+    "ego_actions": "Overtaking/Following/Braking/Keeping"
   },
   {
     "scenario_id": "RTB123",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": false,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 0,
-    "reference_trajectory_source": "not_static_ego_reference_detected",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected",
-      "missing_static_ego_reference_trajectory"
-    ],
-    "blocking_metadata_issues": [
-      "missing_reference_trajectory",
-      "missing_reference_trajectory_and_ego_end"
-    ]
+    "scenario_index": 98,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "山区场景",
+    "estimated_vehicles": 2,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 116,
+    "trajectory_length_m": 270.259,
+    "speed_limit_kmh": 30.0,
+    "suggested_triggered_speed_kmh": 15.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "road_alignment/limited_sight_distance/clearance_intrusion/adverse_weather",
+    "ego_actions": "Overtaking/Yielding/Braking/Keeping"
   },
   {
     "scenario_id": "RTB124",
-    "has_ego_actor": true,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [
-      "ego"
-    ],
-    "reference_trajectory_points": 85,
-    "reference_trajectory_source": "RAW_EGO_TRAJ",
-    "needs_scene_edit_reason": [
-      "ego_actor_missing_role_name"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 99,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "城市场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 1,
+    "reference_trajectory_points": 48,
+    "trajectory_length_m": 391.274,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 30.0,
+    "risk_radius_m": 40.0,
+    "hazard_types": "lighting_facilities/road_intersection/road_alignment/limited_sight_distance",
+    "ego_actions": "Following/Yielding/Crossing"
   },
   {
     "scenario_id": "RTB125",
-    "has_ego_actor": false,
-    "has_role_name_ego": false,
-    "has_static_ego_trajectory": true,
-    "ego_actor_names": [],
-    "reference_trajectory_points": 71,
-    "reference_trajectory_source": "TRAJ_3_EGO",
-    "needs_scene_edit_reason": [
-      "no_clear_ego_actor_detected"
-    ],
-    "blocking_metadata_issues": []
+    "scenario_index": 100,
+    "ego_model": "vehicle.audi.tt",
+    "scene_type": "郊区场景",
+    "estimated_vehicles": 4,
+    "estimated_pedestrians": 0,
+    "reference_trajectory_points": 52,
+    "trajectory_length_m": 288.949,
+    "speed_limit_kmh": 60.0,
+    "suggested_triggered_speed_kmh": 60.0,
+    "risk_radius_m": 20.0,
+    "hazard_types": "separation_protection/road_alignment",
+    "ego_actions": "Following/Yielding/Keeping"
   }
 ]

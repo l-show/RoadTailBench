@@ -1,80 +1,158 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB001",
+  "scenario_index": 1,
   "town": "RTB001",
-  "description": "Original scenario body for LX104; detailed variant description is unavailable in the source spreadsheet.",
-  "scenario_family_id": "LX104",
-  "scene_type": "高速场景 (Highway Scenes)",
-  "source_hazards": "交通标志[限速标志误导]",
+  "estimated_vehicles": 3,
+  "estimated_pedestrians": 0,
   "ego": {
-    "role_names": [
-      "ego",
-      "hero"
-    ],
+    "role_name": "ego",
     "type_id": "vehicle.citroen.c3",
+    "color": "255,255,0",
     "start_match_radius_m": 8.0
   },
-  "ego_role_names": [
-    "ego",
-    "hero"
-  ],
-  "ego_type_id": "vehicle.citroen.c3",
-  "ego_blueprint": "vehicle.citroen.c3",
-  "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "not_static_ego_reference_detected",
-  "reference_trajectory_format": "x_y",
-  "reference_trajectory": [],
-  "reference_speed_kmh": 70.0,
-  "speed_limit_kmh": 70.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
-  ],
-  "ability_tags": [
-    "A",
-    "B"
-  ],
-  "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 1,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 0,
-      "low_speed_maneuver": 0
+  "ego_start": {
+    "location": {
+      "x": -23.931,
+      "y": 20.836
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -91.516,
+      "roll": 0.0
     }
   },
-  "notes": [
-    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-    "Scenario timeout remains the termination fallback for this scene."
+  "ego_end": {
+    "location": {
+      "x": -25.447,
+      "y": -148.835
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -90.535,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
+    [-23.931, 20.836, -91.516], [-23.931, 20.836, -91.516], [-23.931, 20.836, -91.516], [-23.931, 20.836, -91.516],
+    [-23.931, 20.836, -91.516], [-23.931, 20.836, -91.516], [-23.931, 20.836, -91.516], [-23.931, 20.836, -91.516],
+    [-23.931, 20.836, -91.516], [-23.942, 20.337, -91.306], [-23.991, 17.799, -90.886], [-24.034, 15.3, -91.166],
+    [-24.092, 12.759, -91.306], [-24.15, 10.218, -91.306], [-24.199, 7.635, -90.886], [-24.225, 5.135, -90.326],
+    [-24.24, 2.594, -90.326], [-24.247, 0.094, -90.116], [-24.252, -2.448, -90.116], [-24.257, -4.99, -90.116],
+    [-24.262, -7.531, -90.116], [-24.267, -10.031, -90.116], [-24.272, -12.573, -90.116], [-24.279, -15.157, -90.326],
+    [-24.296, -17.698, -90.396], [-24.314, -20.198, -90.536], [-24.341, -22.74, -90.606], [-24.367, -25.24, -90.606],
+    [-24.39, -27.74, -90.396], [-24.4, -30.24, -90.186], [-24.408, -32.781, -90.186], [-24.41, -35.323, -89.976],
+    [-24.409, -37.823, -89.976], [-24.411, -40.407, -90.116], [-24.42, -42.907, -90.325], [-24.437, -45.45, -90.535],
+    [-24.46, -47.95, -90.535], [-24.481, -50.492, -90.465], [-24.502, -53.033, -90.465], [-24.522, -55.533, -90.465],
+    [-24.543, -58.075, -90.465], [-24.563, -60.575, -90.465], [-24.588, -63.116, -90.675], [-24.617, -65.616, -90.675],
+    [-24.647, -68.158, -90.675], [-24.676, -70.658, -90.675], [-24.706, -73.2, -90.675], [-24.736, -75.7, -90.675],
+    [-24.766, -78.241, -90.675], [-24.796, -80.784, -90.675], [-24.826, -83.327, -90.675], [-24.855, -85.827, -90.675],
+    [-24.884, -88.326, -90.675], [-24.914, -90.868, -90.675], [-24.944, -93.409, -90.675], [-24.974, -95.951, -90.675],
+    [-24.999, -98.492, -90.465], [-25.02, -100.993, -90.465], [-25.042, -103.534, -90.675], [-25.072, -106.076, -90.675],
+    [-25.101, -108.575, -90.675], [-25.13, -111.075, -90.675], [-25.16, -113.616, -90.675], [-25.191, -116.208, -90.675],
+    [-25.22, -118.708, -90.675], [-25.25, -121.251, -90.675], [-25.28, -123.751, -90.675], [-25.31, -126.292, -90.675],
+    [-25.334, -128.835, -90.325], [-25.345, -131.335, -90.255], [-25.357, -133.876, -90.255], [-25.368, -136.376, -90.255],
+    [-25.379, -138.918, -90.255], [-25.384, -141.418, -90.115], [-25.401, -143.919, -90.535], [-25.425, -146.46, -90.535],
+    [-25.447, -148.835, -90.535], [-25.447, -148.835, -90.535], [-25.447, -148.835, -90.535], [-25.447, -148.835, -90.535],
+    [-25.447, -148.835, -90.535], [-25.447, -148.835, -90.535], [-25.447, -148.835, -90.535]
   ],
-  "blocking_metadata_issues": [
-    "missing_reference_trajectory",
-    "missing_reference_trajectory_and_ego_end"
+  "reference_trajectory_points": 83,
+  "trajectory_length_m": 169.68,
+  "trajectory_adherence_mode": "spatial",
+  "scene_type": "高速场景",
+  "speed_limit_kmh": 100.0,
+  "reference_speed_kmh": 80.0,
+  "hazard_labels": [
+    "标志标线",
+    "限速设施"
+  ],
+  "ego_actions": [
+    "Keeping"
+  ],
+  "weather_parameters": {
+    "cloudiness": 5.0,
+    "precipitation": 0.0,
+    "precipitation_deposits": 0.0,
+    "wind_intensity": 10.0,
+    "sun_azimuth_angle": -1.0,
+    "sun_altitude_angle": 15.0,
+    "fog_density": 2.0,
+    "fog_distance": 0.75,
+    "fog_falloff": 0.1,
+    "wetness": 0.0,
+    "scattering_intensity": 1.0,
+    "mie_scattering_scale": 0.03,
+    "rayleigh_scattering_scale": 0.0331,
+    "dust_storm": 0.0
+  },
+  "capability_vector": {
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "hazards": [
+    {
+      "id": "rtb001_hazard_01",
+      "type": "traffic_signs_markings",
+      "types": [
+        "traffic_signs_markings",
+        "speed_control_facilities"
+      ],
+      "labels": [
+        "标志标线",
+        "限速设施"
+      ],
+      "center": [
+        -22.598,
+        -22.884
+      ],
+      "radius_m": 10.0,
+      "reference_speed_kmh": 80.0
+    }
   ]
 }

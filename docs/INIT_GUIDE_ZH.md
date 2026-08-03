@@ -13,7 +13,9 @@
 - `leaderboard/metrics/`：从帧日志和配置计算指标。
 - `leaderboard/scenarios/`：发现 `RTBXXX.py` 并加载同名 metadata。
 - `leaderboard/cli/`：`leaderboard-run`、`leaderboard-eval`、`leaderboard-plot`。
-- `scenes/`：`RTBXXX.py` 场景代码。当前 `scene_ego` 模式下，脚本自己生成和控制 ego。
+- `scenarios/`：源 `RTBXXX.py` 场景代码和 `场景元文件最终版.xlsx`。
+- `scene_ego/`：带 scene-side ego 的运行副本，文件名为 `RTBXXX_scene_ego.py`。
+- `agent_ego/`：移除 scene-side ego 生成和控制后的运行副本，文件名为 `RTBXXX_agent_ego.py`。
 - `metadata/`：`RTBXXX.json` 场景元数据。`town` 用于自动切换 CARLA 地图。
 - `outputs/`：运行输出目录，不提交。
 
@@ -33,7 +35,7 @@ pip install -e G:\Codex\RoadTailBench-Zoo
 
 ```powershell
 leaderboard-run `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --dry-run
@@ -57,7 +59,7 @@ leaderboard-run `
 leaderboard-run `
   --host localhost `
   --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --limit 3 `
@@ -110,4 +112,4 @@ leaderboard-eval `
 
 ## 后续 agent_ego 注意
 
-当前不少 `scenes/RTBXXX.py` 场景内部仍有自己的 ego 生成和 PID 控制逻辑。真正接算法跑 `agent_ego` 时，需要补兼容逻辑，让场景在 `LEADERBOARD_EGO_MODE=agent_ego` 或 `ROADTAILBENCH_EGO_MODE=agent_ego` 时不再生成或控制 scene-side ego，只保留 NPC、hazard 和场景动态行为。这个改动应优先放在 Bench 仓库的场景运行兼容层或场景公共 helper 中，而不是放到 Zoo adapter 里。
+`agent_ego/RTBXXX_agent_ego.py` 已移除 scene-side ego 生成和控制逻辑，只保留 NPC、hazard、行人、天气和其他动态要素。真正接算法跑 `agent_ego` 时，使用 `--scene-root G:\Codex\RoadTailBench\agent_ego --ego-mode agent_ego`，runner 会按 metadata 的 `ego_start` / `ego_blueprint` 生成 ego。

@@ -1,0 +1,746 @@
+# -*- coding: utf-8 -*-
+import sys
+import carla
+import time
+import random
+
+# 1. 动态引入标准化函数库路径
+LIBRARY_PATH = r"G:\RoadTailCode\标准化函数库"
+if LIBRARY_PATH not in sys.path:
+    sys.path.append(LIBRARY_PATH)
+
+# 全局导入标准化函数库
+import RoadTailBenchInitV9 as RTB
+
+# ==========================================
+# 原始轨迹数据 (去除了中文表头，直接赋值)
+# ==========================================
+NPC_TRAJ_STR = """
+361.887 -27.095 171.545
+361.887 -27.095 171.545
+361.887 -27.095 171.545
+361.077 -26.974 171.545
+357.352 -26.443 171.991
+353.512 -25.919 172.481
+349.73  -25.439 173.324
+346.002 -25.032 174.093
+342.177 -24.665 174.656
+338.443 -24.32  174.796
+334.643 -24.009 176.878
+330.832 -23.957 -178.84
+327.025 -24.16  -175.187
+323.254 -24.701 -168.879
+319.547 -25.585 -164.341
+315.912 -26.731 -159.943
+312.376 -28.156 -156.647
+308.933 -29.643 -156.647
+302.905 -32.245 -156.647
+296.009 -35.195 -157.35
+288.857 -38.176 -157.421
+281.933 -41.055 -157.421
+275.01  -43.934 -157.421
+267.971 -46.861 -157.421
+260.817 -49.836 -157.421
+253.893 -52.715 -157.421
+246.968 -55.595 -157.421
+240.045 -58.474 -157.421
+233.119 -61.354 -157.421
+226.06  -64.232 -158.773
+219.004 -66.768 -162.749
+211.829 -68.953 -163.172
+204.444 -70.844 -167.21
+196.982 -72.436 -168.752
+189.471 -73.75  -171.237
+182.044 -74.768 -173.721
+174.355 -75.512 -175.419
+166.793 -76.039 -177.26
+159.226 -76.072 178.319
+151.659 -75.679 175.979
+144.211 -75.056 174.433
+136.517 -74.274 173.799
+129.096 -73.25  170.671
+121.585 -71.963 169.962
+114.215 -70.584 168.966
+106.748 -69.111 167.96
+100.093 -67.634 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+97.313  -67.016 167.455
+95.618  -66.6   166.01
+91.928  -65.68  166.15
+88.232  -64.783 166.429
+86.745  -64.424 166.429
+86.253  -64.305 166.429
+85.752  -64.184 166.429
+85.267  -64.067 166.429
+84.775  -63.949 166.429
+84.281  -63.831 166.989
+83.787  -63.719 167.479
+83.3    -63.612 167.618
+82.805  -63.503 167.618
+82.302  -63.393 167.618
+81.806  -63.284 167.618
+81.311  -63.176 167.688
+80.816  -63.067 167.688
+80.321  -62.959 167.688
+79.833  -62.854 167.968
+79.337  -62.75  168.528
+78.839  -62.65  168.808
+78.341  -62.551 168.808
+77.852  -62.455 168.878
+77.354  -62.357 168.878
+76.856  -62.259 168.878
+76.138  -62.118 168.878
+74.894  -61.873 168.737
+73.651  -61.62  168.454
+72.408  -61.366 168.454
+71.165  -61.111 168.244
+69.923  -60.851 167.894
+68.704  -60.582 167.054
+67.47   -60.286 165.559
+66.242  -59.964 165.279
+65.015  -59.641 164.847
+63.815  -59.298 163.971
+60.896  -58.46  163.971
+57.28   -57.282 159.867
+53.787  -55.96  158
+50.307  -54.445 154.977
+46.872  -52.828 154.557
+43.952  -51.427 154.347
+43.952  -51.427 154.347
+43.952  -51.427 154.347
+43.952  -51.427 154.277
+43.727  -51.319 154.277
+40.303  -49.67  154.277
+36.862  -47.912 150.973
+33.632  -45.907 146.793
+30.488  -43.771 144.28
+27.451  -41.481 141.411
+24.56   -39.008 138.019
+21.817  -36.373 134.631
+19.145  -33.666 134.631
+16.472  -30.959 134.631
+13.83   -28.222 133.207
+11.296  -25.388 129.844
+8.892   -22.447 128.454
+6.528   -19.391 127.252
+4.236   -16.357 126.759
+1.971   -13.303 126.266
+-0.18   -10.246 123.247
+-2.221  -6.999  120.025
+-3.973  -3.638  116.694
+-5.678  -0.185  114.637
+-7.177  3.3     111.555
+-8.429  6.816   108.232
+-9.569  10.437  105.953
+-10.509 14.118  102.211
+-11.159 17.928  97.465
+-11.421 21.721  91.911
+-11.406 25.525  87.519
+-11.13  29.323  84.539
+-10.751 33.113  83.977
+-10.267 36.828  81.619
+-9.615  40.645  79.117
+-8.836  44.375  77.419
+-7.91   48.072  75.054
+-6.913  51.685  74.278
+-5.872  55.352  74.068
+-4.735  58.991  72.063
+-3.543  62.675  72.063
+-2.388  66.243  72.063
+-1.214  69.869  72.063
+0.136   73.5    68.867
+1.486   76.999  69.007
+2.852   80.558  69.007
+4.292   84.087  65.71
+5.95    87.52   61.787
+7.788   90.786  60.341
+9.707   94.078  58.174
+11.745  97.298  57.471
+13.88   100.528 55.195
+16.126  103.604 51.968
+18.53   106.558 50.735
+21.204  109.829 50.735
+25.283  114.692 47.848
+29.676  119.272 44.607
+34.291  123.629 41.82
+39.051  127.824 41.33
+43.813  132.012 41.26
+48.681  136.072 38.119
+53.733  139.891 36.137
+58.982  143.434 31.655
+64.529  146.494 27.06
+70.222  149.274 24.109
+75.987  151.643 20.643
+81.939  153.821 18.811
+87.969  155.774 16.822
+94.064  157.529 15.339
+100.217 159.076 13.27
+106.396 160.529 13.13
+112.59  161.916 12.008
+118.807 163.17  11.096
+125.042 164.322 10.186
+131.277 165.473 10.816
+137.484 166.798 12.739
+143.57  168.198 12.949
+149.656 169.584 12.81
+155.843 170.976 12.53
+162.039 172.306 11.551
+168.258 173.555 11.478
+174.369 174.808 11.549
+180.576 176.077 11.549
+186.791 177.34  11.269
+193.14  178.461 8.918
+199.401 179.471 9.559
+205.651 180.533 9.559
+211.795 181.542 9.209
+218.055 182.486 7.947
+224.43  183.368 7.667
+230.614 184.115 6.047
+236.919 184.709 4.925
+243.122 185.243 4.925
+249.434 185.729 3.875
+255.759 186.025 1.669
+262.09  186.211 1.879
+268.312 186.503 3.228
+274.624 186.857 3.018
+280.841 187.156 2.668
+287.167 187.436 2.027
+293.495 187.66  2.027
+299.825 187.871 1.677
+306.156 188.056 1.677
+312.385 188.242 1.817
+318.614 188.455 2.307
+324.951 188.72  2.447
+331.293 189.053 3.445
+337.531 189.403 2.885
+341.274 189.584 2.745
+341.274 189.584 2.745
+341.274 189.584 2.745
+"""
+
+EGO_TRAJ_STR = """
+135.783 162.402 -168.024
+135.783 162.402 -168.024
+135.783 162.402 -168.024
+131.609 161.51  -167.814
+125.405 160.17  -167.813
+119.204 158.846 -167.953
+113.002 157.529 -168.093
+106.793 156.238 -168.303
+100.582 154.952 -168.303
+94.375  153.636 -167.53
+88.223  152.085 -164.304
+82.185  150.147 -160.56
+76.325  148.006 -159.01
+70.378  145.523 -154.459
+64.784  142.537 -149.392
+59.47   139.08  -146.288
+54.244  135.494 -144.599
+49.141  131.735 -142.406
+44.246  127.706 -139.024
+39.54   123.461 -136.18
+35.014  119.024 -135.268
+30.565  114.51  -134.28
+26.203  109.909 -132.717
+24.662  108.219 -132.152
+24.662  108.219 -132.152
+24.662  108.219 -132.152
+24.662  108.219 -132.152
+24.662  108.219 -132.152
+24.662  108.219 -132.152
+24.662  108.219 -132.152
+21.039  104.066 -130.136
+17.051  99.131  -126.507
+13.517  93.984  -121.52
+10.398  88.455  -118.233
+7.561   82.774  -114.769
+5.06    76.935  -111.674
+2.826   70.872  -108.608
+0.839   64.839  -106.877
+-0.954  58.746  -105.755
+-2.547  52.599  -103.706
+-4.036  46.426  -103.496
+-5.507  40.248  -102.794
+-6.758  34.257  -101.219
+-7.433  30.447  -95.637
+-7.734  26.713  -93.186
+-7.848  22.907  -90.177
+-7.716  19.165  -84.207
+-7.143  15.403  -78.774
+-6.364  11.678  -77.999
+-5.454  7.984   -74.246
+-4.354  4.341   -71.595
+-3.02   0.78    -67.411
+-1.439  -2.679  -63.443
+0.395   -6.007  -58.229
+2.389   -9.165  -57.659
+4.425   -12.371 -57.238
+6.54    -15.6   -56.398
+8.723   -18.709 -54.523
+10.928  -21.802 -54.523
+13.096  -24.844 -54.523
+14.951  -27.187 -49.234
+16.254  -28.529 -43.516
+19.151  -30.996 -38.044
+22.154  -33.34  -37.974
+25.228  -35.692 -36.249
+28.305  -37.937 -35.899
+31.421  -40.124 -33.777
+34.614  -42.195 -32.218
+37.882  -44.146 -30.069
+41.258  -46.035 -28.655
+44.555  -47.802 -27.387
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+45.773  -48.432 -27.317
+47.545  -49.347 -27.459
+50.831  -51.254 -32.629
+53.293  -53.01  -35.891
+53.703  -53.307 -35.891
+54.114  -53.604 -35.891
+54.531  -53.905 -35.891
+54.941  -54.202 -35.891
+55.352  -54.499 -35.891
+55.762  -54.796 -35.891
+56.173  -55.093 -35.891
+56.583  -55.39  -35.891
+56.998  -55.681 -34.256
+57.418  -55.965 -34.047
+57.839  -56.248 -33.697
+58.263  -56.525 -33.135
+58.688  -56.802 -32.643
+59.119  -57.068 -29.545
+59.564  -57.311 -28.203
+60.005  -57.544 -27.363
+60.456  -57.775 -26.873
+60.904  -57.994 -24.592
+61.368  -58.197 -22.827
+61.839  -58.385 -20.639
+62.314  -58.557 -18.512
+62.802  -58.693 -12.684
+63.298  -58.797 -11.412
+63.796  -58.893 -10.153
+64.296  -58.978 -9.241
+64.788  -59.058 -9.241
+65.288  -59.139 -9.451
+65.796  -59.227 -10.011
+66.287  -59.313 -10.081
+66.785  -59.406 -11.061
+67.282  -59.506 -11.976
+67.777  -59.616 -13.032
+68.263  -59.729 -13.102
+68.757  -59.844 -13.102
+69.25   -59.96  -13.242
+69.743  -60.079 -13.872
+70.236  -60.201 -14.012
+70.728  -60.323 -14.012
+71.22   -60.446 -14.012
+71.711  -60.572 -15.35
+72.198  -60.711 -16.551
+72.684  -60.856 -16.691
+73.169  -61.002 -16.691
+73.656  -61.141 -15.624
+74.144  -61.278 -15.624
+74.624  -61.41  -15.065
+75.114  -61.539 -14.575
+75.596  -61.665 -14.435
+76.087  -61.79  -14.155
+76.579  -61.912 -13.875
+77.071  -62.032 -13.456
+77.564  -62.15  -13.456
+78.05   -62.261 -12.594
+79.672  -62.623 -12.594
+82.145  -63.176 -12.594
+84.617  -63.728 -12.594
+85.226  -63.864 -12.594
+87.247  -64.006 1.709
+89.78   -63.925 1.849
+92.313  -63.845 1.779
+94.847  -63.793 0.282
+97.424  -63.811 -1.128
+99.956  -63.926 -4.135
+102.443 -64.121 -4.495
+103.106 -64.173 -4.495
+103.106 -64.173 -4.915
+103.106 -64.173 -4.915
+103.106 -64.173 -4.915
+103.106 -64.173 -4.915
+103.106 -64.173 -4.915
+103.106 -64.173 -4.915
+105.084 -64.451 -10.725
+107.564 -64.998 -13.1
+110.076 -65.593 -13.38
+114.593 -66.668 -13.38
+120.787 -68.035 -10.597
+126.929 -69.072 -8.531
+133.191 -69.998 -8.391
+139.465 -70.825 -7.179
+145.751 -71.537 -4.803
+152.073 -71.923 -2.749
+158.408 -72.129 -0.979
+164.643 -72.11  1.283
+170.978 -71.901 2.545
+177.305 -71.524 4.817
+183.601 -70.792 7.538
+189.874 -69.871 9.957
+196.014 -68.727 11.155
+202.229 -67.407 13.281
+208.393 -65.874 14.624
+214.503 -64.138 17.169
+220.548 -62.18  18.371
+226.541 -60.072 19.921
+232.401 -57.898 21.272
+238.294 -55.523 22.474
+244.154 -53.069 22.754
+250.009 -50.592 22.964
+255.763 -48.154 22.964
+261.604 -45.653 23.383
+267.438 -43.137 23.172
+273.259 -40.608 23.801
+279.068 -38.058 23.52
+284.996 -35.5   23.029
+290.757 -33.079 22.749
+296.638 -30.672 22.119
+302.546 -28.331 21.339
+308.456 -25.996 22.181
+314.342 -23.603 21.032
+320.402 -21.71  13.069
+326.569 -20.72  5.985
+332.908 -20.344 -1.173
+337.17  -20.609 -4.428
+337.17  -20.609 -4.428
+337.17  -20.609 -4.428
+"""
+
+# === RoadTailBench Opt: ego endpoint cleanup guard ===
+_RTB_OPT_EGO_GOAL_XY = (337.17, -20.609)
+_RTB_OPT_EGO_TYPE_ID = 'vehicle.audi.tt'
+_RTB_OPT_EGO_ROLE_NAMES = ['ego', 'hero']
+_RTB_OPT_GOAL_RADIUS_M = 5.0
+_RTB_OPT_GOAL_HITS = 0
+
+def _rtb_opt_is_alive(actor):
+    return bool(actor is not None and hasattr(actor, 'is_alive') and actor.is_alive)
+
+def _rtb_opt_iter_actor_values(value, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(value)
+    if obj_id in seen:
+        return
+    seen.add(obj_id)
+    if _rtb_opt_is_alive(value) and hasattr(value, 'get_location'):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _rtb_opt_iter_actor_values(item, seen)
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            yield from _rtb_opt_iter_actor_values(item, seen)
+
+def _rtb_opt_actor_matches_ego(actor):
+    if not _rtb_opt_is_alive(actor):
+        return False
+    try:
+        role_name = actor.attributes.get('role_name', '')
+        if role_name in _RTB_OPT_EGO_ROLE_NAMES:
+            return True
+    except Exception:
+        pass
+    try:
+        if _RTB_OPT_EGO_TYPE_ID and actor.type_id == _RTB_OPT_EGO_TYPE_ID:
+            return True
+    except Exception:
+        pass
+    return False
+
+def _rtb_opt_find_ego(local_vars):
+    preferred_names = ('ego', 'ego_vehicle', 'vehicle_ego', 'v3_ego', 'v2_ego', 'agent_ego', 'audi', 'tesla', 'moto', 'truck', 'firetruck')
+    for name in preferred_names:
+        if name in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[name]):
+                if _rtb_opt_actor_matches_ego(actor) or 'ego' in name.lower():
+                    return actor
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            if _rtb_opt_actor_matches_ego(actor):
+                return actor
+    return None
+
+def _rtb_opt_collect_scene_actors(local_vars, world):
+    actors = []
+    seen = set()
+
+    def add(actor):
+        if not _rtb_opt_is_alive(actor):
+            return
+        try:
+            actor_id = actor.id
+        except Exception:
+            actor_id = id(actor)
+        if actor_id in seen:
+            return
+        seen.add(actor_id)
+        actors.append(actor)
+
+    for key in ('actor_list', 'actors', 'vehicles', 'spawned_actors'):
+        if key in local_vars:
+            for actor in _rtb_opt_iter_actor_values(local_vars[key]):
+                add(actor)
+    for value in local_vars.values():
+        for actor in _rtb_opt_iter_actor_values(value):
+            add(actor)
+    try:
+        world_actors = world.get_actors()
+        for pattern in ('vehicle.*', 'walker.*', 'sensor.*', 'controller.*', 'static.prop.*', 'static.trigger.*'):
+            for actor in world_actors.filter(pattern):
+                add(actor)
+    except Exception:
+        pass
+    return actors
+
+def _rtb_opt_cleanup_scene(local_vars, client, world):
+    actors = _rtb_opt_collect_scene_actors(local_vars, world)
+    try:
+        commands = [carla.command.DestroyActor(actor.id) for actor in actors if _rtb_opt_is_alive(actor)]
+        if commands:
+            client.apply_batch(commands)
+        return
+    except Exception:
+        pass
+    for actor in actors:
+        try:
+            if _rtb_opt_is_alive(actor):
+                actor.destroy()
+        except Exception:
+            pass
+
+def _rtb_opt_goal_guard(local_vars, client, world):
+    global _RTB_OPT_GOAL_HITS
+    if _RTB_OPT_EGO_GOAL_XY is None:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    ego_actor = _rtb_opt_find_ego(local_vars)
+    if not _rtb_opt_is_alive(ego_actor):
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    try:
+        loc = ego_actor.get_location()
+        dist = ((loc.x - _RTB_OPT_EGO_GOAL_XY[0]) ** 2 + (loc.y - _RTB_OPT_EGO_GOAL_XY[1]) ** 2) ** 0.5
+    except Exception:
+        _RTB_OPT_GOAL_HITS = 0
+        return False
+    if dist <= _RTB_OPT_GOAL_RADIUS_M:
+        _RTB_OPT_GOAL_HITS += 1
+    else:
+        _RTB_OPT_GOAL_HITS = 0
+    if _RTB_OPT_GOAL_HITS >= 2:
+        print('[RoadTailBench Opt] Ego reached trajectory endpoint; cleaning all scene actors and ending simulation.')
+        _rtb_opt_cleanup_scene(local_vars, client, world)
+        return True
+    return False
+# === End RoadTailBench Opt guard ===
+
+def main():
+    actor_list = []
+    client = carla.Client('localhost', 2000)
+    client.set_timeout(10.0)
+
+    try:
+        world = client.get_world()
+        carla_map = world.get_map()
+        bp_lib = world.get_blueprint_library()
+        dt = 0.05
+
+        # ==========================================
+        # 1. 环境初始化：帧率同步与天气系统
+        # ==========================================
+        RTB.enable_synchronous_mode(world, dt=dt)
+
+        # 严苛按照你提供的截图要求配置静态天气（极端大雾、大风、积水暗角）
+        RTB.set_static_weather(
+            world,
+            cloudiness=40.0,
+            precipitation=50.0,
+            precipitation_deposits=50.0,
+            wind_intensity=100.0,
+            sun_azimuth_angle=155.0,
+            sun_altitude_angle=14.0,
+            fog_density=40.0,
+            fog_distance=5.0,
+            fog_falloff=0.5,
+            wetness=50.0,
+            scattering_intensity=5.0,
+            mie_scattering_scale=0.0,
+            rayleigh_scattering_scale=0.04,
+            dust_storm=150.0
+        )
+        print("[场景配置] 天气系统已设置（严格对应需求参数）")
+
+        # ==========================================
+        # 2. 轨迹数据解析、清洗与稠密化
+        # ==========================================
+        # NPC 轨迹处理
+        npc_raw = RTB.parse_string_trajectory(NPC_TRAJ_STR, min_dist=0.5)
+        npc_dense = RTB.interpolate_trajectory(npc_raw, interval=0.5)
+        npc_path = RTB.build_transforms_from_trajectory(npc_dense)
+        npc_locs = [wp.location for wp in npc_path]
+
+        # Ego 轨迹处理
+        ego_raw = RTB.parse_string_trajectory(EGO_TRAJ_STR, min_dist=0.5)
+        ego_dense = RTB.interpolate_trajectory(ego_raw, interval=0.5)
+        ego_path = RTB.build_transforms_from_trajectory(ego_dense)
+        ego_locs = [wp.location for wp in ego_path]
+
+        # ==========================================
+        # 3. 车辆与行人实体安全生成
+        # ==========================================
+        # 第一辆车 NPC (Chevrolet Impala)
+        npc_vehicle = RTB.spawn_vehicle(world, 'vehicle.chevrolet.impala',
+                                        x=npc_raw[0][0], y=npc_raw[0][1], yaw=npc_raw[0][2], role_name='npc')
+        actor_list.append(npc_vehicle)
+
+        # 第二辆车 Ego (Audi TT)
+        ego_vehicle = RTB.spawn_vehicle(world, 'vehicle.audi.tt',
+                                        x=ego_raw[0][0], y=ego_raw[0][1], yaw=ego_raw[0][2], role_name='ego')
+        actor_list.append(ego_vehicle)
+
+        # 生成行人
+        ped_bp = bp_lib.filter('walker.pedestrian.*')[0]
+        ped_tf = carla.Transform(carla.Location(x=61.418, y=-52.765, z=3.0))
+        pedestrian = world.try_spawn_actor(ped_bp, ped_tf)
+        actor_list.append(pedestrian)
+
+        # ==========================================
+        # 4. 车辆PID与行人控制器挂载
+        # ==========================================
+        # 为每辆车建立独立的 PID
+        npc_pid_lon = RTB.PIDLongitudinalController(preset='default_car')
+        npc_pid_lat = RTB.PIDLateralController(preset='default_car')
+        npc_wp_idx = 0
+
+        ego_pid_lon = RTB.PIDLongitudinalController(preset='default_car')
+        ego_pid_lat = RTB.PIDLateralController(preset='default_car')
+        ego_wp_idx = 0
+
+        # 行人控制器挂载：设置随机漫游列表
+        ped_ctrl = RTB.PedestrianController(pedestrian, mode='roam',
+                                            target_list=[(61.418, -52.765), (62.899, -56.746)],
+                                            default_speed=random.uniform(1.0, 4.5))
+        ped_was_waiting = False
+
+        # ==========================================
+        # 5. 车辆灯光管理器
+        # ==========================================
+        npc_lights = RTB.VehicleLightManager(npc_vehicle)
+        npc_lights.set_static_lights(low_beam=True, high_beam=False)  # 行车灯 + 近光灯
+
+        ego_lights = RTB.VehicleLightManager(ego_vehicle)
+        ego_lights.set_static_lights(low_beam=True, high_beam=False)  # 行车灯 + 近光灯
+        ego_high_beam_switched = False  # 控制灯光切换状态位的 Flag
+
+        # ==========================================
+        # 6. 剧本状态机编排
+        # ==========================================
+        # NPC 剧本：初速度 70，在 x=90 时减速到 30，在 x=50 时加速到 60 (轨迹从大x往小x开)
+        npc_sm = RTB.MultiStageBehaviorMachine(initial_speed=70.0)
+        npc_sm.add_stage('x_less', target_speed=30.0, trigger_val=90.0, accel=15.0)
+        npc_sm.add_stage('x_less', target_speed=60.0, trigger_val=50.0, accel=15.0)
+
+        # Ego 剧本：初速度 70，在 y=108 减速到 50，y=-48 减速到 20，y=-64 加速到 60 (轨迹y从正向负递减)
+        ego_sm = RTB.MultiStageBehaviorMachine(initial_speed=70.0)
+        ego_sm.add_stage('y_less', target_speed=50.0, trigger_val=108.0, accel=20.0)
+        ego_sm.add_stage('y_less', target_speed=20.0, trigger_val=-48.0, accel=15.0)
+        ego_sm.add_stage('y_less', target_speed=60.0, trigger_val=-64.0, accel=15.0)
+
+        # ==========================================
+        # 7. 预热与初始物理动量注入
+        # ==========================================
+        RTB.set_vehicle_initial_speed(npc_vehicle, 70.0, yaw_deg=npc_raw[0][2])
+        RTB.set_vehicle_initial_speed(ego_vehicle, 70.0, yaw_deg=ego_raw[0][2])
+
+        sim_time = 0.0
+
+        # ==========================================
+        # 8. 仿真主循环
+        # ==========================================
+        while True:
+            start_time = time.time()
+            world.tick()
+            if _rtb_opt_goal_guard(locals(), client, world):
+                break
+            sim_time += dt
+
+            # ---------------- 状态机与 PID 执行：NPC ----------------
+            if npc_vehicle and npc_vehicle.is_alive:
+                # 检查是否出界，如果出界则直接在函数内销毁
+                if not RTB.check_vehicle_out_of_bounds(npc_vehicle, carla_map, auto_destroy=True):
+                    npc_loc = npc_vehicle.get_location()
+                    npc_target_spd = npc_sm.tick(npc_loc, sim_time, dt)
+
+                    npc_target_wp, npc_wp_idx = RTB.get_target_waypoint(npc_loc, npc_locs, npc_wp_idx,
+                                                                        speed_kmh=npc_target_spd)
+                    RTB.apply_pid_control(npc_vehicle, npc_pid_lon, npc_pid_lat, npc_target_spd, npc_target_wp)
+
+                    # NPC 可以不画预瞄点，这里主要是保持画面干净
+
+            # ---------------- 状态机、灯光与 PID 执行：Ego ----------------
+            if ego_vehicle and ego_vehicle.is_alive:
+                if not RTB.check_vehicle_out_of_bounds(ego_vehicle, carla_map, auto_destroy=True):
+                    ego_loc = ego_vehicle.get_location()
+                    ego_target_spd = ego_sm.tick(ego_loc, sim_time, dt)
+
+                    # 剧本要求：在 y=108 时，减速的同时将近光灯切换为远光灯
+                    if not ego_high_beam_switched and ego_loc.y <= 108.0:
+                        ego_lights.turn_off(carla.VehicleLightState.LowBeam)
+                        ego_lights.turn_on(carla.VehicleLightState.HighBeam)
+                        ego_high_beam_switched = True
+                        print("[剧本触发] Ego 车辆已在 y=108 切换为远光灯。")
+
+                    ego_target_wp, ego_wp_idx = RTB.get_target_waypoint(ego_loc, ego_locs, ego_wp_idx,
+                                                                        speed_kmh=ego_target_spd)
+                    RTB.apply_pid_control(ego_vehicle, ego_pid_lon, ego_pid_lat, ego_target_spd, ego_target_wp)
+
+                    # 画出当前预瞄点与牵引线（仅绘制 Ego，保持主视角的关注）
+
+            # ---------------- 行人逻辑 ----------------
+            if pedestrian and pedestrian.is_alive:
+                # 当行人从行走状态变为等待状态时，重新抽取一次 1~4.5 的随机速度，为了让每次行走速度都不一致
+                if ped_ctrl.is_waiting and not ped_was_waiting:
+                    ped_ctrl.default_speed = random.uniform(1.0, 4.5)
+                    print(f"[行人系统] 开始新的一轮折返，随机抽取移动速度: {ped_ctrl.default_speed:.2f} m/s")
+
+                ped_was_waiting = ped_ctrl.is_waiting
+                ped_ctrl.run_step(dt, sim_time)
+
+            # ---------------- 硬件时钟补齐 (强制 1X 真实时间流逝) ----------------
+            compute_time = time.time() - start_time
+            if compute_time < dt:
+                time.sleep(dt - compute_time)
+
+    except KeyboardInterrupt:
+        print("\n[场景中断] 用户手动中断了仿真。")
+    finally:
+        # 恢复异步模式并一键清理场景实体
+        RTB.disable_synchronous_mode(world)
+        RTB.cleanup_actors(client, actor_list)
+        print("[场景结束] 资源已安全回收。")
+
+if __name__ == '__main__':
+    main()

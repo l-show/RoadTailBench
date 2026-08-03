@@ -1,12 +1,13 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB027",
+  "scenario_index": 17,
   "town": "RTB027",
-  "description": "在傍晚雷雨后，Ego车辆沿一段下坡弯道乡村公路接近一个铁路下穿涵洞。由于涵洞入口前的排水系统被杂物严重堵塞，在光线昏暗的涵洞内部形成了一个长而深的积水区。Ego车辆在进入涵洞时因光线骤变、路面标线缺失和积水未能及时识别危险并减速，导致车辆在积水中发生侧滑偏移。",
-  "scenario_family_id": "LX339",
-  "scene_type": "郊区场景 (Suburban Scenes)",
-  "environment": "傍晚雷雨后",
-  "source_hazards": "排水系统[排水不畅]\n + 交通标线[标线缺失]\n + 视距不良[视距不良]",
+  "estimated_vehicles": 2,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.audi.tt",
+  "ego_color": "255,165,0",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
       "ego"
@@ -20,7 +21,29 @@
   "ego_type_id": "vehicle.audi.tt",
   "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "scenes/RTB027.py:EGO_TRAJECTORY",
+  "ego_start": {
+    "location": {
+      "x": 19.009,
+      "y": -77.257
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 35.182,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 100.969,
+      "y": 93.035
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 73.897,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [
     [
@@ -387,110 +410,103 @@
       100.969,
       93.035,
       73.897
-    ],
-    [
-      102.24,
-      97.953,
-      77.382
-    ],
-    [
-      103.319,
-      102.904,
-      77.755
-    ],
-    [
-      104.398,
-      107.784,
-      77.129
-    ],
-    [
-      105.531,
-      112.743,
-      77.128
-    ],
-    [
-      106.683,
-      117.609,
-      76.379
-    ],
-    [
-      107.86,
-      122.468,
-      76.378
-    ],
-    [
-      109.058,
-      127.409,
-      76.378
-    ],
-    [
-      109.293,
-      128.38,
-      76.378
-    ],
-    [
-      109.293,
-      128.38,
-      76.378
-    ],
-    [
-      109.293,
-      128.38,
-      76.378
-    ],
-    [
-      109.293,
-      128.38,
-      76.378
     ]
   ],
-  "reference_speed_kmh": 60.0,
+  "reference_trajectory_points": 73,
+  "trajectory_length_m": 194.444,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    65.363,
+    -27.814
+  ],
+  "risk_radius_m": 10.0,
+  "scene_type": "郊区场景",
   "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 20.0,
+  "suggested_triggered_speed_kmh": 20.0,
+  "hazard_labels": [
+    "道路交叉",
+    "路面情况",
+    "恶劣天气"
   ],
-  "ability_tags": [
-    "A",
-    "B"
+  "ego_actions": [
+    "Keeping"
   ],
+  "weather_summary": "cloudiness=40.0, precipitation=100.0, precipitation_deposits=100.0,\n        wind_intensity=100.0, sun_azimuth_angle=90.0, sun_altitude_angle=10.0,\n        fog_density=10.0, fog_distance=0.75, fog_falloff=0.1, wetness=100.0,\n        scattering_intensity=11.5, mie_scattering_scale=0.21, rayleigh_scattering_scale=0.07",
+  "weather_parameters": {
+    "cloudiness": 40.0,
+    "precipitation": 100.0,
+    "precipitation_deposits": 100.0,
+    "wind_intensity": 100.0,
+    "sun_azimuth_angle": 90.0,
+    "sun_altitude_angle": 10.0,
+    "fog_density": 10.0,
+    "fog_distance": 0.75,
+    "fog_falloff": 0.1,
+    "wetness": 100.0,
+    "scattering_intensity": 11.5,
+    "mie_scattering_scale": 0.21,
+    "rayleigh_scattering_scale": 0.07
+  },
   "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 0,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 1,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+      ]
     }
   },
-  "notes": [
-    "Ego is the orange Audi TT with role_name=ego; scene-side PID follows EGO_TRAJECTORY with staged speed changes at y=-40 and y=9.618."
-  ],
-  "blocking_metadata_issues": []
+  "hazards": [
+    {
+      "id": "rtb027_primary_hazard",
+      "type": "road_intersection",
+      "center": [
+        65.363,
+        -27.814
+      ],
+      "radius_m": 10.0,
+      "reference_speed_kmh": 20.0
+    }
+  ]
 }

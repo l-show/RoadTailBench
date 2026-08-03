@@ -1,82 +1,836 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB070",
+  "scenario_index": 55,
   "town": "RTB070",
-  "description": "在一条双向两车道的县道上，Ego车辆为躲避前方因故障抛锚的道路养护车，需借用对向车道完成变道超车。然而，核心挑战在于，此时正值傍晚，强烈的日落眩光严重干扰了Ego的视觉传感器性能，同时车道中心标线磨损严重，导致感知系统难以准确识别车道边界。更危险的是，在一个轻微的弯道后，一辆超速行驶的社会车辆从对向驶来，由于弯道遮挡和眩光影响，Ego车辆对其的探测距离被大幅缩短。",
-  "scenario_family_id": "HHY2",
-  "scene_type": "郊区场景 (Suburban Scenes)",
-  "source_hazards": "交通标线[交通标线磨损+交通标线缺失]",
+  "estimated_vehicles": 6,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.audi.tt",
+  "ego_color": null,
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
-    "type_id": "vehicle.tesla.model3",
+    "type_id": "vehicle.audi.tt",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
-  "ego_type_id": "vehicle.tesla.model3",
-  "ego_blueprint": "vehicle.tesla.model3",
+  "ego_type_id": "vehicle.audi.tt",
+  "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "not_static_ego_reference_detected",
-  "reference_trajectory_format": "x_y",
-  "reference_trajectory": [],
-  "reference_speed_kmh": 60.0,
-  "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B",
-    "C"
-  ],
-  "ability_tags": [
-    "A",
-    "B",
-    "C"
-  ],
-  "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 0,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+  "ego_start": {
+    "location": {
+      "x": 193.27,
+      "y": -37.171
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 145.337,
+      "roll": 0.0
     }
   },
-  "notes": [
-    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-    "Scenario timeout remains the termination fallback for this scene."
+  "ego_end": {
+    "location": {
+      "x": 45.726,
+      "y": 134.328
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 76.464,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
+    [
+      193.27,
+      -37.171,
+      145.337
+    ],
+    [
+      193.27,
+      -37.171,
+      145.337
+    ],
+    [
+      193.099,
+      -37.053,
+      145.337
+    ],
+    [
+      191.008,
+      -35.607,
+      145.337
+    ],
+    [
+      188.917,
+      -34.162,
+      145.337
+    ],
+    [
+      186.826,
+      -32.716,
+      145.337
+    ],
+    [
+      184.735,
+      -31.271,
+      145.337
+    ],
+    [
+      182.644,
+      -29.825,
+      145.337
+    ],
+    [
+      181.602,
+      -29.104,
+      145.337
+    ],
+    [
+      181.602,
+      -29.104,
+      145.337
+    ],
+    [
+      181.602,
+      -29.104,
+      145.337
+    ],
+    [
+      181.602,
+      -29.104,
+      145.337
+    ],
+    [
+      181.602,
+      -29.104,
+      145.337
+    ],
+    [
+      181.602,
+      -29.104,
+      145.337
+    ],
+    [
+      179.888,
+      -27.92,
+      145.337
+    ],
+    [
+      177.797,
+      -26.474,
+      145.337
+    ],
+    [
+      175.709,
+      -25.026,
+      145.267
+    ],
+    [
+      173.62,
+      -23.578,
+      145.267
+    ],
+    [
+      171.533,
+      -22.128,
+      145.197
+    ],
+    [
+      169.445,
+      -20.678,
+      145.267
+    ],
+    [
+      167.311,
+      -19.22,
+      145.967
+    ],
+    [
+      165.193,
+      -17.815,
+      146.946
+    ],
+    [
+      163.053,
+      -16.442,
+      147.785
+    ],
+    [
+      160.862,
+      -15.074,
+      148.135
+    ],
+    [
+      158.738,
+      -13.754,
+      148.135
+    ],
+    [
+      157.393,
+      -12.918,
+      148.135
+    ],
+    [
+      157.393,
+      -12.918,
+      148.135
+    ],
+    [
+      157.393,
+      -12.918,
+      148.135
+    ],
+    [
+      149.45,
+      -7.476,
+      153.264
+    ],
+    [
+      149.45,
+      -7.476,
+      153.264
+    ],
+    [
+      149.45,
+      -7.476,
+      153.264
+    ],
+    [
+      147.591,
+      -6.536,
+      153.194
+    ],
+    [
+      145.324,
+      -5.388,
+      152.914
+    ],
+    [
+      143.06,
+      -4.233,
+      153.551
+    ],
+    [
+      140.743,
+      -3.19,
+      157.273
+    ],
+    [
+      138.382,
+      -2.25,
+      158.973
+    ],
+    [
+      136.001,
+      -1.358,
+      159.815
+    ],
+    [
+      133.604,
+      -0.514,
+      161.725
+    ],
+    [
+      131.178,
+      0.243,
+      163.416
+    ],
+    [
+      128.678,
+      0.896,
+      167.015
+    ],
+    [
+      126.232,
+      1.408,
+      169.42
+    ],
+    [
+      124.294,
+      1.572,
+      -178.876
+    ],
+    [
+      124.294,
+      1.572,
+      -178.876
+    ],
+    [
+      124.294,
+      1.572,
+      -178.876
+    ],
+    [
+      123.404,
+      1.554,
+      -178.876
+    ],
+    [
+      119.644,
+      1.48,
+      -178.876
+    ],
+    [
+      118.812,
+      1.464,
+      -178.876
+    ],
+    [
+      118.304,
+      1.454,
+      -178.876
+    ],
+    [
+      117.795,
+      1.444,
+      -178.946
+    ],
+    [
+      117.278,
+      1.435,
+      -178.809
+    ],
+    [
+      116.768,
+      1.424,
+      -178.809
+    ],
+    [
+      116.26,
+      1.413,
+      -178.809
+    ],
+    [
+      114.992,
+      1.387,
+      -178.809
+    ],
+    [
+      113.725,
+      1.361,
+      -178.809
+    ],
+    [
+      112.451,
+      1.334,
+      -178.809
+    ],
+    [
+      111.178,
+      1.308,
+      -178.809
+    ],
+    [
+      109.907,
+      1.278,
+      -177.808
+    ],
+    [
+      108.646,
+      1.218,
+      -177.051
+    ],
+    [
+      107.354,
+      1.15,
+      -176.98
+    ],
+    [
+      106.08,
+      1.087,
+      -177.676
+    ],
+    [
+      104.809,
+      1.058,
+      -179.573
+    ],
+    [
+      103.535,
+      1.081,
+      177.452
+    ],
+    [
+      102.263,
+      1.169,
+      174.057
+    ],
+    [
+      101.0,
+      1.349,
+      169.515
+    ],
+    [
+      99.755,
+      1.622,
+      166.22
+    ],
+    [
+      98.521,
+      1.931,
+      165.94
+    ],
+    [
+      97.292,
+      2.237,
+      166.573
+    ],
+    [
+      96.032,
+      2.505,
+      169.354
+    ],
+    [
+      94.798,
+      2.69,
+      173.41
+    ],
+    [
+      93.516,
+      2.798,
+      177.181
+    ],
+    [
+      92.234,
+      2.831,
+      -179.832
+    ],
+    [
+      90.974,
+      2.774,
+      -175.078
+    ],
+    [
+      89.704,
+      2.61,
+      -170.295
+    ],
+    [
+      88.469,
+      2.352,
+      -165.411
+    ],
+    [
+      87.254,
+      1.993,
+      -162.564
+    ],
+    [
+      86.041,
+      1.599,
+      -161.805
+    ],
+    [
+      84.814,
+      1.196,
+      -161.805
+    ],
+    [
+      83.613,
+      0.802,
+      -162.218
+    ],
+    [
+      82.396,
+      0.45,
+      -165.829
+    ],
+    [
+      81.148,
+      0.178,
+      -169.998
+    ],
+    [
+      79.887,
+      0.016,
+      -175.602
+    ],
+    [
+      78.615,
+      -0.028,
+      179.923
+    ],
+    [
+      77.335,
+      0.038,
+      173.91
+    ],
+    [
+      76.088,
+      0.197,
+      172.213
+    ],
+    [
+      74.831,
+      0.413,
+      168.261
+    ],
+    [
+      73.588,
+      0.736,
+      161.766
+    ],
+    [
+      72.403,
+      1.148,
+      159.499
+    ],
+    [
+      71.218,
+      1.63,
+      156.873
+    ],
+    [
+      70.051,
+      2.133,
+      156.662
+    ],
+    [
+      68.886,
+      2.637,
+      156.313
+    ],
+    [
+      67.722,
+      3.153,
+      155.756
+    ],
+    [
+      66.557,
+      3.69,
+      154.989
+    ],
+    [
+      65.403,
+      4.258,
+      152.445
+    ],
+    [
+      64.28,
+      4.846,
+      152.375
+    ],
+    [
+      63.143,
+      5.441,
+      152.375
+    ],
+    [
+      62.022,
+      6.027,
+      152.375
+    ],
+    [
+      60.881,
+      6.624,
+      152.375
+    ],
+    [
+      59.77,
+      7.23,
+      150.054
+    ],
+    [
+      58.68,
+      7.889,
+      148.425
+    ],
+    [
+      57.616,
+      8.575,
+      145.504
+    ],
+    [
+      56.579,
+      9.307,
+      144.595
+    ],
+    [
+      55.539,
+      10.069,
+      142.185
+    ],
+    [
+      54.564,
+      10.877,
+      138.897
+    ],
+    [
+      53.606,
+      11.718,
+      138.547
+    ],
+    [
+      52.658,
+      12.563,
+      138.011
+    ],
+    [
+      51.716,
+      13.413,
+      137.732
+    ],
+    [
+      50.765,
+      14.28,
+      137.384
+    ],
+    [
+      49.852,
+      15.132,
+      136.896
+    ],
+    [
+      48.922,
+      16.002,
+      136.896
+    ],
+    [
+      48.681,
+      16.228,
+      136.896
+    ],
+    [
+      48.681,
+      16.228,
+      136.896
+    ],
+    [
+      48.681,
+      16.228,
+      136.896
+    ],
+    [
+      45.804,
+      19.163,
+      134.303
+    ],
+    [
+      42.457,
+      22.986,
+      129.548
+    ],
+    [
+      39.299,
+      26.969,
+      126.912
+    ],
+    [
+      36.496,
+      31.207,
+      121.986
+    ],
+    [
+      33.852,
+      35.547,
+      117.642
+    ],
+    [
+      31.78,
+      40.094,
+      110.641
+    ],
+    [
+      30.246,
+      44.938,
+      104.733
+    ],
+    [
+      29.202,
+      49.911,
+      99.192
+    ],
+    [
+      28.591,
+      54.955,
+      93.618
+    ],
+    [
+      28.522,
+      60.035,
+      87.633
+    ],
+    [
+      28.982,
+      65.095,
+      82.676
+    ],
+    [
+      29.799,
+      70.111,
+      78.861
+    ],
+    [
+      30.821,
+      75.09,
+      78.085
+    ],
+    [
+      31.919,
+      80.053,
+      77.099
+    ],
+    [
+      33.126,
+      84.993,
+      75.623
+    ],
+    [
+      34.401,
+      89.918,
+      75.343
+    ],
+    [
+      35.692,
+      94.835,
+      75.343
+    ],
+    [
+      36.994,
+      99.835,
+      75.412
+    ],
+    [
+      38.27,
+      104.755,
+      75.411
+    ],
+    [
+      39.549,
+      109.674,
+      75.481
+    ],
+    [
+      40.805,
+      114.599,
+      75.9
+    ],
+    [
+      42.044,
+      119.53,
+      75.9
+    ],
+    [
+      43.283,
+      124.46,
+      75.83
+    ],
+    [
+      44.547,
+      129.47,
+      75.9
+    ],
+    [
+      45.726,
+      134.328,
+      76.464
+    ]
   ],
-  "blocking_metadata_issues": [
-    "missing_reference_trajectory",
-    "missing_reference_trajectory_and_ego_end"
+  "reference_trajectory_points": 137,
+  "trajectory_length_m": 286.861,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    86.24,
+    -2.584
+  ],
+  "risk_radius_m": 40.0,
+  "scene_type": "郊区场景",
+  "speed_limit_kmh": 60.0,
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 60.0,
+  "suggested_triggered_speed_kmh": 0.0,
+  "hazard_labels": [
+    "照明设施",
+    "道路线形",
+    "视距不良",
+    "限界侵入"
+  ],
+  "ego_actions": [
+    "Yielding",
+    "Overtaking",
+    "Braking"
+  ],
+  "weather_summary": "cloudiness=5.0,\n            precipitation=75.0,\n            precipitation_deposits=55.0,\n            wind_intensity=10.0,\n            sun_azimuth_angle=-1.0,\n            sun_altitude_angle=-90.0,\n            fog_density=60.0,\n            fog_distance=75.0,\n            fog_falloff=1.0,\n            wetness=75.0,\n            scattering_intensity=1.0,\n            mie_scattering_scale=0.03,\n            rayleigh_scattering_scale=0.0331,\n            dust_storm=0.0",
+  "weather_parameters": {
+    "cloudiness": 5.0,
+    "precipitation": 75.0,
+    "precipitation_deposits": 55.0,
+    "wind_intensity": 10.0,
+    "sun_azimuth_angle": -1.0,
+    "sun_altitude_angle": -90.0,
+    "fog_density": 60.0,
+    "fog_distance": 75.0,
+    "fog_falloff": 1.0,
+    "wetness": 75.0,
+    "scattering_intensity": 1.0,
+    "mie_scattering_scale": 0.03,
+    "rayleigh_scattering_scale": 0.0331,
+    "dust_storm": 0.0
+  },
+  "capability_vector": {
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ]
+    }
+  },
+  "hazards": [
+    {
+      "id": "rtb070_primary_hazard",
+      "type": "lighting_facilities",
+      "center": [
+        86.24,
+        -2.584
+      ],
+      "radius_m": 40.0,
+      "reference_speed_kmh": 60.0
+    }
   ]
 }

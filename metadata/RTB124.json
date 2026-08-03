@@ -1,30 +1,61 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB124",
+  "scenario_index": 99,
   "town": "RTB124",
-  "description": "在夜间大雨中，Ego车辆以自适应巡航模式（ACC）进入一个无清晰标线、缺少关键警告标志的城市陡峭下坡路段。由于感知系统受限及数字信息延迟，车辆错误地判断前方为平坦道路并开始加速，而此时前方不仅有部分侵占车道的市政作业车辆，还有行为不规律的打伞人群。",
-  "scenario_family_id": "HHY1313",
-  "scene_type": "城市场景 (Urban Scenes)",
-  "environment": "夜间大雨",
-  "source_hazards": "交通标志[交通标志缺失]\n+交通标线[交通标线缺失]",
+  "estimated_vehicles": 4,
+  "estimated_pedestrians": 1,
+  "ego_model": "vehicle.audi.tt",
+  "ego_color": "0,255,0",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
     "type_id": "vehicle.audi.tt",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
   "ego_type_id": "vehicle.audi.tt",
   "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "RAW_EGO_TRAJ",
+  "ego_start": {
+    "location": {
+      "x": 3.78,
+      "y": 317.128
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -90.558,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 1.91,
+      "y": -74.108
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -89.987,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [
+    [
+      3.78,
+      317.128,
+      -90.558
+    ],
+    [
+      3.78,
+      317.128,
+      -90.558
+    ],
     [
       3.78,
       317.128,
@@ -254,282 +285,107 @@
       1.91,
       -74.108,
       -89.987
-    ],
-    [
-      1.927,
-      -83.164,
-      -89.567
-    ],
-    [
-      1.993,
-      -92.257,
-      -89.637
-    ],
-    [
-      2.049,
-      -101.073,
-      -89.637
-    ],
-    [
-      2.106,
-      -109.973,
-      -89.637
-    ],
-    [
-      2.162,
-      -118.877,
-      -89.637
-    ],
-    [
-      2.2,
-      -127.879,
-      -90.177
-    ],
-    [
-      2.033,
-      -136.471,
-      -91.653
-    ],
-    [
-      1.771,
-      -145.563,
-      -91.653
-    ],
-    [
-      1.586,
-      -154.153,
-      -90.883
-    ],
-    [
-      1.504,
-      -163.297,
-      -90.463
-    ],
-    [
-      1.435,
-      -171.89,
-      -90.463
-    ],
-    [
-      1.363,
-      -180.78,
-      -90.463
-    ],
-    [
-      1.288,
-      -190.089,
-      -90.463
-    ],
-    [
-      1.219,
-      -198.637,
-      -90.463
-    ],
-    [
-      1.179,
-      -207.597,
-      -89.506
-    ],
-    [
-      1.435,
-      -216.252,
-      -82.09
-    ],
-    [
-      5.935,
-      -223.972,
-      -26.668
-    ],
-    [
-      14.474,
-      -226.39,
-      -7.649
-    ],
-    [
-      23.46,
-      -226.773,
-      0.357
-    ],
-    [
-      32.303,
-      -226.726,
-      0.077
-    ],
-    [
-      41.221,
-      -226.639,
-      1.29
-    ],
-    [
-      49.741,
-      -226.379,
-      2.012
-    ],
-    [
-      58.967,
-      -226.103,
-      1.586
-    ],
-    [
-      67.818,
-      -225.955,
-      0.606
-    ],
-    [
-      76.711,
-      -225.875,
-      0.19
-    ],
-    [
-      85.396,
-      -225.918,
-      -0.362
-    ],
-    [
-      94.381,
-      -225.975,
-      -0.222
-    ],
-    [
-      103.326,
-      -225.989,
-      -0.082
-    ],
-    [
-      112.262,
-      -225.945,
-      0.536
-    ],
-    [
-      121.133,
-      -225.834,
-      0.746
-    ],
-    [
-      129.887,
-      -225.715,
-      0.931
-    ],
-    [
-      138.711,
-      -225.575,
-      0.757
-    ],
-    [
-      147.629,
-      -225.457,
-      0.757
-    ],
-    [
-      156.611,
-      -225.344,
-      0.327
-    ],
-    [
-      165.577,
-      -225.292,
-      0.327
-    ],
-    [
-      174.621,
-      -225.241,
-      0.327
-    ],
-    [
-      183.546,
-      -225.19,
-      0.327
-    ],
-    [
-      192.314,
-      -225.172,
-      -0.7
-    ],
-    [
-      200.47,
-      -225.325,
-      -1.112
     ]
   ],
-  "reference_speed_kmh": 60.0,
+  "reference_trajectory_points": 48,
+  "trajectory_length_m": 391.274,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    -1.523,
+    185.999
+  ],
+  "risk_radius_m": 40.0,
+  "scene_type": "城市场景",
   "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 30.0,
+  "suggested_triggered_speed_kmh": 30.0,
+  "hazard_labels": [
+    "道路交叉",
+    "道路线形",
+    "视距不良",
+    "照明设施"
   ],
-  "ability_tags": [
-    "A",
-    "B"
+  "ego_actions": [
+    "Crossing",
+    "Yielding",
+    "Following"
   ],
+  "weather_summary": "cloudiness=0.0, precipitation=100.0, precipitation_deposits=90.0,\n        wind_intensity=100.0, sun_azimuth_angle=0.0, sun_altitude_angle=-90.0,\n        fog_density=0.0, fog_distance=0.0, fog_falloff=0.0, wetness=100.0,\n        scattering_intensity=0.0, mie_scattering_scale=0.0, rayleigh_scattering_scale=0.0, dust_storm=0.0",
+  "weather_parameters": {
+    "cloudiness": 0.0,
+    "precipitation": 100.0,
+    "precipitation_deposits": 90.0,
+    "wind_intensity": 100.0,
+    "sun_azimuth_angle": 0.0,
+    "sun_altitude_angle": -90.0,
+    "fog_density": 0.0,
+    "fog_distance": 0.0,
+    "fog_falloff": 0.0,
+    "wetness": 100.0,
+    "scattering_intensity": 0.0,
+    "mie_scattering_scale": 0.0,
+    "rayleigh_scattering_scale": 0.0,
+    "dust_storm": 0.0
+  },
   "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 0,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 1,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0
+      ]
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
-    }
-  },
-  "ego_start": {
-    "location": {
-      "x": 3.78,
-      "y": 317.128
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -90.558,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 200.47,
-      "y": -225.325
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -1.112,
-      "roll": 0.0
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ]
     }
   },
   "hazards": [
     {
       "id": "rtb124_primary_hazard",
-      "type": "emergency_avoidance",
+      "type": "road_intersection",
       "center": [
-        1.912,
-        -47.817
+        -1.523,
+        185.999
       ],
-      "radius_m": 10.0,
-      "perception_radius_m": 40.0,
-      "reference_speed_kmh": 40.0,
-      "expected_behavior": "yield_or_stop_for_priority_conflict"
+      "radius_m": 40.0,
+      "reference_speed_kmh": 30.0
     }
   ]
 }

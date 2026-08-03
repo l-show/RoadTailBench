@@ -67,7 +67,7 @@ Dry run 只检查场景发现和 metadata，不连接 CARLA：
 
 ```powershell
 leaderboard-run `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --limit 3 `
@@ -82,7 +82,7 @@ leaderboard-run `
 leaderboard-run `
   --host localhost `
   --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --limit 0 `
@@ -126,6 +126,20 @@ leaderboard-run `
 - `--cleanup-ego`: `agent_ego` 模式结束后销毁 runner 生成的 ego。CARLA 不可用时会跳过销毁，避免卡死。
 - `--agent`: `agent_ego` 模式下模型 adapter，格式 `module:Class`。
 - `--agent-config`: 传给 adapter 的配置字符串或路径。
+
+`agent_ego` 运行时使用 `agent_ego/RTBXXX_agent_ego.py`。这些脚本不再生成或控制 scene-side ego，只保留场景中的 NPC、行人、隐患、天气和动态要素：
+
+```powershell
+leaderboard-run `
+  --host localhost `
+  --port 2000 `
+  --scene-root G:\Codex\RoadTailBench\agent_ego `
+  --metadata-root G:\Codex\RoadTailBench\metadata `
+  --scenes RTB116 `
+  --ego-mode agent_ego `
+  --agent your_module:Adapter `
+  --output-root G:\Codex\RoadTailBench\outputs
+```
 
 ### 仿真终止
 
@@ -194,7 +208,7 @@ scenario_stdout.log
 ```powershell
 leaderboard-run `
   --host localhost --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116 `
   --ego-mode scene_ego `
@@ -352,7 +366,7 @@ scenario_stdout.log
 leaderboard-run `
   --host localhost `
   --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB122 `
   --ego-mode scene_ego `
@@ -370,7 +384,7 @@ leaderboard-run `
 leaderboard-run `
   --host localhost `
   --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --limit 0 `

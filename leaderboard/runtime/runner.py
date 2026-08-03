@@ -305,7 +305,12 @@ class CodeScenarioRunner:
                 if actor.attributes.get("role_name") == role_name:
                     return actor
 
-        ego_type_id = metadata.get("ego_type_id") or metadata.get("ego_blueprint") or self.args.ego_type_id
+        ego_type_id = (
+            metadata.get("ego_type_id")
+            or metadata.get("ego_blueprint")
+            or (ego_meta.get("type_id") if isinstance(ego_meta, dict) else None)
+            or self.args.ego_type_id
+        )
         ego_start = metadata_location(metadata.get("ego_start") or metadata.get("ego_spawn"))
         if ego_type_id:
             matches = [actor for actor in actors if actor.type_id == ego_type_id]
@@ -320,7 +325,7 @@ class CodeScenarioRunner:
                     except RuntimeError:
                         continue
                 ranked.sort(key=lambda item: item[0])
-                radius = float(metadata.get("ego_start_match_radius_m", 8.0))
+                radius = float(metadata.get("ego_start_match_radius_m", ego_meta.get("start_match_radius_m", 8.0)))
                 close = [item for item in ranked if item[0] <= radius]
                 if len(close) == 1:
                     return close[0][1]
@@ -338,7 +343,7 @@ class CodeScenarioRunner:
                 except RuntimeError:
                     continue
             ranked.sort(key=lambda item: item[0])
-            radius = float(metadata.get("ego_start_match_radius_m", 8.0))
+            radius = float(metadata.get("ego_start_match_radius_m", ego_meta.get("start_match_radius_m", 8.0)))
             close = [item for item in ranked if item[0] <= radius]
             if len(close) == 1:
                 return close[0][1]
@@ -363,12 +368,14 @@ class CodeScenarioRunner:
 
     def spawn_agent_ego(self, scenario):
         metadata = scenario.metadata or {}
+        ego = metadata.get("ego") or {}
         ego_meta = metadata.get("ego_start") or metadata.get("ego_spawn")
         if not ego_meta:
             raise RuntimeError(f"{scenario.scene_id}: missing ego_start for agent_ego")
-        bp_id = metadata.get("ego_blueprint") or metadata.get("ego_type_id") or self.args.ego_blueprint
+        bp_id = metadata.get("ego_blueprint") or metadata.get("ego_type_id") or ego.get("type_id") or self.args.ego_blueprint
         bp = self.world.get_blueprint_library().find(bp_id)
-        bp.set_attribute("role_name", "ego")
+        role_name = ego.get("role_name") or "ego"
+        bp.set_attribute("role_name", role_name)
         transform = dict_to_transform(self.carla, ego_meta)
         ego = self.world.try_spawn_actor(bp, transform)
         if not ego:
@@ -480,10 +487,12 @@ class CodeScenarioRunner:
                 raise CarlaUnavailableError(f"{scenario.scene_id}: CARLA is not reachable before scenario start")
             check_scenario_timeout()
             world = self.connect_world(scenario)
+            proc = self.start_scene_process(scenario, output_dir)
             if self.args.ego_mode == "agent_ego":
+                for _ in range(2):
+                    self.advance_world_for_collection(world, remaining_wait_timeout())
                 ego = self.spawn_agent_ego(scenario)
                 adapter = self.load_adapter()
-            proc = self.start_scene_process(scenario, output_dir)
             deadline = time.time() + float(self.args.ego_wait_timeout)
             while time.time() < deadline:
                 check_scenario_timeout()

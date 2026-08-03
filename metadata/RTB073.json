@@ -1,80 +1,419 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB073",
+  "scenario_index": 58,
   "town": "RTB073",
-  "description": "在城市道路的一个信号灯控制交叉口前，Ego车辆由于多种风险叠加，面临未能对突然出现的行人做出及时反应的碰撞风险。",
-  "scenario_family_id": "HHY7",
-  "scene_type": "城市场景 (Urban Scenes)",
-  "source_hazards": "路面质量[路面破损]\n + 道路交叉[路口缺少警告标志]",
+  "estimated_vehicles": 4,
+  "estimated_pedestrians": 1,
+  "ego_model": "vehicle.chevrolet.impala",
+  "ego_color": "255,255,255",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
-    "type_id": "vehicle.mercedes.sprinter",
+    "type_id": "vehicle.chevrolet.impala",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
-  "ego_type_id": "vehicle.mercedes.sprinter",
-  "ego_blueprint": "vehicle.mercedes.sprinter",
+  "ego_type_id": "vehicle.chevrolet.impala",
+  "ego_blueprint": "vehicle.chevrolet.impala",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "not_static_ego_reference_detected",
-  "reference_trajectory_format": "x_y",
-  "reference_trajectory": [],
-  "reference_speed_kmh": 60.0,
-  "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
-  ],
-  "ability_tags": [
-    "A",
-    "B"
-  ],
-  "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 1,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 1,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+  "ego_start": {
+    "location": {
+      "x": 41.942,
+      "y": 210.443
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -94.294,
+      "roll": 0.0
     }
   },
-  "notes": [
-    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-    "Scenario timeout remains the termination fallback for this scene."
+  "ego_end": {
+    "location": {
+      "x": 85.0,
+      "y": 28.056
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -3.221,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
+    [
+      41.942,
+      210.443,
+      -94.294
+    ],
+    [
+      41.942,
+      210.443,
+      -94.294
+    ],
+    [
+      41.942,
+      210.443,
+      -94.154
+    ],
+    [
+      41.404,
+      201.806,
+      -93.524
+    ],
+    [
+      40.41,
+      185.322,
+      -93.384
+    ],
+    [
+      39.745,
+      168.824,
+      -91.387
+    ],
+    [
+      39.238,
+      152.583,
+      -92.024
+    ],
+    [
+      38.722,
+      137.988,
+      -92.024
+    ],
+    [
+      38.052,
+      124.025,
+      -92.963
+    ],
+    [
+      37.341,
+      110.293,
+      -92.963
+    ],
+    [
+      36.693,
+      97.769,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.262,
+      89.446,
+      -92.963
+    ],
+    [
+      36.064,
+      85.618,
+      -92.963
+    ],
+    [
+      35.801,
+      80.541,
+      -92.963
+    ],
+    [
+      35.543,
+      75.464,
+      -92.47
+    ],
+    [
+      35.332,
+      70.469,
+      -92.26
+    ],
+    [
+      35.132,
+      65.391,
+      -92.26
+    ],
+    [
+      34.941,
+      60.312,
+      -91.91
+    ],
+    [
+      34.829,
+      55.314,
+      -89.529
+    ],
+    [
+      35.112,
+      50.242,
+      -82.006
+    ],
+    [
+      35.842,
+      46.225,
+      -79.393
+    ],
+    [
+      36.076,
+      44.976,
+      -79.393
+    ],
+    [
+      36.312,
+      43.728,
+      -78.383
+    ],
+    [
+      36.635,
+      42.521,
+      -71.743
+    ],
+    [
+      37.077,
+      41.307,
+      -68.645
+    ],
+    [
+      37.586,
+      40.143,
+      -62.897
+    ],
+    [
+      38.207,
+      39.059,
+      -57.913
+    ],
+    [
+      38.922,
+      38.009,
+      -52.783
+    ],
+    [
+      39.764,
+      37.059,
+      -47.314
+    ],
+    [
+      40.658,
+      36.157,
+      -40.356
+    ],
+    [
+      41.655,
+      35.369,
+      -36.699
+    ],
+    [
+      42.685,
+      34.661,
+      -32.854
+    ],
+    [
+      43.812,
+      34.031,
+      -27.501
+    ],
+    [
+      46.701,
+      32.543,
+      -24.305
+    ],
+    [
+      50.225,
+      31.265,
+      -17.832
+    ],
+    [
+      53.92,
+      30.344,
+      -9.656
+    ],
+    [
+      57.695,
+      29.809,
+      -7.003
+    ],
+    [
+      61.421,
+      29.396,
+      -5.737
+    ],
+    [
+      65.222,
+      29.113,
+      -3.081
+    ],
+    [
+      69.028,
+      28.917,
+      -2.941
+    ],
+    [
+      72.835,
+      28.719,
+      -3.011
+    ],
+    [
+      76.641,
+      28.519,
+      -3.011
+    ],
+    [
+      78.077,
+      28.444,
+      -3.011
+    ],
+    [
+      78.077,
+      28.444,
+      -3.011
+    ],
+    [
+      78.077,
+      28.444,
+      -3.011
+    ],
+    [
+      81.197,
+      28.27,
+      -3.221
+    ],
+    [
+      85.0,
+      28.056,
+      -3.221
+    ]
   ],
-  "blocking_metadata_issues": [
-    "missing_reference_trajectory",
-    "missing_reference_trajectory_and_ego_end"
+  "reference_trajectory_points": 54,
+  "trajectory_length_m": 221.672,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    34.499,
+    78.96
+  ],
+  "risk_radius_m": 10.0,
+  "scene_type": "城市场景",
+  "speed_limit_kmh": 60.0,
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 30.0,
+  "suggested_triggered_speed_kmh": 30.0,
+  "hazard_labels": [
+    "限速设施",
+    "道路交叉",
+    "恶劣天气"
+  ],
+  "ego_actions": [
+    "Crossing",
+    "Yielding"
+  ],
+  "weather_summary": "cloudiness=40.0, precipitation=100.0,\n                                      precipitation_deposits=100.0, wind_intensity=100.0,\n                                      sun_azimuth_angle=90.0, sun_altitude_angle=10.0,\n                                      fog_density=10.0, fog_distance=0.75, fog_falloff=0.10,\n                                      wetness=100.0, scattering_intensity=11.5,\n                                      mie_scattering_scale=0.21, rayleigh_scattering_scale=0.07, dust_storm=0.0",
+  "weather_parameters": {
+    "cloudiness": 40.0,
+    "precipitation": 100.0,
+    "precipitation_deposits": 100.0,
+    "wind_intensity": 100.0,
+    "sun_azimuth_angle": 90.0,
+    "sun_altitude_angle": 10.0,
+    "fog_density": 10.0,
+    "fog_distance": 0.75,
+    "fog_falloff": 0.1,
+    "wetness": 100.0,
+    "scattering_intensity": 11.5,
+    "mie_scattering_scale": 0.21,
+    "rayleigh_scattering_scale": 0.07,
+    "dust_storm": 0.0
+  },
+  "capability_vector": {
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "hazards": [
+    {
+      "id": "rtb073_primary_hazard",
+      "type": "speed_control_facilities",
+      "center": [
+        34.499,
+        78.96
+      ],
+      "radius_m": 10.0,
+      "reference_speed_kmh": 30.0
+    }
   ]
 }

@@ -1,34 +1,70 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB009",
+  "scenario_index": 9,
   "town": "RTB009",
-  "description": "在一次突发性暴雨后，Ego车辆（自动驾驶状态）行驶在一段高速公路下坡出口匝道上。由于路侧植被被雨水打湿后下垂，严重遮挡了出口限速及方向指示牌。同时，路面因暴雨而严重湿滑并伴有局部积水，一阵强风突然吹落一根树枝到Ego车道前方。Ego车辆的感知系统面临多重挑战，未能及时识别匝道并做出预减速，而此时后方有一辆大型SUV正在近距离压迫式跟车，形成了“感知失效+物理环境恶劣+危险交通参与者”的复合长尾风险场景。",
-  "scenario_family_id": "LX132",
-  "scene_type": "高速场景 (Highway Scenes)",
-  "environment": "突发性暴雨后",
-  "source_hazards": "视距不良[路段视距不良]\n+路域环境[杂草、植被遮挡视距]\n+交通标志[交通标志缺失]",
+  "estimated_vehicles": 3,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.mercedes.coupe_2020",
+  "ego_color": "0,50,0",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
     "type_id": "vehicle.mercedes.coupe_2020",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
   "ego_type_id": "vehicle.mercedes.coupe_2020",
   "ego_blueprint": "vehicle.mercedes.coupe_2020",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "EGO_TRAJECTORY_DATA",
+  "ego_start": {
+    "location": {
+      "x": 23.645,
+      "y": -135.552
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -94.448,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 83.435,
+      "y": -252.776
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -69.403,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [
     [
       23.645,
       -135.552,
       -94.448
+    ],
+    [
+      23.645,
+      -135.552,
+      -94.448
+    ],
+    [
+      23.645,
+      -135.552,
+      -94.448
+    ],
+    [
+      23.645,
+      -135.552,
+      -92.966
     ],
     [
       23.347,
@@ -39,6 +75,21 @@
       23.123,
       -147.716,
       -92.258
+    ],
+    [
+      23.119,
+      -147.821,
+      -90.994
+    ],
+    [
+      23.119,
+      -147.821,
+      -89.942
+    ],
+    [
+      23.119,
+      -147.821,
+      -89.942
     ],
     [
       23.121,
@@ -311,85 +362,104 @@
       -69.403
     ]
   ],
-  "reference_speed_kmh": 60.0,
-  "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
+  "reference_trajectory_points": 63,
+  "trajectory_length_m": 148.235,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    24.768,
+    -208.579
   ],
-  "ability_tags": [
-    "A",
-    "B"
+  "risk_radius_m": 10.0,
+  "scene_type": "高速场景",
+  "speed_limit_kmh": 100.0,
+  "road_speed_limit_kmh": 100.0,
+  "reference_speed_kmh": 30.0,
+  "suggested_triggered_speed_kmh": 30.0,
+  "hazard_labels": [
+    "标志标线",
+    "限速设施",
+    "道路交叉",
+    "限界侵入",
+    "恶劣天气"
   ],
+  "ego_actions": [
+    "Keeping"
+  ],
+  "weather_summary": "cloudiness=55.0, precipitation=70.0, precipitation_deposits=80.0,\n        wind_intensity=100.0, sun_azimuth_angle=90.0, sun_altitude_angle=50.0,\n        fog_density=6.0, fog_distance=0.0, fog_falloff=0.0, wetness=70.0,\n        scattering_intensity=5.0, mie_scattering_scale=0.3, rayleigh_scattering_scale=0.05,\n        dust_storm=0.0",
+  "weather_parameters": {
+    "cloudiness": 55.0,
+    "precipitation": 70.0,
+    "precipitation_deposits": 80.0,
+    "wind_intensity": 100.0,
+    "sun_azimuth_angle": 90.0,
+    "sun_altitude_angle": 50.0,
+    "fog_density": 6.0,
+    "fog_distance": 0.0,
+    "fog_falloff": 0.0,
+    "wetness": 70.0,
+    "scattering_intensity": 5.0,
+    "mie_scattering_scale": 0.3,
+    "rayleigh_scattering_scale": 0.05,
+    "dust_storm": 0.0
+  },
   "capability_vector": {
-    "behavior": {
-      "lane_change": 1,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 1,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
-    }
-  },
-  "ego_start": {
-    "location": {
-      "x": 23.645,
-      "y": -135.552
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -94.448,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 83.435,
-      "y": -252.776
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -69.403,
-      "roll": 0.0
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ]
     }
   },
   "hazards": [
     {
       "id": "rtb009_primary_hazard",
-      "type": "emergency_avoidance",
+      "type": "traffic_signs_markings",
       "center": [
-        28.462,
-        -211.651
+        24.768,
+        -208.579
       ],
       "radius_m": 10.0,
-      "perception_radius_m": 40.0,
-      "reference_speed_kmh": 40.0,
-      "expected_behavior": "bypass_or_change_lane_safely"
+      "reference_speed_kmh": 30.0
     }
   ]
 }

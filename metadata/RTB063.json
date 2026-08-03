@@ -1,33 +1,65 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB063",
+  "scenario_index": 48,
   "town": "RTB063",
-  "description": "Ego车辆（测试车）在一段具有复合特征（下坡+半径递减）的右转乡间弯道上行驶。由于道路右侧的植被（树木与灌木）过度生长，严重侵入道路限界，导致Ego车辆的视距（SSD）远低于安全标准。在弯道盲区内，一个骑行者沿路边缓慢行驶，同时一组行人聚集在路肩。恶劣的光照条件（傍晚侧逆光）与轻微湿滑的路面进一步加剧了感知与控制的难度。",
-  "scenario_family_id": "LX1264",
-  "scene_type": "乡村场景 (Rural Scenes)",
-  "source_hazards": "路域环境[杂草、植被遮挡视距]\n + 视距不良[转弯视距不良]",
+  "estimated_vehicles": 3,
+  "estimated_pedestrians": 1,
+  "ego_model": "vehicle.audi.tt",
+  "ego_color": null,
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
     "type_id": "vehicle.audi.tt",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
   "ego_type_id": "vehicle.audi.tt",
   "ego_blueprint": "vehicle.audi.tt",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "RAW_TRAJ_EGO",
+  "ego_start": {
+    "location": {
+      "x": -69.674,
+      "y": -49.643
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 3.699,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": 1.628,
+      "y": 82.663
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 90.594,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [
     [
       -69.674,
       -49.643,
       3.699
+    ],
+    [
+      -69.674,
+      -49.643,
+      3.699
+    ],
+    [
+      -69.491,
+      -49.63,
+      3.839
     ],
     [
       -68.984,
@@ -278,107 +310,106 @@
       1.628,
       82.663,
       90.594
-    ],
-    [
-      1.58,
-      87.745,
-      89.954
-    ],
-    [
-      1.605,
-      92.742,
-      88.892
-    ],
-    [
-      1.758,
-      97.823,
-      88.115
-    ],
-    [
-      1.796,
-      98.989,
-      88.115
     ]
   ],
-  "reference_speed_kmh": 60.0,
+  "reference_trajectory_points": 53,
+  "trajectory_length_m": 189.862,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    3.07,
+    19.898
+  ],
+  "risk_radius_m": 20.0,
+  "scene_type": "郊区场景",
   "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 50.0,
+  "suggested_triggered_speed_kmh": 50.0,
+  "hazard_labels": [
+    "道路线形",
+    "视距不良",
+    "限界侵入"
   ],
-  "ability_tags": [
-    "A",
-    "B"
+  "ego_actions": [
+    "Overtaking",
+    "Yielding",
+    "Following"
   ],
+  "weather_summary": "cloudiness=5.0000,\n                               precipitation=10.0000,\n                               precipitation_deposits=55.0000,\n                               wind_intensity=25.0000,\n                               sun_azimuth_angle=224.0000,\n                               sun_altitude_angle=13.0000,\n                               fog_density=2.0000,\n                               fog_distance=0.7500,\n                               fog_falloff=0.1000,\n                               wetness=70.0000,\n                               scattering_intensity=1.0000,\n                               mie_scattering_scale=0.0300,\n                               rayleigh_scattering_scale=0.0331,\n                               dust_storm=0.0000",
+  "weather_parameters": {
+    "cloudiness": 5.0,
+    "precipitation": 10.0,
+    "precipitation_deposits": 55.0,
+    "wind_intensity": 25.0,
+    "sun_azimuth_angle": 224.0,
+    "sun_altitude_angle": 13.0,
+    "fog_density": 2.0,
+    "fog_distance": 0.75,
+    "fog_falloff": 0.1,
+    "wetness": 70.0,
+    "scattering_intensity": 1.0,
+    "mie_scattering_scale": 0.03,
+    "rayleigh_scattering_scale": 0.0331,
+    "dust_storm": 0.0
+  },
   "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 0,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 1,
-      "emergency_braking": 0,
-      "low_speed_maneuver": 0
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
-    }
-  },
-  "ego_start": {
-    "location": {
-      "x": -69.674,
-      "y": -49.643
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": 3.699,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": 1.796,
-      "y": 98.989
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": 88.115,
-      "roll": 0.0
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ]
     }
   },
   "hazards": [
     {
       "id": "rtb063_primary_hazard",
-      "type": "yielding_priority",
+      "type": "road_alignment",
       "center": [
-        3.646,
-        -25.126
+        3.07,
+        19.898
       ],
-      "radius_m": 10.0,
-      "perception_radius_m": 40.0,
-      "reference_speed_kmh": 40.0,
-      "expected_behavior": "yield_or_stop_for_priority_conflict"
+      "radius_m": 20.0,
+      "reference_speed_kmh": 50.0
     }
   ]
 }

@@ -1,5 +1,6 @@
 {
-  "schema_version": "roadtailbench.capability_taxonomy.v2",
+  "schema_version": "roadtailbench.capability_taxonomy.v3",
+  "source_workbook": "scenarios/场景元文件最终版.xlsx",
   "ego_action": {
     "names": [
       "Overtaking",
@@ -10,14 +11,42 @@
       "Braking",
       "Keeping"
     ],
-    "descriptions_zh": [
-      "超车、绕行",
-      "跟车",
-      "让行",
-      "汇入、并线、切入",
-      "交叉口通行",
-      "紧急制动",
-      "车道保持、稳定巡航、路径跟随"
+    "items": [
+      {
+        "name": "Overtaking",
+        "description_zh": "超车、绕行",
+        "note_zh": "绕行障碍物"
+      },
+      {
+        "name": "Following",
+        "description_zh": "跟车",
+        "note_zh": null
+      },
+      {
+        "name": "Yielding",
+        "description_zh": "对向/侧向/同向来车让行、行人让行",
+        "note_zh": "让行是从容主动减速/停车的"
+      },
+      {
+        "name": "Merging",
+        "description_zh": "汇入、并线、切入",
+        "note_zh": "加入新的车流/驶入正确目标车道/匝道"
+      },
+      {
+        "name": "Crossing",
+        "description_zh": "交叉口通行",
+        "note_zh": null
+      },
+      {
+        "name": "Braking",
+        "description_zh": "紧急制动",
+        "note_zh": "遭遇突发情况"
+      },
+      {
+        "name": "Keeping",
+        "description_zh": "稳定巡航、意图保持、对抗干扰",
+        "note_zh": "车道内保持，车道ID不变"
+      }
     ]
   },
   "hazard_type": {
@@ -33,17 +62,57 @@
       "clearance_intrusion",
       "adverse_weather"
     ],
-    "descriptions_zh": [
-      "标志标线",
-      "隔离防护",
-      "限速设施",
-      "照明设施",
-      "道路交叉",
-      "路面情况",
-      "道路线形",
-      "视距不良",
-      "限界侵入",
-      "恶劣天气"
+    "items": [
+      {
+        "name": "traffic_signs_markings",
+        "label_zh": "标志标线",
+        "description_zh": "道路规则理解、标志缺失、标线模糊、限速提示不清"
+      },
+      {
+        "name": "separation_protection",
+        "label_zh": "隔离防护",
+        "description_zh": "护栏缺失、隔离设施异常、防护不足"
+      },
+      {
+        "name": "speed_control_facilities",
+        "label_zh": "限速设施",
+        "description_zh": "限速牌、减速带、测速、速度控制设施异常"
+      },
+      {
+        "name": "lighting_facilities",
+        "label_zh": "照明设施",
+        "description_zh": "路灯缺失、失效、低照度、异常照明"
+      },
+      {
+        "name": "road_intersection",
+        "label_zh": "道路交叉",
+        "description_zh": "平面交叉、立体交叉、匝道、复杂路口结构"
+      },
+      {
+        "name": "road_surface_condition",
+        "label_zh": "路面情况",
+        "description_zh": "坑洼、积水、低摩擦、冰雪覆盖"
+      },
+      {
+        "name": "road_alignment",
+        "label_zh": "道路线形",
+        "description_zh": "急弯、陡坡、连续弯、长下坡、匝道曲率"
+      },
+      {
+        "name": "limited_sight_distance",
+        "label_zh": "视距不良",
+        "description_zh": "遮挡、盲区、浓雾、雨雪导致的低能见度"
+      },
+      {
+        "name": "clearance_intrusion",
+        "label_zh": "限界侵入",
+        "description_zh": "路侧构造物、坠落物、货物、动物行人等侵入车辆通行空间"
+      },
+      {
+        "name": "adverse_weather",
+        "label_zh": "恶劣天气",
+        "description_zh": "暴雨、雪天、雾天、眩光、逆光、沙尘、强风等环境影响"
+      }
     ]
   }
 }

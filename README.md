@@ -2,7 +2,7 @@
 
 RoadTailBench Leaderboard is a standalone closed-loop evaluation layer for CARLA code scenarios.
 
-This repository intentionally does not use Bench2Drive XML/XOSC route loading. A scene is a Python script such as `RTB116.py`; the script owns its weather, actors, hazards, and scene-owned ego behavior in `scene_ego` mode. The leaderboard runner loads the CARLA map from metadata, starts the scene script, finds the ego vehicle, records frames, and evaluates metrics.
+This repository intentionally does not use Bench2Drive XML/XOSC route loading. Source scenarios live in `scenarios/`; runnable variants are generated into `scene_ego/` and `agent_ego/`. In `scene_ego` mode the script owns ego generation/control; in `agent_ego` mode the script keeps NPCs, hazards, pedestrians, weather, and other dynamics while the runner or external agent supplies ego.
 
 ## License Boundary
 
@@ -18,7 +18,7 @@ cd G:\Codex\RoadTailBench
 python -m pip install -e . --no-build-isolation
 
 leaderboard-run `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --dry-run
@@ -28,7 +28,7 @@ If the console script is not available yet, use the repository script directly:
 
 ```powershell
 python G:\Codex\RoadTailBench\run_leaderboard.py `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --dry-run
@@ -42,7 +42,7 @@ For automated `scene_ego` CARLA execution:
 leaderboard-run `
   --host localhost `
   --port 2000 `
-  --scene-root G:\Codex\RoadTailBench\scenes `
+  --scene-root G:\Codex\RoadTailBench\scene_ego `
   --metadata-root G:\Codex\RoadTailBench\metadata `
   --scenes RTB116-RTB125 `
   --limit 3 `
@@ -76,7 +76,7 @@ leaderboard-eval `
   --output G:\Codex\RoadTailBench\outputs\<run>\metrics.json
 ```
 
-Scenario-owned ego vehicles should set `role_name="ego"` so the runner can bind logs, video, and natural termination to the correct actor. Reference trajectories are read through one shared parser and may be stored either as JSON arrays or copied multi-line text in `reference_trajectory`; supported formats include `x_y`, `x_y_yaw`, and `x_y_z_yaw`.
+Scenario-owned ego vehicles should set `role_name="ego"` so the runner can bind logs, video, and natural termination to the correct actor. The 100 metadata files are regenerated from `scenarios/场景元文件最终版.xlsx`; trajectory length is computed from adjacent `Trajectory` points and saved as `trajectory_length_m`.
 
 Plot a finished run:
 
@@ -88,7 +88,7 @@ leaderboard-plot `
   --output G:\Codex\RoadTailBench\outputs\plots\RTB116_report.png
 ```
 
-`agent_ego` and Zoo adapters remain a later integration phase. The current priority is validating scenario execution and metrics in `scene_ego`.
+Use `agent_ego/RTBXXX_agent_ego.py` with `--ego-mode agent_ego` when integrating a model or runner-spawned ego. The runner starts the no-ego scene first, then spawns/attaches ego from metadata.
 
 ## Repository Layout
 
@@ -96,6 +96,8 @@ leaderboard-plot `
 - `leaderboard/scenarios`: scene discovery and metadata loading.
 - `leaderboard/metrics`: metric implementations and composite scoring.
 - `leaderboard/cli`: `leaderboard-run`, `leaderboard-eval`, and `leaderboard-plot`.
-- `metadata`: scenario metadata such as `RTB116.json`.
-- `scenes`: self-owned RTB scene scripts such as `RTB116.py`.
+- `metadata`: final workbook-derived metadata such as `RTB116.json`, plus capability/statistics files.
+- `scenarios`: source RTB scene scripts and `场景元文件最终版.xlsx`.
+- `scene_ego`: runnable scene-owned-ego scripts named `RTBXXX_scene_ego.py`.
+- `agent_ego`: runnable no-scene-ego scripts named `RTBXXX_agent_ego.py`.
 - `docs`: detailed usage and schema documentation.

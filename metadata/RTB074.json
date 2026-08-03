@@ -1,29 +1,61 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB074",
+  "scenario_index": 59,
   "town": "RTB074",
-  "description": "Ego车辆（自动驾驶状态）正沿一段多弯道的山区下坡公路行驶，接近一个T型交叉口。该交叉口前方的标准减速带已严重破损，且预警该交叉口与减速带的交通标志牌完全缺失。同时，午后低角度的太阳光正好在车辆出弯时形成间歇性强眩光，严重干扰了摄像头对路面细节的识别。",
-  "scenario_family_id": "HHY7",
-  "scene_type": "山区场景 (Mountain Scenes)",
-  "source_hazards": "路面质量[路面破损]\n + 道路交叉[路口缺少警告标志]",
+  "estimated_vehicles": 3,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.chevrolet.impala",
+  "ego_color": null,
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
     "type_id": "vehicle.chevrolet.impala",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
   "ego_type_id": "vehicle.chevrolet.impala",
   "ego_blueprint": "vehicle.chevrolet.impala",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "EGO_TRAJ_STR",
+  "ego_start": {
+    "location": {
+      "x": 8.718,
+      "y": 103.576
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": -70.467,
+      "roll": 0.0
+    }
+  },
+  "ego_end": {
+    "location": {
+      "x": -108.673,
+      "y": 5.29
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 134.757,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [
+    [
+      8.718,
+      103.576,
+      -70.467
+    ],
+    [
+      8.718,
+      103.576,
+      -70.467
+    ],
     [
       8.718,
       103.576,
@@ -80,6 +112,31 @@
       -112.937
     ],
     [
+      8.94,
+      17.961,
+      -112.937
+    ],
+    [
+      8.94,
+      17.961,
+      -112.937
+    ],
+    [
+      8.94,
+      17.961,
+      -112.937
+    ],
+    [
+      8.94,
+      17.961,
+      -112.937
+    ],
+    [
+      8.94,
+      17.961,
+      -112.937
+    ],
+    [
       7.237,
       13.95,
       -114.085
@@ -113,6 +170,61 @@
       -33.177,
       -18.522,
       -160.205
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
+    ],
+    [
+      -36.632,
+      -19.631,
+      -164.192
     ],
     [
       -36.632,
@@ -203,119 +315,111 @@
       -108.673,
       5.29,
       134.757
-    ],
-    [
-      -112.312,
-      8.957,
-      135.107
-    ],
-    [
-      -115.915,
-      12.546,
-      135.107
-    ],
-    [
-      -119.914,
-      16.531,
-      135.107
-    ],
-    [
-      -125.316,
-      21.913,
-      135.107
-    ],
-    [
-      -130.709,
-      27.305,
-      134.684
-    ],
-    [
-      -133.346,
-      29.972,
-      134.684
     ]
   ],
-  "reference_speed_kmh": 60.0,
+  "reference_trajectory_points": 54,
+  "trajectory_length_m": 231.807,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    0.336,
+    6.235
+  ],
+  "risk_radius_m": 20.0,
+  "scene_type": "山区场景",
   "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B",
-    "C"
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 20.0,
+  "suggested_triggered_speed_kmh": 20.0,
+  "hazard_labels": [
+    "标志标线",
+    "隔离防护",
+    "限速设施",
+    "视距不良",
+    "道路交叉",
+    "限界侵入",
+    "道路线形",
+    "恶劣天气"
   ],
-  "ability_tags": [
-    "A",
-    "B",
-    "C"
+  "ego_actions": [
+    "Yielding",
+    "Following",
+    "Keeping"
   ],
+  "weather_summary": "cloudiness=45.0,\n            precipitation=45.0,\n            precipitation_deposits=75.0,\n            wind_intensity=35.0,\n            sun_azimuth_angle=49.0,\n            sun_altitude_angle=15.0,\n            fog_density=20.0,\n            fog_distance=5.0,\n            fog_falloff=0.5,\n            wetness=60.0,\n            scattering_intensity=1.0,\n            mie_scattering_scale=0.3300,\n            rayleigh_scattering_scale=0.0331,\n            dust_storm=0.0000",
+  "weather_parameters": {
+    "cloudiness": 45.0,
+    "precipitation": 45.0,
+    "precipitation_deposits": 75.0,
+    "wind_intensity": 35.0,
+    "sun_azimuth_angle": 49.0,
+    "sun_altitude_angle": 15.0,
+    "fog_density": 20.0,
+    "fog_distance": 5.0,
+    "fog_falloff": 0.5,
+    "wetness": 60.0,
+    "scattering_intensity": 1.0,
+    "mie_scattering_scale": 0.33,
+    "rayleigh_scattering_scale": 0.0331,
+    "dust_storm": 0.0
+  },
   "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 1,
-      "bypass_obstacle": 0,
-      "car_following": 0,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 0
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+      ]
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 0,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 0,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
-    }
-  },
-  "ego_start": {
-    "location": {
-      "x": 8.718,
-      "y": 103.576
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": -70.467,
-      "roll": 0.0
-    }
-  },
-  "ego_end": {
-    "location": {
-      "x": -133.346,
-      "y": 29.972
-    },
-    "rotation": {
-      "pitch": 0.0,
-      "yaw": 134.684,
-      "roll": 0.0
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        1,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1
+      ]
     }
   },
   "hazards": [
     {
       "id": "rtb074_primary_hazard",
-      "type": "emergency_avoidance",
+      "type": "traffic_signs_markings",
       "center": [
-        -47.489,
-        -21.922
+        0.336,
+        6.235
       ],
-      "radius_m": 10.0,
-      "perception_radius_m": 40.0,
-      "reference_speed_kmh": 40.0,
-      "expected_behavior": "slow_or_avoid"
+      "radius_m": 20.0,
+      "reference_speed_kmh": 20.0
     }
   ]
 }

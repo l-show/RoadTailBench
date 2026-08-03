@@ -1,18 +1,21 @@
 # leaderboard Metadata v5
 
-metadata 只服务于评测语义，不负责加载或运行场景。动态 actor、天气、同步模式和控制逻辑仍由 `scenes/RTBXXX.py` 定义。
+metadata 只服务于评测语义，不负责加载或运行场景。源场景和最终版表格在 `scenarios/`；运行用副本在 `scene_ego/` 和 `agent_ego/`。
 
 ## 核心字段
 
-- `schema_version`: 当前为 `roadtailbench.code_scene_metadata.v4`。
+- `schema_version`: 当前为 `roadtailbench.code_scene_metadata.v5`。
 - `scenario_id`: 场景编号，例如 `RTB116`。
 - `town`: CARLA map 名称或代码场景使用的地图标识。
-- `description`: 场景描述。
+- `scenario_index`: 最终版表格中的场景序号。
+- `estimated_vehicles` / `estimated_pedestrians`: 表格记录的车辆、行人数量估计。
+- `ego_model` / `ego_color` / `ego_role_name`: 表格记录的 ego 车型、颜色和 role name。
 - `ego`: ego 发现和匹配信息，包含 `role_names`、`type_id`、`start_match_radius_m`。
 - `ego_role_names` / `ego_type_id` / `ego_blueprint`: runner 兼容字段。新场景建议 `ego_role_names` 只写 `["ego"]`。
 - `ego_start` / `ego_end`: ego 起终点。自然结束只看 ego 是否到达终点或 ego 是否被销毁。
 - `reference_trajectory_format`: `x_y`、`x_y_yaw` 或 `x_y_z_yaw`。
-- `reference_trajectory`: ego 合理参考路线。推荐使用 `[[x, y, yaw], ...]` 或 `[[x, y], ...]`；也兼容场景脚本中的多行字符串轨迹。
+- `reference_trajectory`: 从最终版表格 `Trajectory` 标准化得到的 `[[x, y, yaw], ...]`。
+- `trajectory_length_m`: 按相邻轨迹点平面距离累加得到的路线长度。
 - `trajectory_adherence_mode`: 默认为 `spatial`。可显式写 `spatiotemporal` 复用旧的进度/时间偏差评分。
 - `speed_limit_kmh`: 普通区域速度上限。
 - `reference_speed_kmh`: 兼容旧字段，仍可被效率和速度指标读取，但默认不再用于轨迹贴合评分。
@@ -39,9 +42,15 @@ ego = RTB.spawn_vehicle(world, "vehicle.audi.tt", x, y, role_name="ego", z_offse
 
 ```json
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTBXXX",
+  "scenario_index": 1,
   "town": "RTBXXX",
+  "estimated_vehicles": 3,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.xxx",
+  "ego_color": "255,255,0",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": ["ego"],
     "type_id": "vehicle.xxx",
@@ -61,6 +70,8 @@ ego = RTB.spawn_vehicle(world, "vehicle.audi.tt", x, y, role_name="ego", z_offse
   },
   "reference_trajectory_format": "x_y_yaw",
   "reference_trajectory": [[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]],
+  "reference_trajectory_points": 2,
+  "trajectory_length_m": 100.0,
   "trajectory_adherence_mode": "spatial",
   "speed_limit_kmh": 50.0,
   "capability_vector": {
@@ -131,23 +142,19 @@ ego = RTB.spawn_vehicle(world, "vehicle.audi.tt", x, y, role_name="ego", z_offse
 python scripts\generate_metadata.py
 ```
 
-会更新 metadata，并生成：
+会从 `scenarios\场景元文件最终版.xlsx` 更新 100 个 metadata，并生成：
 
 - `metadata/metadata_audit.json`
 - `metadata/metadata_audit.csv`
+- `metadata/metadata_summary.json`
+- `metadata/capability_taxonomy.json`
 - `outputs/metadata_generation_report.json`
 
 审计字段包括：
 
-- `has_ego_actor`
-- `has_role_name_ego`
-- `has_static_ego_trajectory`
-- `ego_actor_names`
 - `reference_trajectory_points`
-- `reference_trajectory_source`
-- `missing_role_name_ego`
-- `ambiguous_ego_actor`
-- `missing_reference_trajectory`
-- `missing_ego_start_end`
-- `needs_scene_edit_reason`
-- `blocking_metadata_issues`
+- `trajectory_length_m`
+- `speed_limit_kmh`
+- `suggested_triggered_speed_kmh`
+- `hazard_types`
+- `ego_actions`

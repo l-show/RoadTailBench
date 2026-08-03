@@ -26,14 +26,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_discovery():
-    scenarios = discover_scenarios(ROOT / "scenes", ROOT / "metadata", "RTB116-RTB125")
+    scenarios = discover_scenarios(ROOT / "scene_ego", ROOT / "metadata", "RTB116-RTB125")
     assert len(scenarios) == 10
     assert all(s.metadata_path for s in scenarios)
 
 
 def test_runner_cli_args():
     args = build_argparser().parse_args([
-        "--scene-root", "scenes",
+        "--scene-root", "scene_ego",
         "--metadata-root", "metadata",
         "--scenes", "RTB116-RTB125",
         "--limit", "2",
@@ -73,7 +73,7 @@ def test_runner_cli_args():
 
 
 def test_runner_cli_defaults():
-    args = build_argparser().parse_args(["--scene-root", "scenes"])
+    args = build_argparser().parse_args(["--scene-root", "scene_ego"])
     assert args.limit == 0
     assert args.carla_timeout == 180.0
     assert args.map_load_mode == "api"
@@ -95,7 +95,8 @@ def test_metadata_json():
     for path in (ROOT / "metadata").glob("RTB*.json"):
         data = json.loads(path.read_text(encoding="utf-8"))
         assert data["scenario_id"] == path.stem
-        assert data["ego_type_id"]
+        ego = data.get("ego") or {}
+        assert data.get("ego_type_id") or ego.get("type_id")
         assert "excel_metadata" not in data
         assert "route_waypoints" not in data
         assert "centerline_route" not in data
@@ -985,6 +986,22 @@ def test_find_scene_ego_reads_nested_metadata_role_names():
     assert runner.find_scene_ego(scenario) is nested_role_actor
 
 
+def test_find_scene_ego_reads_nested_metadata_type_id():
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(ego_role_name="", ego_type_id="")
+    runner._last_rpc = ""
+
+    class ActorList(list):
+        def filter(self, pattern):
+            return self
+
+    actor = SimpleNamespace(id=1, type_id="vehicle.test", attributes={})
+    runner.world = SimpleNamespace(get_actors=lambda: ActorList([actor]))
+    scenario = SimpleNamespace(metadata={"ego": {"type_id": "vehicle.test"}})
+
+    assert runner.find_scene_ego(scenario) is actor
+
+
 def test_find_scene_ego_uses_start_when_type_has_multiple_matches():
     runner = object.__new__(CodeScenarioRunner)
     runner.args = SimpleNamespace(ego_role_name="", ego_type_id="")
@@ -1055,6 +1072,54 @@ def test_spawn_agent_ego_uses_ego_role_name():
     runner.spawn_agent_ego(scenario)
 
     assert captured["blueprint"].attributes["role_name"] == "ego"
+
+
+def test_spawn_agent_ego_reads_nested_metadata_type_and_role():
+    runner = object.__new__(CodeScenarioRunner)
+    runner.args = SimpleNamespace(ego_blueprint="vehicle.default")
+
+    class FakeBlueprint:
+        def __init__(self):
+            self.attributes = {}
+
+        def set_attribute(self, key, value):
+            self.attributes[key] = value
+
+    captured = {}
+
+    def find(bp_id):
+        captured["bp_id"] = bp_id
+        return FakeBlueprint()
+
+    runner.world = SimpleNamespace(
+        get_blueprint_library=lambda: SimpleNamespace(find=find),
+        try_spawn_actor=lambda blueprint, transform: captured.setdefault("blueprint", blueprint) or SimpleNamespace(id=1),
+    )
+
+    class FakeCarla:
+        class Transform:
+            def __init__(self, location, rotation):
+                self.location = location
+                self.rotation = rotation
+
+        class Location:
+            def __init__(self, x=0.0, y=0.0, z=0.0):
+                self.x, self.y, self.z = x, y, z
+
+        class Rotation:
+            def __init__(self, pitch=0.0, yaw=0.0, roll=0.0):
+                self.pitch, self.yaw, self.roll = pitch, yaw, roll
+
+    runner.carla = FakeCarla
+    scenario = SimpleNamespace(metadata={
+        "ego": {"role_name": "hero", "type_id": "vehicle.from_ego"},
+        "ego_start": {"location": {"x": 1.0, "y": 2.0}},
+    })
+
+    runner.spawn_agent_ego(scenario)
+
+    assert captured["bp_id"] == "vehicle.from_ego"
+    assert captured["blueprint"].attributes["role_name"] == "hero"
 
 
 def test_scenario_marks_carla_crashed_before_start(tmp_path):

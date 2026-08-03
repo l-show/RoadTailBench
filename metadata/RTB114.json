@@ -1,80 +1,360 @@
 {
-  "schema_version": "roadtailbench.code_scene_metadata.v4",
+  "schema_version": "roadtailbench.code_scene_metadata.v5",
   "scenario_id": "RTB114",
+  "scenario_index": 89,
   "town": "RTB114",
-  "description": "在一条视距受限的乡村双向两车道道路上，自动驾驶车辆（Ego）在低能见度（浓雾）和道路基础设施（凸面镜缺失、警告标志缺失、护栏缺失）不完善的复合影响下，遭遇一辆突然从盲区出现的农业机械车。Ego车辆在感知和决策上受到多重挑战，被迫执行紧急变道避让操作，且避让方向偏左，面临驶出路面或与对向来车发生次生事故的风险。",
-  "scenario_family_id": "HHY1185",
-  "scene_type": "郊区场景 (Suburban Scenes)",
-  "source_hazards": "交通标志[交通标志缺失]\n + 隔离防护[护栏缺失]",
+  "estimated_vehicles": 2,
+  "estimated_pedestrians": 0,
+  "ego_model": "vehicle.tesla.model3",
+  "ego_color": "0,80,255",
+  "ego_role_name": "ego",
   "ego": {
     "role_names": [
-      "ego",
-      "hero"
+      "ego"
     ],
     "type_id": "vehicle.tesla.model3",
     "start_match_radius_m": 8.0
   },
   "ego_role_names": [
-    "ego",
-    "hero"
+    "ego"
   ],
   "ego_type_id": "vehicle.tesla.model3",
   "ego_blueprint": "vehicle.tesla.model3",
   "ego_start_match_radius_m": 8.0,
-  "reference_trajectory_source": "not_static_ego_reference_detected",
-  "reference_trajectory_format": "x_y",
-  "reference_trajectory": [],
-  "reference_speed_kmh": 60.0,
-  "speed_limit_kmh": 60.0,
-  "allowed_lateral_error_m": 4.0,
-  "hard_lateral_error_m": 12.0,
-  "allowed_progress_error_m": 20.0,
-  "hard_progress_error_m": 60.0,
-  "allowed_time_error_s": 3.0,
-  "hard_time_error_s": 8.0,
-  "allowed_heading_error_deg": 45.0,
-  "hard_heading_error_deg": 120.0,
-  "scenario_tags": [
-    "A",
-    "B"
-  ],
-  "ability_tags": [
-    "A",
-    "B"
-  ],
-  "capability_vector": {
-    "behavior": {
-      "lane_change": 0,
-      "overtaking": 0,
-      "bypass_obstacle": 0,
-      "car_following": 0,
-      "yielding": 0,
-      "merge_or_cut_in": 0,
-      "intersection_crossing": 0,
-      "pedestrian_interaction": 0,
-      "emergency_braking": 1,
-      "low_speed_maneuver": 1
+  "ego_start": {
+    "location": {
+      "x": 97.789,
+      "y": -34.909
     },
-    "hazard": {
-      "traffic_sign_marking": 0,
-      "road_geometry": 0,
-      "limited_sight_distance": 1,
-      "road_surface_low_friction": 0,
-      "static_obstacle_or_intrusion": 0,
-      "falling_or_moving_obstacle": 1,
-      "construction_or_lane_blockage": 0,
-      "priority_conflict": 1,
-      "adverse_weather_visibility": 0,
-      "adverse_lighting_glare": 0,
-      "adverse_lighting_low_light": 0
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 176.922,
+      "roll": 0.0
     }
   },
-  "notes": [
-    "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-    "Scenario timeout remains the termination fallback for this scene."
+  "ego_end": {
+    "location": {
+      "x": 2.035,
+      "y": 135.26
+    },
+    "rotation": {
+      "pitch": 0.0,
+      "yaw": 95.169,
+      "roll": 0.0
+    }
+  },
+  "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
+  "reference_trajectory_format": "x_y_yaw",
+  "reference_trajectory": [
+    [
+      97.789,
+      -34.909,
+      176.922
+    ],
+    [
+      97.34,
+      -34.885,
+      176.922
+    ],
+    [
+      88.78,
+      -34.17,
+      173.881
+    ],
+    [
+      80.657,
+      -33.061,
+      171.19
+    ],
+    [
+      72.663,
+      -31.49,
+      166.236
+    ],
+    [
+      65.771,
+      -29.591,
+      164.315
+    ],
+    [
+      58.457,
+      -27.359,
+      161.006
+    ],
+    [
+      50.582,
+      -24.585,
+      159.536
+    ],
+    [
+      42.337,
+      -21.372,
+      158.626
+    ],
+    [
+      34.124,
+      -18.079,
+      157.716
+    ],
+    [
+      26.2,
+      -14.618,
+      153.757
+    ],
+    [
+      19.39,
+      -10.449,
+      143.713
+    ],
+    [
+      12.688,
+      -4.757,
+      136.261
+    ],
+    [
+      8.436,
+      1.323,
+      112.444
+    ],
+    [
+      7.632,
+      3.584,
+      108.382
+    ],
+    [
+      6.272,
+      8.235,
+      101.746
+    ],
+    [
+      5.257,
+      15.46,
+      95.356
+    ],
+    [
+      4.854,
+      22.748,
+      92.527
+    ],
+    [
+      4.808,
+      25.547,
+      90.108
+    ],
+    [
+      4.808,
+      25.547,
+      90.108
+    ],
+    [
+      4.808,
+      25.547,
+      90.108
+    ],
+    [
+      4.871,
+      27.195,
+      87.82
+    ],
+    [
+      5.443,
+      34.168,
+      83.393
+    ],
+    [
+      6.23,
+      41.074,
+      84.163
+    ],
+    [
+      6.741,
+      47.903,
+      87.75
+    ],
+    [
+      6.957,
+      54.849,
+      89.36
+    ],
+    [
+      6.912,
+      61.899,
+      90.83
+    ],
+    [
+      6.782,
+      68.797,
+      91.39
+    ],
+    [
+      6.555,
+      75.793,
+      92.019
+    ],
+    [
+      6.265,
+      82.887,
+      92.649
+    ],
+    [
+      5.925,
+      89.828,
+      92.929
+    ],
+    [
+      5.44,
+      97.111,
+      94.259
+    ],
+    [
+      4.824,
+      104.636,
+      95.239
+    ],
+    [
+      4.093,
+      112.603,
+      95.239
+    ],
+    [
+      3.346,
+      120.769,
+      95.169
+    ],
+    [
+      2.589,
+      129.135,
+      95.169
+    ],
+    [
+      2.035,
+      135.26,
+      95.169
+    ],
+    [
+      2.035,
+      135.26,
+      95.169
+    ],
+    [
+      2.035,
+      135.26,
+      95.169
+    ],
+    [
+      2.035,
+      135.26,
+      95.169
+    ],
+    [
+      2.035,
+      135.26,
+      95.169
+    ],
+    [
+      2.035,
+      135.26,
+      95.169
+    ]
   ],
-  "blocking_metadata_issues": [
-    "missing_reference_trajectory",
-    "missing_reference_trajectory_and_ego_end"
+  "reference_trajectory_points": 42,
+  "trajectory_length_m": 233.703,
+  "trajectory_adherence_mode": "spatial",
+  "hazard_location": [
+    11.411,
+    50.358
+  ],
+  "risk_radius_m": 10.0,
+  "scene_type": "郊区场景",
+  "speed_limit_kmh": 60.0,
+  "road_speed_limit_kmh": 60.0,
+  "reference_speed_kmh": 60.0,
+  "suggested_triggered_speed_kmh": 0.0,
+  "hazard_labels": [
+    "标志标线",
+    "道路线形",
+    "视距不良",
+    "恶劣天气"
+  ],
+  "ego_actions": [
+    "Keeping",
+    "Yielding",
+    "Braking"
+  ],
+  "weather_summary": "cloudiness=35.0, precipitation=0.0, precipitation_deposits=0.0,\n        wind_intensity=0.0, sun_azimuth_angle=90.0, sun_altitude_angle=10.0,\n        fog_density=80.0, fog_distance=0.0, fog_falloff=0.0, wetness=0.0,\n        scattering_intensity=1.0, mie_scattering_scale=0.0300, rayleigh_scattering_scale=0.0331",
+  "weather_parameters": {
+    "cloudiness": 35.0,
+    "precipitation": 0.0,
+    "precipitation_deposits": 0.0,
+    "wind_intensity": 0.0,
+    "sun_azimuth_angle": 90.0,
+    "sun_altitude_angle": 10.0,
+    "fog_density": 80.0,
+    "fog_distance": 0.0,
+    "fog_falloff": 0.0,
+    "wetness": 0.0,
+    "scattering_intensity": 1.0,
+    "mie_scattering_scale": 0.03,
+    "rayleigh_scattering_scale": 0.0331
+  },
+  "capability_vector": {
+    "ego_action": {
+      "names": [
+        "Overtaking",
+        "Following",
+        "Yielding",
+        "Merging",
+        "Crossing",
+        "Braking",
+        "Keeping"
+      ],
+      "values": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "hazard_type": {
+      "names": [
+        "traffic_signs_markings",
+        "separation_protection",
+        "speed_control_facilities",
+        "lighting_facilities",
+        "road_intersection",
+        "road_surface_condition",
+        "road_alignment",
+        "limited_sight_distance",
+        "clearance_intrusion",
+        "adverse_weather"
+      ],
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1
+      ]
+    }
+  },
+  "hazards": [
+    {
+      "id": "rtb114_primary_hazard",
+      "type": "traffic_signs_markings",
+      "center": [
+        11.411,
+        50.358
+      ],
+      "radius_m": 10.0,
+      "reference_speed_kmh": 60.0
+    }
   ]
 }

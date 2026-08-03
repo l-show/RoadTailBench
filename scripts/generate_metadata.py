@@ -7,337 +7,21 @@ from pathlib import Path
 
 try:
     from openpyxl import load_workbook
-except ImportError:  # pragma: no cover - optional generation dependency
+except ImportError:  # pragma: no cover - generation-only dependency
     load_workbook = None
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCENES = ROOT / "scenes"
+SCENARIO_SOURCE = ROOT / "scenarios"
 METADATA = ROOT / "metadata"
 OUTPUTS = ROOT / "outputs"
+WORKBOOK_NAME = "场景元文件最终版.xlsx"
+
+SCHEMA_VERSION = "roadtailbench.code_scene_metadata.v5"
+TAXONOMY_VERSION = "roadtailbench.capability_taxonomy.v3"
 
 
-A_KEYWORDS = [
-    ("traffic_sign_marking", ["交通标志", "标志", "标线", "限速", "方向指示", "警告"]),
-    ("separation_protection", ["隔离", "护栏", "防护", "中央分隔"]),
-    ("speed_control_facility", ["减速带", "限速", "测速", "速度控制"]),
-    ("lighting_facility", ["照明", "路灯", "远光", "眩光", "逆光", "低光"]),
-    ("pavement_condition", ["湿滑", "积水", "坑洼", "路面", "低附着", "冰雪", "施工"]),
-    ("alignment_geometry", ["急弯", "匝道", "坡", "螺旋", "弯道", "陡坡"]),
-    ("sight_distance", ["视距", "遮挡", "盲区", "视线", "低能见度", "浓雾", "植被"]),
-    ("clearance_intrusion", ["侵入", "掉落", "货物", "障碍", "树枝", "广告牌", "临停", "占道"]),
-]
-
-B_KEYWORDS = [
-    ("overtaking_bypass", ["绕行", "避让", "变道", "跨越", "障碍", "施工", "占道", "掉落", "树枝"]),
-    ("merging_flow", ["汇入", "并入", "合流", "匝道", "出口", "入口", "加塞"]),
-    ("emergency_avoidance", ["紧急", "突发", "急刹", "碰撞", "追尾", "横穿", "避险", "冲突"]),
-    ("yielding_priority", ["让行", "会车", "路口", "交叉", "行人", "对向", "优先", "丁字", "无信号"]),
-]
-
-C_KEYWORDS = [
-    ("low_light", ["黄昏", "傍晚", "夜", "低光", "无光", "low_light", "low light"]),
-    ("glare", ["眩光", "逆光", "落日", "glare"]),
-    ("fog", ["雾", "浓雾", "fog", "低能见度"]),
-    ("rain_wet", ["雨", "暴雨", "小雨", "湿", "积水", "wet", "rain"]),
-    ("snow_low_friction", ["雪", "冰", "低附着", "低摩擦"]),
-    ("wind_dust_visibility", ["风", "沙尘", "尘", "dust"]),
-]
-
-
-def read_json(path):
-    if not path.exists():
-        return {}
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def write_json(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
-
-
-def load_excel_rows():
-    if load_workbook is None:
-        return {}
-    workbooks = sorted(ROOT.glob("RoadTailGen*.xlsx"))
-    if not workbooks:
-        return {}
-    wb = load_workbook(workbooks[0], read_only=True, data_only=True)
-    ws = wb.worksheets[0]
-    rows = {}
-    merged = {"source": None, "original_scene_id": None, "source_hazards": None}
-    for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        source, original, hazards, variant, scenario_id, typical, scene_type, road, env, maker, variant_hazard, desc = row[:12]
-        if source:
-            merged["source"] = source
-        if original:
-            merged["original_scene_id"] = original
-        if hazards:
-            merged["source_hazards"] = hazards
-        if not scenario_id:
-            continue
-        scenario_id = str(scenario_id).strip()
-        if not re.fullmatch(r"RTB\d{3}", scenario_id):
-            continue
-        rows[scenario_id] = {
-            "excel_row": row_num,
-            "source": source or merged["source"],
-            "original_scene_id": original or merged["original_scene_id"],
-            "source_hazards": hazards or merged["source_hazards"],
-            "variant": variant,
-            "scenario_typical": typical,
-            "scene_type": scene_type,
-            "road": road,
-            "environment": env,
-            "maker": maker,
-            "variant_hazard": variant_hazard,
-            "description": desc,
-        }
-    return rows
-
-
-def read_source(path):
-    for encoding in ("utf-8", "gbk", "latin-1"):
-        try:
-            return path.read_text(encoding=encoding)
-        except UnicodeDecodeError:
-            continue
-    return path.read_text(errors="replace")
-
-
-def numeric_tuple(node):
-    if isinstance(node, (ast.Tuple, ast.List)):
-        values = []
-        for item in node.elts:
-            if isinstance(item, ast.Constant) and isinstance(item.value, (int, float)):
-                values.append(float(item.value))
-            elif isinstance(item, ast.UnaryOp) and isinstance(item.op, ast.USub) and isinstance(item.operand, ast.Constant):
-                values.append(-float(item.operand.value))
-            else:
-                return None
-        return values if len(values) >= 2 else None
-    return None
-
-
-def literal_sequences(source):
-    tree = ast.parse(source)
-    lists, strings = {}, {}
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Assign):
-            continue
-        names = [target.id for target in node.targets if isinstance(target, ast.Name)]
-        if not names:
-            continue
-        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
-            for name in names:
-                strings[name] = node.value.value
-        elif isinstance(node.value, (ast.List, ast.Tuple)):
-            seq = [numeric_tuple(item) for item in node.value.elts]
-            if seq and all(item is not None for item in seq):
-                for name in names:
-                    lists[name] = seq
-    return lists, strings
-
-
-def parse_string_points(text):
-    points = []
-    for line in text.replace(",", " ").splitlines():
-        nums = []
-        for part in line.split():
-            try:
-                nums.append(float(part))
-            except ValueError:
-                pass
-        if len(nums) >= 2:
-            points.append(nums)
-    return points
-
-
-def clean_points(points, min_dist=0.5):
-    if not points:
-        return []
-    out = [points[0]]
-    for point in points[1:]:
-        prev = out[-1]
-        if math.hypot(point[0] - prev[0], point[1] - prev[1]) >= min_dist:
-            out.append(point)
-    return out
-
-
-def assigned_name_before(source, position):
-    prefix = source[max(0, position - 180):position]
-    match = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)?$", prefix)
-    return match.group(1) if match else ""
-
-
-def call_texts(source, function_name):
-    texts = []
-    for match in re.finditer(re.escape(function_name) + r"\s*\(", source):
-        start = match.start()
-        depth = 0
-        end = None
-        for idx in range(match.end() - 1, min(len(source), match.end() + 2000)):
-            ch = source[idx]
-            if ch == "(":
-                depth += 1
-            elif ch == ")":
-                depth -= 1
-                if depth == 0:
-                    end = idx + 1
-                    break
-        if end:
-            texts.append((start, source[start:end]))
-    return texts
-
-
-def infer_ego_actor_names(source):
-    names = set()
-    for start, call in call_texts(source, "spawn_vehicle"):
-        assigned = assigned_name_before(source, start)
-        if re.search(r"role_name\s*=\s*['\"](?:ego|hero)['\"]", call, re.I) or "ego" in assigned.lower():
-            if assigned:
-                names.add(assigned)
-    for start, call in call_texts(source, "try_spawn_actor"):
-        assigned = assigned_name_before(source, start)
-        local = source[max(0, start - 800):start]
-        has_role = re.search(r"set_attribute\s*\(\s*['\"]role_name['\"]\s*,\s*['\"](?:ego|hero)['\"]", local, re.I)
-        if has_role or "ego" in assigned.lower():
-            if assigned:
-                names.add(assigned)
-    return sorted(names)
-
-
-def infer_ego_route_names(source, ego_actor_names):
-    names = set()
-    literal_lists, literal_strings = literal_sequences(source)
-    for name in list(literal_lists) + list(literal_strings):
-        if "ego" in name.lower():
-            names.add(name)
-    for actor in ego_actor_names:
-        pattern = (
-            r"get_target_waypoint\s*\(\s*"
-            + re.escape(actor)
-            + r"\.get_location\(\)\s*,\s*([A-Za-z_][A-Za-z0-9_]*)"
-        )
-        names.update(re.findall(pattern, source))
-    for match in re.finditer(r"RTB\.parse_string_trajectory\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)", source):
-        assigned = assigned_name_before(source, match.start())
-        if "ego" in assigned.lower():
-            names.add(match.group(1))
-            names.add(assigned)
-    return names
-
-
-def route_from_source(source):
-    literal_lists, literal_strings = literal_sequences(source)
-    ego_names = infer_ego_actor_names(source)
-    route_names = infer_ego_route_names(source, ego_names)
-    candidates = {}
-    for name in route_names:
-        if name in literal_lists:
-            candidates[name] = clean_points(literal_lists[name])
-        elif name in literal_strings:
-            candidates[name] = clean_points(parse_string_points(literal_strings[name]))
-    for name in sorted(candidates, key=lambda n: (0 if "ego" in n.lower() else 1, n)):
-        points = candidates[name]
-        if len(points) >= 2:
-            return name, points
-    return None, []
-
-
-def point_to_reference(point):
-    if len(point) >= 3:
-        return [round(float(point[0]), 3), round(float(point[1]), 3), round(float(point[2]), 3)]
-    return [round(float(point[0]), 3), round(float(point[1]), 3)]
-
-
-def yaw_from_point(point, next_point=None):
-    if len(point) >= 3:
-        return float(point[2])
-    if next_point:
-        return math.degrees(math.atan2(next_point[1] - point[1], next_point[0] - point[0]))
-    return 0.0
-
-
-def infer_ego_blueprint(source):
-    for start, call in call_texts(source, "spawn_vehicle"):
-        assigned = assigned_name_before(source, start)
-        if not (re.search(r"role_name\s*=\s*['\"](?:ego|hero)['\"]", call, re.I) or "ego" in assigned.lower()):
-            continue
-        vehicle = re.search(r"['\"](vehicle\.[A-Za-z0-9_.-]+)['\"]", call)
-        if vehicle:
-            return vehicle.group(1)
-    for start, call in call_texts(source, "try_spawn_actor"):
-        assigned = assigned_name_before(source, start)
-        if "ego" not in assigned.lower():
-            continue
-        local = source[max(0, start - 700):start]
-        bp_var = re.search(r"try_spawn_actor\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)", call)
-        if bp_var:
-            find = re.search(re.escape(bp_var.group(1)) + r"\s*=\s*bp_lib\.find\s*\(\s*['\"](vehicle\.[A-Za-z0-9_.-]+)['\"]", local)
-            if find:
-                return find.group(1)
-    all_matches = re.findall(r"['\"](vehicle\.[A-Za-z0-9_.-]+)['\"]", source)
-    return all_matches[0] if all_matches else "vehicle.audi.tt"
-
-
-def infer_reference_speed(source):
-    values = []
-    values.extend(float(v) for v in re.findall(r"sm_ego\s*=\s*RTB\.MultiStageBehaviorMachine\(initial_speed\s*=\s*([0-9.]+)", source))
-    values.extend(float(v) for v in re.findall(r"ego_sm\s*=\s*RTB\.MultiStageBehaviorMachine\(initial_speed\s*=\s*([0-9.]+)", source))
-    values.extend(float(v) for v in re.findall(r"set_vehicle_initial_speed\(\s*ego(?:_vehicle)?\s*,\s*(?:target_speed_kmh\s*=\s*)?([0-9.]+)", source))
-    return round(max(values) if values else 60.0, 1)
-
-
-def keyword_tags(text, table, prefix):
-    lower = text.lower()
-    return [f"{prefix}.{subtype}" for subtype, words in table if any(word.lower() in lower for word in words)]
-
-
-def build_tags(excel, source, old):
-    excel_text = "\n".join(str(v) for v in [
-        excel.get("source_hazards"),
-        excel.get("scenario_typical"),
-        excel.get("scene_type"),
-        excel.get("environment"),
-        excel.get("variant_hazard"),
-        excel.get("description"),
-    ] if v)
-    tags = []
-    tags.extend(keyword_tags(excel_text, A_KEYWORDS, "A"))
-    tags.extend(keyword_tags(excel_text, B_KEYWORDS, "B"))
-    tags.extend(keyword_tags(excel_text, C_KEYWORDS, "C"))
-    code_text = source.lower()
-    if any(word in code_text for word in ("lane_change", "change_lane", "overtak", "bypass")):
-        tags.append("B.overtaking_bypass")
-    if any(word in code_text for word in ("merge", "ramp", "yield")):
-        tags.append("B.merging_flow")
-    if any(word in code_text for word in ("walker.pedestrian", "pedestrian", "opposing", "junction")):
-        tags.append("B.yielding_priority")
-    if any(word in code_text for word in ("collision", "emergency", "brake", "obstacle")):
-        tags.append("B.emergency_avoidance")
-    if not tags and old.get("scenario_tags"):
-        tags.extend(old["scenario_tags"])
-    if not any(tag.startswith("A.") for tag in tags):
-        tags.append("A.sight_distance")
-    if not any(tag.startswith("B.") for tag in tags):
-        tags.append("B.emergency_avoidance")
-    return sorted(dict.fromkeys(tags))
-
-
-def simplify_ability_tags(tags):
-    groups = []
-    for tag in tags:
-        group = str(tag).split(".", 1)[0]
-        if group in ("A", "B", "C") and group not in groups:
-            groups.append(group)
-    return groups or ["A", "B"]
-
-
-EGO_ACTION_KEYS = [
+EGO_ACTIONS = [
     "Overtaking",
     "Following",
     "Yielding",
@@ -347,7 +31,7 @@ EGO_ACTION_KEYS = [
     "Keeping",
 ]
 
-HAZARD_TYPE_KEYS = [
+HAZARD_TYPES = [
     "traffic_signs_markings",
     "separation_protection",
     "speed_control_facilities",
@@ -361,253 +45,423 @@ HAZARD_TYPE_KEYS = [
 ]
 
 
-def zero_vector(keys):
-    return {key: 0 for key in keys}
+def compact_point_rows(points, items_per_line=4, indent=2):
+    if not isinstance(points, list):
+        return json.dumps(points, ensure_ascii=False, indent=indent)
+    inner_indent = " " * (indent * 2)
+    close_indent = " " * indent
+    lines = ["["]
+    for index in range(0, len(points), items_per_line):
+        chunk = points[index:index + items_per_line]
+        suffix = "," if index + items_per_line < len(points) else ""
+        rows = ", ".join(json.dumps(point, ensure_ascii=False) for point in chunk)
+        lines.append(f"{inner_indent}{rows}{suffix}")
+    lines.append(f"{close_indent}]")
+    return "\n".join(lines)
 
 
-def binary_array(keys, vector):
-    return {
-        "names": keys,
-        "values": [int(bool(vector.get(key, 0))) for key in keys],
-    }
-
-
-def build_capability_vector(tags, source, excel):
-    ego_action = zero_vector(EGO_ACTION_KEYS)
-    hazard_type = zero_vector(HAZARD_TYPE_KEYS)
-    text = "\n".join(str(v) for v in [
-        excel.get("source_hazards"),
-        excel.get("scenario_typical"),
-        excel.get("scene_type"),
-        excel.get("road"),
-        excel.get("environment"),
-        excel.get("variant_hazard"),
-        excel.get("description"),
-        source,
-    ] if v).lower()
-
-    if any(word in text for word in ("overtak", "超车", "跨越")):
-        ego_action["Overtaking"] = 1
-    if any(word in text for word in ("bypass", "绕行", "避让", "障碍", "obstacle", "construction")):
-        ego_action["Overtaking"] = 1
-    if any(word in text for word in ("follow", "跟车", "carla.command", "autopilot")):
-        ego_action["Following"] = 1
-    if any(word in text for word in ("yield", "让行", "优先", "会车")):
-        ego_action["Yielding"] = 1
-    if any(word in text for word in ("merge", "cut_in", "cut-in", "汇入", "合流", "匝道")):
-        ego_action["Merging"] = 1
-    if any(word in text for word in ("lane_change", "change_lane", "变道", "并线")):
-        ego_action["Merging"] = 1
-    if any(word in text for word in ("junction", "intersection", "crossing", "路口", "交叉", "丁字")):
-        ego_action["Crossing"] = 1
-    if any(word in text for word in ("walker.pedestrian", "pedestrian", "行人")):
-        ego_action["Yielding"] = 1
-    if any(word in text for word in ("emergency", "brake", "急刹", "紧急", "突发")):
-        ego_action["Braking"] = 1
-    if any(word in text for word in ("lane keeping", "keep lane", "cruise", "巡航", "车道保持", "路径跟随", "稳定行驶")):
-        ego_action["Keeping"] = 1
-
-    for tag in tags:
-        if tag.endswith("traffic_sign_marking"):
-            hazard_type["traffic_signs_markings"] = 1
-        elif tag.endswith("alignment_geometry"):
-            hazard_type["road_alignment"] = 1
-        elif tag.endswith("sight_distance"):
-            hazard_type["limited_sight_distance"] = 1
-        elif tag.endswith("pavement_condition"):
-            hazard_type["road_surface_condition"] = 1
-        elif tag.endswith("clearance_intrusion"):
-            hazard_type["clearance_intrusion"] = 1
-        elif tag.endswith("rain_wet") or tag.endswith("fog") or tag.endswith("wind_dust_visibility"):
-            hazard_type["adverse_weather"] = 1
-        elif tag.endswith("glare"):
-            hazard_type["adverse_weather"] = 1
-        elif tag.endswith("low_light"):
-            hazard_type["lighting_facilities"] = 1
-    if any(word in text for word in ("falling", "落石", "滚落", "掉落", "货物", "box")):
-        hazard_type["clearance_intrusion"] = 1
-    if any(word in text for word in ("construction", "施工", "占道", "lane_block")):
-        hazard_type["clearance_intrusion"] = 1
-    if any(word in text for word in ("yield", "让行", "优先", "冲突", "priority")):
-        hazard_type["road_intersection"] = 1
-    if any(word in text for word in ("护栏", "隔离", "防护", "barrier", "guardrail")):
-        hazard_type["separation_protection"] = 1
-    if any(word in text for word in ("限速", "减速带", "测速", "speed limit", "speed_control")):
-        hazard_type["speed_control_facilities"] = 1
-    if any(word in text for word in ("照明", "路灯", "low_light", "streetlight", "lighting")):
-        hazard_type["lighting_facilities"] = 1
-    if any(word in text for word in ("坑洼", "积水", "湿滑", "冰雪", "低摩擦", "pavement", "wet", "snow")):
-        hazard_type["road_surface_condition"] = 1
-
-    if not any(ego_action.values()):
-        ego_action["Keeping"] = 1
-    if not any(hazard_type.values()):
-        hazard_type["limited_sight_distance"] = 1
-    return {
-        "ego_action": binary_array(EGO_ACTION_KEYS, ego_action),
-        "hazard_type": binary_array(HAZARD_TYPE_KEYS, hazard_type),
-    }
-
-
-def expected_behavior_for_b(tags):
-    if "B.yielding_priority" in tags:
-        return "yield_or_stop_for_priority_conflict"
-    if "B.merging_flow" in tags:
-        return "maintain_safe_gap_for_merge"
-    if "B.overtaking_bypass" in tags:
-        return "bypass_or_change_lane_safely"
-    if "B.emergency_avoidance" in tags:
-        return "slow_or_avoid"
-    return "slow_or_avoid"
-
-
-def hazard_center(reference):
-    if not reference:
-        return [0.0, 0.0]
-    point = reference[len(reference) // 2]
-    return [point[0], point[1]]
-
-
-def actor_audit(source, reference):
-    ego_names = infer_ego_actor_names(source)
-    has_role = bool(re.search(r"role_name\s*=\s*['\"](?:ego|hero)['\"]", source, re.I)) or bool(
-        re.search(r"set_attribute\s*\(\s*['\"]role_name['\"]\s*,\s*['\"](?:ego|hero)['\"]", source, re.I)
+def json_with_compact_trajectory(data):
+    if not isinstance(data, dict) or not isinstance(data.get("reference_trajectory"), list):
+        return json.dumps(data, ensure_ascii=False, indent=2)
+    placeholder = "__RTB_REFERENCE_TRAJECTORY__"
+    compact_data = dict(data)
+    compact_data["reference_trajectory"] = placeholder
+    text = json.dumps(compact_data, ensure_ascii=False, indent=2)
+    return text.replace(
+        json.dumps(placeholder),
+        compact_point_rows(data["reference_trajectory"], items_per_line=4, indent=2),
     )
-    has_spawn = bool(re.search(r"spawn_vehicle\s*\(|try_spawn_actor\s*\(", source))
-    has_ego_actor = bool(ego_names) or has_role
-    reasons = []
-    if not has_ego_actor and has_spawn:
-        reasons.append("no_clear_ego_actor_detected")
-    if has_ego_actor and not has_role:
-        reasons.append("ego_actor_missing_role_name")
-    if len(reference) < 2:
-        reasons.append("missing_static_ego_reference_trajectory")
+
+
+def write_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        f.write(json_with_compact_trajectory(data))
+        f.write("\n")
+
+
+def workbook_path():
+    direct = SCENARIO_SOURCE / WORKBOOK_NAME
+    if direct.exists():
+        return direct
+    matches = sorted(SCENARIO_SOURCE.glob("*最终版*.xlsx"))
+    if matches:
+        return matches[0]
+    raise FileNotFoundError(f"missing final metadata workbook under {SCENARIO_SOURCE}")
+
+
+def clean_cell(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        value = value.strip()
+        return value if value else None
+    return value
+
+
+def as_int(value):
+    value = clean_cell(value)
+    if value is None:
+        return None
+    return int(value)
+
+
+def as_float(value):
+    value = clean_cell(value)
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        nums = parse_numbers(value)
+        return max(nums) if nums else None
+
+
+def as_float_list(value):
+    value = clean_cell(value)
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        return [float(item) for item in value if item is not None]
+    return parse_numbers(value)
+
+
+def split_labels(value):
+    value = clean_cell(value)
+    if value is None:
+        return []
+    parts = re.split(r"[\\/、,，;；]+", str(value))
+    return [part.strip() for part in parts if part and part.strip()]
+
+
+def parse_numbers(value):
+    if value is None:
+        return []
+    if isinstance(value, (int, float)):
+        return [float(value)]
+    return [float(match) for match in re.findall(r"[-+]?\d+(?:\.\d+)?", str(value))]
+
+
+def parse_point(value):
+    nums = parse_numbers(value)
+    if len(nums) < 2:
+        return None
+    point = [round(nums[0], 3), round(nums[1], 3)]
+    if len(nums) >= 3:
+        point.append(round(nums[2], 3))
+    return point
+
+
+def parse_points(value):
+    nums = parse_numbers(value)
+    points = []
+    for index in range(0, len(nums) - 1, 2):
+        points.append([round(nums[index], 3), round(nums[index + 1], 3)])
+    return points
+
+
+def indexed_value(values, index, default=None):
+    if not values:
+        return default
+    if index < len(values):
+        return values[index]
+    return values[-1]
+
+
+def parse_trajectory(value):
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        points = []
+        for item in value:
+            point = parse_point(item)
+            if point:
+                points.append(point)
+        return points
+    text = str(value).strip()
+    if not text:
+        return []
+    try:
+        parsed = ast.literal_eval(text)
+    except (SyntaxError, ValueError):
+        parsed = None
+    if isinstance(parsed, (list, tuple)):
+        points = []
+        for item in parsed:
+            point = parse_point(item)
+            if point:
+                points.append(point)
+        if points:
+            return points
+    nums = parse_numbers(text)
+    step = 3 if len(nums) % 3 == 0 else 2
+    points = []
+    for index in range(0, len(nums) - step + 1, step):
+        point = nums[index:index + step]
+        if len(point) >= 2:
+            points.append([round(v, 3) for v in point])
+    return points
+
+
+def polyline_length(points):
+    total = 0.0
+    for left, right in zip(points, points[1:]):
+        total += math.hypot(float(right[0]) - float(left[0]), float(right[1]) - float(left[1]))
+    return round(total, 3)
+
+
+def transform_from_point(point):
+    data = {
+        "location": {"x": round(float(point[0]), 3), "y": round(float(point[1]), 3)},
+        "rotation": {"pitch": 0.0, "yaw": round(float(point[2]) if len(point) >= 3 else 0.0, 3), "roll": 0.0},
+    }
+    return data
+
+
+def normalize_color(value):
+    value = clean_cell(value)
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        text = str(int(value))
+        if len(text) == 9:
+            return ",".join([text[0:3], text[3:6], text[6:9]])
+        return text
+    text = str(value).strip()
+    return None if text.lower() in {"null", "none", "nan"} else text
+
+
+def parse_weather_summary(value):
+    value = clean_cell(value)
+    if value is None:
+        return None
+    weather = {}
+    for key, raw in re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([-+]?\d+(?:\.\d+)?)", str(value)):
+        weather[key] = float(raw)
+    return weather or str(value)
+
+
+def load_taxonomy(wb):
+    action_rows = list(wb["Ego Action"].iter_rows(min_row=2, values_only=True))
+    hazard_rows = list(wb["Hazard Type"].iter_rows(min_row=2, values_only=True))
+    action_items = []
+    hazard_items = []
+    for name, purpose, note, *_ in action_rows:
+        name = clean_cell(name)
+        if not name:
+            continue
+        action_items.append({
+            "name": str(name),
+            "description_zh": clean_cell(purpose),
+            "note_zh": clean_cell(note),
+        })
+    for name, zh_name, note, *_ in hazard_rows:
+        name = clean_cell(name)
+        if not name:
+            continue
+        hazard_items.append({
+            "name": str(name),
+            "label_zh": clean_cell(zh_name),
+            "description_zh": clean_cell(note),
+        })
     return {
-        "has_ego_actor": has_ego_actor,
-        "has_role_name_ego": has_role,
-        "has_static_ego_trajectory": len(reference) >= 2,
-        "ego_actor_names": ego_names,
-        "missing_role_name_ego": has_ego_actor and not has_role,
-        "ambiguous_ego_actor": not has_ego_actor and has_spawn,
-        "missing_reference_trajectory": len(reference) < 2,
-        "missing_ego_start_end": len(reference) < 2,
-        "needs_scene_edit_reason": reasons,
+        "schema_version": TAXONOMY_VERSION,
+        "source_workbook": str(workbook_path().relative_to(ROOT)).replace("\\", "/"),
+        "ego_action": {
+            "names": [item["name"] for item in action_items],
+            "items": action_items,
+        },
+        "hazard_type": {
+            "names": [item["name"] for item in hazard_items],
+            "items": hazard_items,
+        },
     }
 
 
-def build_metadata(scene_path, excel, old):
-    source = read_source(scene_path)
-    route_name, points = route_from_source(source)
-    reference = [point_to_reference(point) for point in points]
-    tags = build_tags(excel, source, old)
-    b_tags = [tag for tag in tags if tag.startswith("B.")]
-    a_tags = [tag for tag in tags if tag.startswith("A.")]
-    c_tags = [tag for tag in tags if tag.startswith("C.")]
-    primary_b = b_tags[0].split(".", 1)[1] if b_tags else "emergency_avoidance"
-    primary_a = a_tags[0].split(".", 1)[1] if a_tags else "sight_distance"
-    reference_speed = infer_reference_speed(source)
-    description = excel.get("description") or old.get("description") or (
-        f"Original scenario body for {excel.get('original_scene_id') or old.get('scenario_family_id') or scene_path.stem}; detailed variant description is unavailable."
-    )
+def load_rows_and_taxonomy():
+    if load_workbook is None:
+        raise RuntimeError("openpyxl is required to generate RoadTailBench metadata")
+    wb = load_workbook(workbook_path(), read_only=True, data_only=True)
+    ws = wb["场景元信息"]
+    taxonomy = load_taxonomy(wb)
+    hazard_zh_to_name = {
+        item.get("label_zh"): item["name"]
+        for item in taxonomy["hazard_type"]["items"]
+        if item.get("label_zh")
+    }
+    rows = {}
+    for excel_row, row in enumerate(ws.iter_rows(min_row=3, values_only=True), start=3):
+        scenario_id = clean_cell(row[0])
+        if not scenario_id or not re.fullmatch(r"RTB\d{3}", str(scenario_id)):
+            continue
+        trajectory = parse_trajectory(row[9])
+        hazard_labels = split_labels(row[16])
+        ego_actions = split_labels(row[17])
+        rows[str(scenario_id)] = {
+            "excel_row": excel_row,
+            "scenario_id": str(scenario_id),
+            "scenario_index": as_int(row[1]),
+            "estimated_vehicles": as_int(row[2]),
+            "estimated_pedestrians": as_int(row[3]),
+            "ego_model": clean_cell(row[4]),
+            "ego_color": normalize_color(row[5]),
+            "ego_role_name": clean_cell(row[6]) or "ego",
+            "ego_start": parse_point(row[7]),
+            "ego_end": parse_point(row[8]),
+            "reference_trajectory": trajectory,
+            "trajectory_length_m": polyline_length(trajectory),
+            "hazard_locations": parse_points(row[11]),
+            "risk_radii_m": as_float_list(row[12]),
+            "scene_type": clean_cell(row[13]),
+            "road_speed_limit_kmh": as_float(row[14]),
+            "suggested_triggered_speeds_kmh": as_float_list(row[15]),
+            "hazard_labels": hazard_labels,
+            "hazard_types": [hazard_zh_to_name[label] for label in hazard_labels if label in hazard_zh_to_name],
+            "ego_actions": [action for action in ego_actions if action in taxonomy["ego_action"]["names"]],
+            "weather_parameters": parse_weather_summary(row[18]),
+        }
+    return rows, taxonomy
+
+
+def binary_array(names, selected):
+    selected_set = set(selected)
+    return {"names": names, "values": [1 if name in selected_set else 0 for name in names]}
+
+
+def build_hazards(row):
+    speed_limit = row["road_speed_limit_kmh"]
+    primary_hazard_type = row["hazard_types"][0] if row["hazard_types"] else None
+    hazards = []
+    for index, center in enumerate(row["hazard_locations"]):
+        radius = indexed_value(row["risk_radii_m"], index)
+        triggered_speed = indexed_value(row["suggested_triggered_speeds_kmh"], index, speed_limit)
+        hazard = {
+            "id": f"{row['scenario_id'].lower()}_hazard_{index + 1:02d}",
+            "type": primary_hazard_type,
+            "types": row["hazard_types"],
+            "labels": row["hazard_labels"],
+            "center": center,
+            "radius_m": radius,
+            "reference_speed_kmh": triggered_speed if triggered_speed is not None else speed_limit,
+        }
+        hazards.append({key: value for key, value in hazard.items() if value not in (None, [], {})})
+    return hazards
+
+
+def build_metadata(row):
+    role_name = str(row["ego_role_name"])
+    start = row["ego_start"] or (row["reference_trajectory"][0] if row["reference_trajectory"] else None)
+    end = row["ego_end"] or (row["reference_trajectory"][-1] if row["reference_trajectory"] else None)
+    speed_limit = row["road_speed_limit_kmh"]
+    hazards = build_hazards(row)
+    reference_speed = hazards[0].get("reference_speed_kmh") if hazards else speed_limit
     metadata = {
-        "schema_version": "roadtailbench.code_scene_metadata.v4",
-        "scenario_id": scene_path.stem,
-        "town": old.get("town") or scene_path.stem,
-        "description": description,
-        "scenario_family_id": excel.get("original_scene_id") or old.get("scenario_family_id"),
-        "scene_type": excel.get("scene_type") or old.get("scene_type"),
-        "environment": excel.get("environment") or old.get("environment"),
-        "source_hazards": excel.get("source_hazards") or old.get("source_hazards"),
+        "schema_version": SCHEMA_VERSION,
+        "scenario_id": row["scenario_id"],
+        "scenario_index": row["scenario_index"],
+        "town": row["scenario_id"],
+        "estimated_vehicles": row["estimated_vehicles"],
+        "estimated_pedestrians": row["estimated_pedestrians"],
         "ego": {
-            "role_names": ["ego"],
-            "type_id": infer_ego_blueprint(source),
+            "role_name": role_name,
+            "type_id": row["ego_model"],
+            "color": row["ego_color"],
             "start_match_radius_m": 8.0,
         },
-        "ego_role_names": ["ego"],
-        "ego_type_id": infer_ego_blueprint(source),
-        "ego_blueprint": infer_ego_blueprint(source),
-        "ego_start_match_radius_m": 8.0,
-        "reference_trajectory_source": route_name or "not_static_ego_reference_detected",
-        "reference_trajectory_format": "x_y_yaw" if reference and len(reference[0]) >= 3 else "x_y",
-        "reference_trajectory": reference,
+        "ego_start": transform_from_point(start) if start else None,
+        "ego_end": transform_from_point(end) if end else None,
+        "reference_trajectory_source": "scenarios/场景元文件最终版.xlsx:Trajectory",
+        "reference_trajectory_format": "x_y_yaw",
+        "reference_trajectory": row["reference_trajectory"],
+        "reference_trajectory_points": len(row["reference_trajectory"]),
+        "trajectory_length_m": row["trajectory_length_m"],
         "trajectory_adherence_mode": "spatial",
+        "scene_type": row["scene_type"],
+        "speed_limit_kmh": speed_limit,
         "reference_speed_kmh": reference_speed,
-        "speed_limit_kmh": reference_speed,
-        "scenario_tags": simplify_ability_tags(tags),
-        "ability_tags": simplify_ability_tags(tags),
-        "capability_vector": build_capability_vector(tags, source, excel),
+        "hazard_labels": row["hazard_labels"],
+        "ego_actions": row["ego_actions"],
+        "weather_parameters": row["weather_parameters"],
+        "capability_vector": {
+            "ego_action": binary_array(EGO_ACTIONS, row["ego_actions"]),
+            "hazard_type": binary_array(HAZARD_TYPES, row["hazard_types"]),
+        },
+        "hazards": hazards,
     }
-    if reference:
-        metadata["ego_start"] = {
-            "location": {"x": reference[0][0], "y": reference[0][1]},
-            "rotation": {"pitch": 0.0, "yaw": round(yaw_from_point(points[0], points[1] if len(points) > 1 else None), 3), "roll": 0.0},
-        }
-        metadata["ego_end"] = {
-            "location": {"x": reference[-1][0], "y": reference[-1][1]},
-            "rotation": {"pitch": 0.0, "yaw": round(yaw_from_point(points[-1]), 3), "roll": 0.0},
-        }
-        center = hazard_center(reference)
-        expected = expected_behavior_for_b(tags)
-        metadata["hazards"] = [{
-            "id": f"{scene_path.stem.lower()}_primary_hazard",
-            "type": primary_b,
-            "center": center,
-            "radius_m": 10.0,
-            "reference_speed_kmh": min(40.0, reference_speed),
-            "expected_behavior": expected,
-        }]
-    else:
-        metadata["notes"] = [
-            "No fixed ego reference trajectory was statically detected; natural end by ego goal is unavailable until metadata or scene code is refined.",
-            "Scenario timeout remains the termination fallback for this scene.",
-        ]
-        metadata["blocking_metadata_issues"] = ["missing_reference_trajectory"]
-    if not reference and not (metadata.get("ego_start") and metadata.get("ego_end")):
-        metadata.setdefault("blocking_metadata_issues", []).append("missing_reference_trajectory_and_ego_end")
-    return {key: value for key, value in metadata.items() if value not in (None, [], {}) or key in {"reference_trajectory", "scenario_tags"}}
+    return metadata
 
 
-def main():
-    excel_rows = load_excel_rows()
-    old_metadata = {path.stem: read_json(path) for path in METADATA.glob("RTB*.json")}
-    METADATA.mkdir(exist_ok=True)
-    OUTPUTS.mkdir(exist_ok=True)
-    report = []
-    for scene_path in sorted(SCENES.glob("RTB*.py")):
-        scene_id = scene_path.stem
-        metadata = build_metadata(scene_path, excel_rows.get(scene_id, {}), old_metadata.get(scene_id, {}))
-        write_json(METADATA / f"{scene_id}.json", metadata)
-        source = read_source(scene_path)
-        audit = actor_audit(source, metadata.get("reference_trajectory", []))
-        row = {
-            "scenario_id": scene_id,
-            "has_ego_actor": audit["has_ego_actor"],
-            "has_role_name_ego": audit["has_role_name_ego"],
-            "has_static_ego_trajectory": audit["has_static_ego_trajectory"],
-            "ego_actor_names": audit["ego_actor_names"],
-            "reference_trajectory_points": len(metadata.get("reference_trajectory", [])),
-            "reference_trajectory_source": metadata.get("reference_trajectory_source"),
-            "missing_role_name_ego": audit["missing_role_name_ego"],
-            "ambiguous_ego_actor": audit["ambiguous_ego_actor"],
-            "missing_reference_trajectory": audit["missing_reference_trajectory"],
-            "missing_ego_start_end": audit["missing_ego_start_end"],
-            "needs_scene_edit_reason": audit["needs_scene_edit_reason"],
-            "blocking_metadata_issues": metadata.get("blocking_metadata_issues", []),
-        }
-        report.append(row)
-    write_json(OUTPUTS / "metadata_generation_report.json", report)
+def build_audit_row(metadata):
+    vector = metadata["capability_vector"]
+    ego = metadata.get("ego") or {}
+    hazards = metadata.get("hazards") or []
+    first_hazard = hazards[0] if hazards else {}
+    hazard_selected = [
+        name for name, value in zip(vector["hazard_type"]["names"], vector["hazard_type"]["values"]) if value
+    ]
+    action_selected = [
+        name for name, value in zip(vector["ego_action"]["names"], vector["ego_action"]["values"]) if value
+    ]
+    return {
+        "scenario_id": metadata["scenario_id"],
+        "scenario_index": metadata.get("scenario_index"),
+        "ego_model": metadata.get("ego_model") or ego.get("type_id"),
+        "scene_type": metadata.get("scene_type"),
+        "estimated_vehicles": metadata.get("estimated_vehicles"),
+        "estimated_pedestrians": metadata.get("estimated_pedestrians"),
+        "reference_trajectory_points": metadata.get("reference_trajectory_points", 0),
+        "trajectory_length_m": metadata.get("trajectory_length_m", 0.0),
+        "speed_limit_kmh": metadata.get("speed_limit_kmh"),
+        "suggested_triggered_speed_kmh": first_hazard.get("reference_speed_kmh"),
+        "risk_radius_m": first_hazard.get("radius_m"),
+        "hazard_count": len(hazards),
+        "hazard_types": "/".join(hazard_selected),
+        "ego_actions": "/".join(action_selected),
+    }
+
+
+def write_audit(report):
     write_json(METADATA / "metadata_audit.json", report)
     with (METADATA / "metadata_audit.csv").open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(report[0].keys()) if report else [])
         writer.writeheader()
         writer.writerows(report)
-    missing_routes = [r["scenario_id"] for r in report if not r["has_static_ego_trajectory"]]
-    missing_roles = [r["scenario_id"] for r in report if r["has_ego_actor"] and not r["has_role_name_ego"]]
-    missing_ego = [r["scenario_id"] for r in report if not r["has_ego_actor"]]
-    print(f"wrote {len(report)} metadata files")
-    print(f"missing static ego reference trajectories: {len(missing_routes)} {missing_routes}")
-    print(f"ego actor missing role_name: {len(missing_roles)} {missing_roles}")
-    print(f"no clear ego actor detected: {len(missing_ego)} {missing_ego}")
+    summary = {
+        "schema_version": "roadtailbench.metadata_summary.v1",
+        "scenario_count": len(report),
+        "scenario_ids": [row["scenario_id"] for row in report],
+        "total_trajectory_length_m": round(sum(float(row["trajectory_length_m"]) for row in report), 3),
+        "scene_type_counts": {},
+        "hazard_type_counts": {name: 0 for name in HAZARD_TYPES},
+        "ego_action_counts": {name: 0 for name in EGO_ACTIONS},
+    }
+    for row in report:
+        summary["scene_type_counts"][row["scene_type"]] = summary["scene_type_counts"].get(row["scene_type"], 0) + 1
+        for name in split_labels(row["hazard_types"]):
+            summary["hazard_type_counts"][name] += 1
+        for name in split_labels(row["ego_actions"]):
+            summary["ego_action_counts"][name] += 1
+    write_json(METADATA / "metadata_summary.json", summary)
+    write_json(OUTPUTS / "metadata_generation_report.json", report)
+
+
+def main():
+    rows, taxonomy = load_rows_and_taxonomy()
+    if len(rows) != 100:
+        raise RuntimeError(f"expected 100 scenarios in final workbook, found {len(rows)}")
+    missing_scripts = [sid for sid in rows if not (SCENARIO_SOURCE / f"{sid}.py").exists()]
+    if missing_scripts:
+        raise RuntimeError(f"missing source scripts for: {missing_scripts}")
+    METADATA.mkdir(exist_ok=True)
+    OUTPUTS.mkdir(exist_ok=True)
+    write_json(METADATA / "capability_taxonomy.json", taxonomy)
+    report = []
+    for scenario_id in sorted(rows):
+        metadata = build_metadata(rows[scenario_id])
+        write_json(METADATA / f"{scenario_id}.json", metadata)
+        report.append(build_audit_row(metadata))
+    write_audit(report)
+    print(f"wrote {len(report)} metadata files from {workbook_path()}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,383 @@
+import carla
+import time
+import math
+import numpy as np
+
+# ==========================================
+# 1. 基础控制算法 (PID)
+# ==========================================
+class PIDLongitudinalController:
+    def __init__(self, K_P=1.0, K_I=0.05, K_D=0.1, dt=0.05):
+        self._k_p, self._k_i, self._k_d = K_P, K_I, K_D
+        self._dt = dt
+        self._error_buffer = []
+
+    def run_step(self, target_speed, current_speed):
+        error = target_speed - current_speed
+        self._error_buffer.append(error)
+        if len(self._error_buffer) >= 30: self._error_buffer.pop(0)
+        _de = (self._error_buffer[-1] - self._error_buffer[-2]) / self._dt if len(self._error_buffer) >= 2 else 0.0
+        _ie = sum(self._error_buffer) * self._dt
+        _ie = np.clip(_ie, -2.0, 2.0)
+        # 💡 优化：将油门上限从 0.6 提高到 0.85，确保加速到 70km/h 时有足够动力
+        return np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -0.8, 0.85)
+
+class PIDLateralController:
+    def __init__(self, K_P=1.0, K_I=0.01, K_D=0.1, dt=0.05):
+        self._k_p, self._k_i, self._k_d = K_P, K_I, K_D
+        self._dt = dt
+        self._error_buffer = []
+
+    def run_step(self, waypoint_loc, vehicle_transform):
+        v_loc = vehicle_transform.location
+        v_yaw = math.radians(vehicle_transform.rotation.yaw)
+
+        target_vector = np.array([waypoint_loc.x - v_loc.x, waypoint_loc.y - v_loc.y])
+        norm = np.linalg.norm(target_vector)
+        if norm < 0.1: return 0.0
+
+        target_yaw = math.atan2(target_vector[1], target_vector[0])
+        error = target_yaw - v_yaw
+        while error > math.pi: error -= 2.0 * math.pi
+        while error < -math.pi: error += 2.0 * math.pi
+
+        self._error_buffer.append(error)
+        if len(self._error_buffer) >= 30: self._error_buffer.pop(0)
+        _de = (self._error_buffer[-1] - self._error_buffer[-2]) / self._dt if len(self._error_buffer) >= 2 else 0.0
+        _ie = sum(self._error_buffer) * self._dt
+
+        return np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -0.7, 0.7)
+
+def apply_pid_control(vehicle, pid_lon, pid_lat, target_speed_kmh, target_loc):
+    target_speed_ms = target_speed_kmh / 3.6
+    tf = vehicle.get_transform()
+    vel = vehicle.get_velocity()
+    current_speed_ms = math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
+
+    throttle_output = pid_lon.run_step(target_speed_ms, current_speed_ms)
+    steer_output = pid_lat.run_step(target_loc, tf)
+
+    if abs(steer_output) < 0.02: steer_output = 0.0
+
+    control = carla.VehicleControl()
+    control.steer = steer_output
+    if throttle_output >= 0.0:
+        control.throttle = throttle_output
+        control.brake = 0.0
+    else:
+        control.throttle = 0.0
+        control.brake = abs(throttle_output)
+    vehicle.apply_control(control)
+
+# ==========================================
+# 2. 辅助函数：车辆出界检测与初速度赋予
+# ==========================================
+def destroy_actor(actor_list, actor, reason=""):
+    if not actor:
+        return None
+    try:
+        actor_id = actor.id
+    except Exception:
+        actor_id = "unknown"
+    if actor.is_alive:
+        try:
+            actor.destroy()
+            if reason:
+                print(f"[RTB018] destroyed actor {actor_id}: {reason}")
+        except Exception as exc:
+            print(f"[RTB018] failed to destroy actor {actor_id}: {exc}")
+    return None
+
+def destroy_all_actors(actor_list, reason=""):
+    for actor in actor_list:
+        destroy_actor(actor_list, actor, reason)
+
+def check_and_handle_out_of_bounds(actor, carla_map):
+    if not actor or not actor.is_alive:
+        return True
+
+    loc = actor.get_location()
+    wp_nearest = carla_map.get_waypoint(loc, project_to_road=True)
+    wp_exact = carla_map.get_waypoint(loc, project_to_road=False)
+
+    is_out = False
+    if wp_exact is None:
+        is_out = True
+    elif wp_nearest and wp_nearest.transform.location.distance(loc) > 4.0:
+        is_out = True
+
+    if is_out:
+        actor.destroy()
+        return True
+    return False
+
+def actor_reached_trajectory_end(actor, trajectory, threshold=2.0):
+    if not actor or not actor.is_alive or not trajectory:
+        return False
+    loc = actor.get_location()
+    end_x, end_y, _ = trajectory[-1]
+    end_loc = carla.Location(x=end_x, y=end_y, z=loc.z)
+    return loc.distance(end_loc) <= threshold
+
+def set_initial_velocity(vehicle, speed_kmh):
+    """根据车辆当前朝向赋予一个初始物理速度，避免从0起步"""
+    if not vehicle or not vehicle.is_alive:
+        return
+    speed_ms = speed_kmh / 3.6
+    yaw = math.radians(vehicle.get_transform().rotation.yaw)
+    vx = speed_ms * math.cos(yaw)
+    vy = speed_ms * math.sin(yaw)
+    # 强制设置目标速度向量
+    vehicle.set_target_velocity(carla.Vector3D(x=vx, y=vy, z=0.0))
+
+# ==========================================
+# 3. 轨迹数据录入
+# ==========================================
+TRAJ_EGO = [
+    (55.543, -45.516, 152.084), (55.543, -45.516, 152.084), (55.543, -45.516, 152.084), (55.543, -45.516, 152.084),
+    (55.139, -45.302, 152.084), (52.944, -44.112, 150.120), (50.709, -42.817, 149.385), (48.564, -41.538, 148.650),
+    (46.396, -40.212, 148.527), (44.264, -38.907, 148.527), (42.101, -37.573, 147.578), (39.967, -36.191, 147.565),
+    (37.852, -34.860, 147.849), (35.700, -33.508, 147.848), (33.548, -32.155, 147.848), (31.396, -30.803, 147.848),
+    (29.287, -29.461, 146.991), (27.190, -28.099, 146.991), (25.099, -26.729, 146.623), (23.011, -25.354, 146.623),
+    (20.889, -23.956, 146.623), (18.801, -22.580, 146.623), (16.713, -21.205, 146.623), (14.626, -19.830, 146.623),
+    (12.503, -18.431, 146.623), (10.416, -17.056, 146.623), (8.301, -15.645, 145.554), (6.301, -14.148, 141.440),
+    (4.278, -12.613, 146.887), (2.122, -11.348, 152.139), (-0.186, -10.394, 161.122), (-2.696, -9.793, 170.176),
+    (-5.259, -9.480, 175.507), (-7.756, -9.406, -178.480), (-10.256, -9.473, -177.914), (-12.827, -9.711, -172.477),
+    (-15.301, -10.069, -170.860), (-17.757, -10.534, -167.162), (-20.260, -11.175, -165.039), (-22.663, -11.862, -162.423),
+    (-25.071, -12.672, -160.623), (-27.426, -13.506, -160.497), (-29.860, -14.368, -160.497), (-32.258, -15.217, -160.497),
+    (-34.614, -16.051, -160.497), (-37.030, -16.839, -163.496), (-39.434, -17.521, -164.472), (-43.626, -18.686, -164.472),
+    (-49.721, -20.476, -162.452), (-55.680, -22.361, -162.452), (-61.838, -24.308, -162.452), (-67.880, -26.275, -161.583),
+    (-73.909, -28.283, -161.583), (-80.096, -30.130, -165.560), (-86.143, -31.703, -164.419), (-92.254, -33.443, -163.618),
+    (-98.305, -35.380, -161.711), (-104.236, -37.340, -161.711), (-106.016, -37.928, -161.711), (-106.016, -37.928, -161.711),
+    (-106.016, -37.928, -161.711)
+]
+
+TRAJ_jeep = [(13.465, -14.074, -54.434), (14.291, -15.038, -44.591),
+             (15.247, -15.842, -36.017), (16.332, -16.541, -31.485), (17.431, -17.178, -29.198),
+             (18.529, -17.777, -28.138), (19.669, -18.384, -28.068), (20.78, -19.001, -29.849),
+             (21.871, -19.652, -32.056), (22.924, -20.325, -33.19), (23.963, -21.021, -34.183),
+             (24.997, -21.723, -34.183), (26.031, -22.425, -34.183), (27.1, -23.151, -34.113),
+             (28.173, -23.87, -33.618), (29.233, -24.57, -33.408), (30.295, -25.268, -33.196),
+             (31.341, -25.952, -33.196), (32.422, -26.66, -33.196), (33.485, -27.355, -33.196),
+             (34.391, -27.949, -33.196), (34.391, -27.949, -33.196), (34.827, -28.234, -33.266),
+             (35.593, -28.738, -33.336), (37.333, -29.882, -33.336), (41.611, -32.627, -31.76),
+             (43.172, -33.589, -31.618), (43.172, -33.589, -31.618)]
+TRAJ_PED = [
+    (-11.916, -20.109, -6.396), (-11.916, -20.109, -6.396), (-11.916, -20.109, -5.898),
+    (-11.916, -20.109, -6.913), (-11.767, -20.127, -6.913), (-11.254, -20.189, -6.983),
+    (-10.749, -20.247, -6.344), (-10.244, -20.301, -5.994), (-9.738, -20.352, -5.359),
+    (-9.223, -20.392, -4.141), (-8.724, -20.428, -4.071), (-8.217, -20.462, -3.503),
+    (-7.718, -20.492, -2.503), (-7.21, -20.509, -1.792), (-6.71, -20.524, -1.157),
+    (-6.194, -20.522, 0.575), (-5.694, -20.522, -0.068), (-5.177, -20.523, -0.068),
+    (-4.677, -20.525, -0.776), (-4.177, -20.533, -0.919), (-3.669, -20.536, 1.385),
+    (-3.174, -20.476, 14.906), (-2.712, -20.27, 34.825), (-2.345, -19.921, 52.566),
+    (-2.063, -19.499, 60.221), (-1.832, -19.037, 68.177), (-1.704, -18.546, 78.633),
+    (-1.61, -18.039, 79.924), (-1.526, -17.546, 80.556), (-1.441, -17.037, 80.486),
+    (-1.355, -16.527, 80.486), (-1.253, -16.029, 75.851), (-1.112, -15.549, 71.463),
+    (-0.882, -15.088, 58.819), (-0.622, -14.661, 58.321), (-0.322, -14.241, 50.394),
+    (0.035, -13.894, 34.975), (0.477, -13.643, 26.251), (0.933, -13.438, 22.69),
+    (1.41, -13.241, 22.194), (1.875, -13.055, 21.491), (2.358, -12.872, 20.559),
+    (2.827, -12.7, 19.051), (3.196, -13.011, 34.993), (3.63, -12.731, 31.568), (4.075, -12.47, 28.488),
+    (4.53, -12.243, 25.052),
+    (5.005, -12.04, 21.748), (5.479, -11.856, 21.103), (5.945, -11.676, 21.103), (6.427, -11.49, 21.103),
+    (6.909, -11.304, 21.103), (7.392, -11.121, 19.853), (7.871, -10.949, 19.853), (8.356, -10.771, 20.206),
+    (8.841, -10.593, 20.206), (9.326, -10.414, 20.206), (9.795, -10.242, 20.206), (10.272, -10.066, 20.206),
+    (10.749, -9.89, 20.206), (11.218, -9.718, 20.206), (11.703, -9.539, 20.206), (12.173, -9.366, 20.206),
+    (12.65, -9.191, 20.206), (13.135, -9.012, 20.206), (13.604, -8.839, 20.631), (14.075, -8.628, 28.671),
+    (14.51, -8.351, 33.535), (14.934, -8.07, 33.535), (15.365, -7.785, 33.535), (15.784, -7.513, 32.117),
+    (16.234, -7.278, 22.066)]
+TRAJ_HARLEY = [(-3.685, 53.572, -93.29), (-4.084, 47.235, -93.715), (-4.503, 40.79, -93.715), (-4.908, 34.553, -93.715),
+               (-5.335, 28.317, -94.207), (-5.92, 21.886, -96.182), (-6.935, 15.617, -103.07),
+               (-9.079, 9.539, -114.497), (-12.036, 4.038, -121.897), (-15.956, -1.073, -133.907),
+               (-20.885, -5.218, -145.843), (-26.352, -8.447, -152.948), (-32.229, -11.116, -156.23),
+               (-38.171, -13.636, -158.841), (-44.257, -15.78, -161.469), (-50.271, -17.832, -161.909),
+               (-56.23, -19.713, -162.616), (-62.392, -21.642, -162.616), (-68.368, -23.466, -163.329),
+               (-74.367, -25.217, -164.175), (-80.58, -26.978, -164.035), (-86.774, -28.8, -163.402),
+               (-92.826, -30.737, -161.696), (-98.914, -32.748, -161.981), (-105.069, -34.701, -162.753),
+               (-111.248, -36.57, -163.315), (-117.245, -38.336, -163.74), (-123.247, -40.087, -163.74),
+               (-126.246, -40.966, -163.457), (-126.246, -40.966, -163.457), (-126.246, -40.966, -163.457),
+               (-126.246, -40.966, -163.457), (-126.246, -40.966, -163.457)]
+
+# ==========================================
+# 4. 主程序 (Main Loop)
+# ==========================================
+
+def main():
+    client = carla.Client('localhost', 2000)
+    client.set_timeout(10.0)
+    world = client.get_world()
+    carla_map = world.get_map()
+    bp_lib = world.get_blueprint_library()
+    tm = client.get_trafficmanager(8000)
+
+    weather = carla.WeatherParameters(
+        cloudiness=40.0, precipitation=40.0, precipitation_deposits=55.0,
+        wind_intensity=0.0, sun_azimuth_angle=0.0, sun_altitude_angle=18.0,
+        fog_density=2.0, fog_distance=0.0, fog_falloff=0.0, wetness=55.0,
+        scattering_intensity=0.0, mie_scattering_scale=0.02, rayleigh_scattering_scale=0.1000
+    )
+    world.set_weather(weather)
+
+    dt = 0.05
+    actor_list = []
+
+    try:
+        # 开启同步模式
+        settings = world.get_settings()
+        settings.synchronous_mode = True
+        settings.fixed_delta_seconds = dt
+        world.apply_settings(settings)
+        tm.set_synchronous_mode(True)
+
+        # 辅助生成函数，防止车辆陷入地下
+        def spawn_actor(bp_id, traj, color=None, is_pedestrian=False, role_name=None):
+            bp = bp_lib.find(bp_id) if not is_pedestrian else bp_lib.filter(bp_id)[0]
+            if color and bp.has_attribute('color'):
+                bp.set_attribute('color', color)
+            if role_name and bp.has_attribute('role_name'):
+                bp.set_attribute('role_name', role_name)
+
+            # 强制关闭行人的无敌状态，使得碰撞物理生效(可以被撞飞)
+            if is_pedestrian and bp.has_attribute('is_invincible'):
+                bp.set_attribute('is_invincible', 'false')
+
+            x, y, yaw = traj[0]
+            loc = carla.Location(x=x, y=y, z=1.5)  # 给点初始高度，让重力系统接管
+            rot = carla.Rotation(yaw=yaw)
+            actor = world.try_spawn_actor(bp, carla.Transform(loc, rot))
+            if actor: actor_list.append(actor)
+            return actor
+
+        print("正在生成所有 Actor...")
+
+        ego_veh = _rtb_agent_find_ego(world, type_id=_RTB_AGENT_EGO_TYPE_ID, start_xy=_RTB_AGENT_EGO_START_XY)  # scene-side ego spawn removed
+
+        jeep_veh = spawn_actor('vehicle.jeep.wrangler_rubicon', TRAJ_jeep)
+        jeep_pid = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
+
+        pedestrian = spawn_actor('walker.pedestrian.*', TRAJ_PED, is_pedestrian=True)
+
+        harley_veh = spawn_actor('vehicle.harley-davidson.low_rider', TRAJ_HARLEY)
+        harley_pid = {'lon': PIDLongitudinalController(dt=dt), 'lat': PIDLateralController(dt=dt)}
+
+        print("等待物理引擎环境预热 (让车辆和平稳落地)...")
+        for _ in range(40):
+            world.tick()
+
+        print("预热完毕，赋予初始运动速度...")
+        # 💡 车初始速度km/h
+        set_initial_velocity(jeep_veh, 10.0)
+        set_initial_velocity(harley_veh, 20.0)
+
+        print("仿真正式开始！")
+
+        idx_ego, idx_jeep, idx_ped, idx_harley = 0, 0, 0, 0
+
+        # 💡 增加 Ego 车辆的目标速度动态变量，以及加速度参数
+        ego_current_target_speed = 20.0  # 初始目标 20km/h
+        ego_max_speed = 70.0  # 最高目标 70km/h
+        ego_accel_rate_kmh_per_s = 15.0  # 加速度：km/h
+        # 💡 增加 harley 车辆的目标速度动态变量，以及加速度参数
+
+        harley_current_target_speed = 20.0  # 初始目标 km/h
+        harley_max_speed = 90.0  # 最高目标 km/h
+        harley_accel_rate_kmh_per_s = 10.0  # 加速度：km/h
+        while True:
+            start_time = time.time()
+            world.tick()
+
+            # --- 控制 Ego 车辆 ---
+
+            # --- 控制 Jeep 车辆 (10 km/h) ---
+            if jeep_veh and jeep_veh.is_alive:
+                if check_and_handle_out_of_bounds(jeep_veh, carla_map):
+                    jeep_veh = None
+                elif actor_reached_trajectory_end(jeep_veh, TRAJ_jeep, threshold=1.0):
+                    jeep_veh = destroy_actor(actor_list, jeep_veh, "trajectory end")
+                else:
+                    if idx_jeep < len(TRAJ_jeep):
+                        tx, ty, _ = TRAJ_jeep[idx_jeep]
+                        target_loc = carla.Location(x=tx, y=ty, z=jeep_veh.get_location().z)
+                        if jeep_veh.get_location().distance(target_loc) < 1.0 and idx_jeep < len(TRAJ_jeep) - 1:
+                            idx_jeep += 1
+                        apply_pid_control(jeep_veh, jeep_pid['lon'], jeep_pid['lat'], 10.0, target_loc)
+                    else:
+                        jeep_veh.apply_control(carla.VehicleControl(brake=1.0))
+
+            # --- 控制 Harley 摩托车 ---
+            if harley_veh and harley_veh.is_alive:
+                if check_and_handle_out_of_bounds(harley_veh, carla_map):
+                    harley_veh = None
+                elif actor_reached_trajectory_end(harley_veh, TRAJ_HARLEY, threshold=3.0):
+                    harley_veh = destroy_actor(actor_list, harley_veh, "trajectory end")
+                else:
+
+                    # 💡 获取当前车辆位置，判定是否过线进行加速
+                    current_harley_loc = harley_veh.get_location()
+                    if current_harley_loc.y <= 15.0:
+                        # 每一个 dt (0.05秒)，速度目标增加 (加速度 * dt)
+                        harley_current_target_speed += harley_accel_rate_kmh_per_s * dt
+                        # 上限裁剪到 90 km/h
+                        harley_current_target_speed = min(harley_current_target_speed, harley_max_speed)
+
+                    if idx_harley < len(TRAJ_HARLEY):
+                        tx, ty, _ = TRAJ_HARLEY[idx_harley]
+                        target_loc = carla.Location(x=tx, y=ty, z=harley_veh.get_location().z)
+                        if harley_veh.get_location().distance(target_loc) < 3.0 and idx_harley < len(TRAJ_HARLEY) - 1:
+                            idx_harley += 1
+                        # 💡 将动态计算的目标速度喂给 PID
+                        apply_pid_control(harley_veh, harley_pid['lon'], harley_pid['lat'], harley_current_target_speed, target_loc)
+                    else:
+                        harley_veh.apply_control(carla.VehicleControl(brake=1.0))
+
+            # --- 重点：CARLA 0.9.15 行人方向与分段运动控制 ---
+            if pedestrian and pedestrian.is_alive:
+                current_loc = pedestrian.get_location()
+
+                # 动态判断速度。如果 x 还没到 -1.7，速度是 1.5，到了就突变为 4.0
+                ped_speed = 4.0 if current_loc.x >= -1.7 else 1.5
+
+                if idx_ped < len(TRAJ_PED):
+                    tx, ty, _ = TRAJ_PED[idx_ped]
+                    target_loc = carla.Location(x=tx, y=ty)
+
+                    # 距离判定
+                    if current_loc.distance(target_loc) < 1.0 and idx_ped < len(TRAJ_PED) - 1:
+                        idx_ped += 1
+                        tx, ty, _ = TRAJ_PED[idx_ped]
+                        target_loc = carla.Location(x=tx, y=ty)
+
+                    direction = carla.Vector3D(target_loc.x - current_loc.x, target_loc.y - current_loc.y, 0)
+                    norm = math.sqrt(direction.x ** 2 + direction.y ** 2)
+                    if norm > 0.001:
+                        direction.x /= norm
+                        direction.y /= norm
+
+                    walker_control = carla.WalkerControl(direction=direction, speed=ped_speed, jump=False)
+                    pedestrian.apply_control(walker_control)
+                else:
+                    # 到达终点，停止
+                    pedestrian.apply_control(carla.WalkerControl(direction=carla.Vector3D(0, 0, 0), speed=0.0))
+
+            # 帧率同步控制
+            compute_time = time.time() - start_time
+            if compute_time < dt:
+                time.sleep(dt - compute_time)
+
+    except KeyboardInterrupt:
+        print("\n键盘中断，终止运行。")
+    finally:
+        print("\n清理环境并恢复异步设置...")
+        for actor in actor_list:
+            if actor.is_alive:
+                actor.destroy()
+
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
+        if tm: tm.set_synchronous_mode(False)
+        print("清理完毕。")
+
+if __name__ == '__main__':
+    main()
